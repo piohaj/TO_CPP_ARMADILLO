@@ -152,8 +152,6 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
            }
        }
 
-       cout << "LAMBD:" << LAMBD << endl;
-
        // ===============================================================================
        // Building system - matrix :
        // ===============================================================================
@@ -176,13 +174,11 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
         if ( opt.asymp == 1 || opt.asymp == 2 )
         {
             Dk = join_horiz(Dk, ones<cx_mat>(1,Ns).t());
-            cout << Dk << endl;
         }
         else if ( opt.asymp == 3 )
         {
             Dk = join_horiz(Dk, ones<cx_mat>(1,Ns).t());
             Dk = join_horiz(Dk, s);
-            cout << Dk << endl;
         }
 
         // Scaling for las row of LS - problem (pole identyfication)
@@ -209,10 +205,11 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
         {
             cx_mat AA = zeros<cx_mat>(Nc*(N+1), N+1);
             cx_mat bb = zeros<cx_mat>(Nc*(N+1), 1);
+			cx_mat A2 = zeros<cx_mat>(Ns, N+offs+N+1);
+			mat A; //kobinowanie z kodem A2 - macierz pomocnicza
 
             for ( int n = 0; n < Nc ; n++ )
             {
-                cx_mat A = zeros<cx_mat>(Ns, N+offs+N+1);
 
                 if ( common_weight == 1 )
                 {
@@ -223,10 +220,48 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
                     weig = weight.col(n);
                 }
 
-                for ( int m = 0; m < N +offs ; m++ )
+                for ( int m = 0; m < N + offs ; m++ ) //left block
                 {
-                    
+                    A2( span(0, Ns-1),  m ) = weig % Dk( span(0, Ns-1), m );    
                 }
+
+                int inda = N + offs;
+
+                for ( int m = 0 ; m < N+1 ; m++ ) // right block
+                {
+                    A2( span(0, Ns-1), inda+m ) = -weig % Dk( span(0, Ns-1), m) %  f(n, span(0, Ns-1)).st();
+                }
+
+                A = join_vert( real(A2), imag(A2) );
+
+                // integral criterion for sigma
+                int offset = N + offs;
+
+                if ( n == Nc-1 )
+                {
+                    //dodanie dodatkowego wiersza na koncu macierzy
+                    A.insert_rows( 2*Ns, zeros(1, A.n_cols));
+                    for ( int mm = 0; mm < N+1; mm++ )
+                    {
+                        A( 2*Ns, offset+mm) = real(scale*sum(Dk.col(mm)));
+                    }
+                }
+
+
+                mat Q, R;
+                if ( qr_econ(Q,R,A) == false )
+                {
+                    cout << " qr() line 251 went wrong!!! \n";
+                    exit(1);
+                }
+
+                int ind1 = N+offs+1;
+                int ind2 = N+offs+N+1;
+
+                mat R22 = R( span(ind1-1, ind2-1), span(ind1-1, ind2-1) );
+
+                cout << R22 <<endl ;
+
             }
 
         }
