@@ -203,10 +203,10 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
 
         if ( opt.relax == 1 )
         {
-            cx_mat AA = zeros<cx_mat>(Nc*(N+1), N+1);
-            cx_mat bb = zeros<cx_mat>(Nc*(N+1), 1);
-			cx_mat A2 = zeros<cx_mat>(Ns, N+offs+N+1);
-			mat A; //kobinowanie z kodem A2 - macierz pomocnicza
+            mat AA = zeros<mat>(Nc*(N+1), N+1);
+            mat bb = zeros<mat>(Nc*(N+1), 1);
+			cx_mat my_A = zeros<cx_mat>(Ns, N+offs+N+1);
+			mat A; //kobinowanie z kodem my_A - macierz pomocnicza
 
             for ( int n = 0; n < Nc ; n++ )
             {
@@ -222,17 +222,17 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
 
                 for ( int m = 0; m < N + offs ; m++ ) //left block
                 {
-                    A2( span(0, Ns-1),  m ) = weig % Dk( span(0, Ns-1), m );    
+                    my_A( span(0, Ns-1),  m ) = weig % Dk( span(0, Ns-1), m );    
                 }
 
                 int inda = N + offs;
 
                 for ( int m = 0 ; m < N+1 ; m++ ) // right block
                 {
-                    A2( span(0, Ns-1), inda+m ) = -weig % Dk( span(0, Ns-1), m) %  f(n, span(0, Ns-1)).st();
+                    my_A( span(0, Ns-1), inda+m ) = -weig % Dk( span(0, Ns-1), m) %  f(n, span(0, Ns-1)).st();
                 }
 
-                A = join_vert( real(A2), imag(A2) );
+                A = join_vert( real(my_A), imag(my_A) );
 
                 // integral criterion for sigma
                 int offset = N + offs;
@@ -260,8 +260,13 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
 
                 mat R22 = R( span(ind1-1, ind2-1), span(ind1-1, ind2-1) );
 
-                cout << R22 <<endl ;
+                AA.rows( n*(N+1), (n+1)*N ) = R22;
 
+                if ( n == Nc-1 )
+                {
+                    bb( span( n*(N+1), (n+1)*N), 0) = trans( Q( Q.n_rows-1, span(N+offs, Q.n_cols-1) ) * Ns * scale );
+                }
+            cout << bb << endl;
             }
 
         }
