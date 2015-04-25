@@ -118,12 +118,12 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
 // ==================================================================================
 // POLE INDENTIFICATION
 // ==================================================================================
-   cx_mat Escale, Dk;
-      mat cindex;
+   cx_mat Dk;
+      mat cindex, Escale;
 
    if ( opt.skip_pole != 1 )
    {
-       Escale = zeros<cx_mat>(1, Nc+1 );
+       Escale = zeros<mat>(1, Nc+1 );
 
        //==========================================================================
        // Finding out which starting poles are complex
@@ -208,6 +208,7 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
             mat bb = zeros<mat>(Nc*(N+1), 1);
 			cx_mat my_A = zeros<cx_mat>(Ns, N+offs+N+1);
 			mat A; //kobinowanie z kodem my_A - macierz pomocnicza
+			Escale = zeros<mat>(1, AA.n_cols);
 
             for ( int n = 0; n < Nc ; n++ )
             {
@@ -267,10 +268,18 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
                 {
                     bb( span( n*(N+1), (n+1)*N), 0) = trans( Q( Q.n_rows-1, span(N+offs, Q.n_cols-1) ) * Ns * scale );
                 }
-            cout << bb << endl;
             }
 
-        }
+            for ( int col = 0; col < AA.n_cols; col++ )
+            {
+                Escale(col) = 1 / norm( AA.col(col) );
+                AA.col(col) = Escale(col) * AA.col(col);
+            }
+
+            mat x = solve(AA, bb);
+            x = x % Escale.st();
+            cout << "x: " << x << endl;
+        } // end - if opts.relax == 0
 
 
 
