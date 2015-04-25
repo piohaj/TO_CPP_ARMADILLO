@@ -98,6 +98,7 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
     else
     {
         cout << "ERROR in vectfit3: Invalid size of array weight" << endl;
+        exit(1);
     }
 
     int offs = 0;
