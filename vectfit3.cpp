@@ -16,6 +16,22 @@ cx_mat logspace(double a, double b, int n)
     return return_mat;
 }
 
+int sign( double x )
+{
+    if ( x == 0 )
+    {
+        return 0;
+    }
+    else if ( x < 0 )
+    {
+        return -1;
+    }
+    else 
+    {
+        return 1;
+    }
+}
+
 void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
 {
     //struktura z opcjami algorytmu
@@ -119,7 +135,7 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
 // POLE INDENTIFICATION
 // ==================================================================================
    cx_mat Dk;
-      mat cindex, Escale;
+      mat cindex, Escale, x;
 
    if ( opt.skip_pole != 1 )
    {
@@ -276,12 +292,41 @@ void vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
                 AA.col(col) = Escale(col) * AA.col(col);
             }
 
-            mat x = solve(AA, bb);
+            x = solve(AA, bb);
             x = x % Escale.st();
-            cout << "x: " << x << endl;
         } // end - if opts.relax == 0
 
 
+    
+    // Situation: no relaxation, or produced D of sigma extremel small and large. Solve again, without relaxation
+    // x( x.n_rows - 1 ) last elem of x
+    if ( opt.relax == 0 || abs( x( x.n_rows -1 ) ) < TOLlow || abs( x( x.n_rows -1 )  ) > TOLhigh )
+    {
+        mat AA = zeros<mat>(Nc*N, N);
+        mat bb = zeros(Nc*N, 1);
+        int Dnew;
+
+        if ( opt.relax == 0 )
+        {
+            Dnew = 1;
+        }
+        else
+        {
+            if ( x( x.n_rows -1 ) == 0 )
+            {
+                Dnew = 1;
+            }
+            else if ( abs( x( x.n_rows -1 ) ) < TOLlow )
+            {
+                Dnew = sign( x( x.n_rows -1 ) ) * TOLlow;
+            }
+            else if ( abs( x( x.n_rows -1 ) ) > TOLhigh )
+            {
+                Dnew = sign( x( x.n_rows -1 ) ) * TOLhigh;
+            }
+        }
+    }
+    
 
 
 
