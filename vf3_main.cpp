@@ -23,10 +23,10 @@ int main()
     weight = ones<cx_mat>(1, Ns);
     poles = -2 * 3.14 * logspace(0,4,3);
 
-
 // wlaczenie algorytmu
-    my_vectorfit3(f, s, poles, weight); 
+    cx_mat x = my_vectorfit3(f, s, poles, weight); 
 
+//    cout << x << endl;
     return 0;
 }
 
