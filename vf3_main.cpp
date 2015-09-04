@@ -1,4 +1,4 @@
-#include "vectfit3.h"
+#include "my_vectfit.h"
 
 int main()
 {
@@ -25,7 +25,7 @@ int main()
 
 
 // wlaczenie algorytmu
-    vectorfit3(f, s, poles, weight); 
+    my_vectorfit3(f, s, poles, weight); 
 
     return 0;
 }
