@@ -4,14 +4,14 @@ int main()
 {
 
     // przygotowanie danych testowych
-    cx_mat f, s, poles;
+    cx_mat f, s;
+    cx_vec poles;
     cx_mat weight;
 
     
     int Ns = 101;
     f = zeros<cx_mat>(1, Ns);
-    s = 2 * 3.14 * 1i * logspace(0, 4, Ns);
-
+    s = 2 * 3.14 * 1i * linspace<cx_mat>(0, 350, Ns);
 
     for ( int k = 0; k < Ns ; k++ )
     {
@@ -26,7 +26,8 @@ int main()
 // wlaczenie algorytmu
     cx_mat x = my_vectorfit3(f, s, poles, weight); 
 
-//    cout << x << endl;
+
+    cout << "Poles: \n" <<  x << endl;
     return 0;
 }
 

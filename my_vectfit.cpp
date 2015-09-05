@@ -36,7 +36,7 @@ int sign( double x )
 // mozliwe zespolone dane
 // do rozwiazania rownania metoda najmniejszych kwadratow uzyto dekompozycji QR
 // algorymt zaklada istnienie stalej h
-cx_mat my_vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
+cx_mat my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
 {
     int N = poles.n_elem, //rzad rozwiazania
         Ns = f.n_elem; // liczba probek pomiarowych
@@ -71,17 +71,17 @@ cx_mat my_vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
     {
         if ( imag_check(m) == 0 )
         {
-            A.col(m) = 1 / (s - poles(m));
+            A.col(m) = cx_double(1,0) / (s - poles(m));
         }
-        else if ( imag_check(m) = 1 )
+        else if ( imag_check(m) == 1 )
         {
-            A.col(m) = 1 / (s - poles(m)) + 1 / (s - conj(poles(m)) );
+            A.col(m) = cx_double(1,0) / (s - poles(m)) + cx_double(1,0) / (s - conj(poles(m)) );
             A.col(m+1) = 1i / (s-poles(m)) - 1i / (s - conj(poles(m)) );
         }
     }
 
-    A.col(N+1) = ones<cx_mat>(1,Ns).st();
-    
+    A.col(N) = ones<cx_mat>(1,Ns).st();
+
     // wypelnienie prawej strony macierzy A
 
     for ( int i = 0; i < N; i++ )
@@ -102,7 +102,8 @@ cx_mat my_vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
     AA = AA.rows(N+1, 2*N);
 
     mat bb = R( span(N+1, 2*N), span(N+1, 2*N) );
-    mat x = solve(AA, bb);
+    mat x = solve(bb, AA);
+   cout << "x: \n" <<x  << endl; 
     
     // przy pomocy metody wartosci wlasnych macierzy obliczanie zer funkcji sigma - szukane bieguny
 
@@ -136,12 +137,9 @@ cx_mat my_vectorfit3(cx_mat f, cx_mat s, cx_mat poles, cx_mat weight)
     }
 
     //obliczanie wartosci wlasnych macierzy
-    mat H = poles_diag_real - b_ones * x;
+    mat H = poles_diag_real - b_ones * x_trans;
     cx_mat Hi = cx_mat(H, zeros<mat>(N,N));
-    vec eigval2;
-    eig_sym(eigval2, poles, Hi);
-
-    cout << eigval2;
+	poles = eig_gen(Hi);
 
     return poles;
 }
