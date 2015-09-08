@@ -36,15 +36,16 @@ int sign( double x )
 // mozliwe zespolone dane
 // do rozwiazania rownania metoda najmniejszych kwadratow uzyto dekompozycji QR
 // algorymt zaklada istnienie stalej h
-cx_mat my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
+SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
 {
     int N = poles.n_elem, //rzad rozwiazania
         Ns = f.n_elem; // liczba probek pomiarowych
     mat imag_check = zeros<mat>(1, N); //wektor informujacy czy dany biegun jest zespolony
+    SER wynik; // struktura z wynikiem dzialania algorytmu
 
     for ( int i = 0; i < N; i++ )
     {
-        if ( imag(poles(i)) != 0 ) 
+        if ( imag(poles(i)) > 0 ) 
         {
             if ( i == 0 )
             {
@@ -91,8 +92,11 @@ cx_mat my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
 
     // obliczanie x metoda najmniejszych kwadratow Ax=b
     mat A_real = join_vert( real(A), imag(A) );
+    A.reset();
+
     cx_mat f_lsp = f.st();
     mat f_lsp_real = join_vert( real(f_lsp), imag(f_lsp) );
+    f_lsp.reset();
 
     // dokompozycja QR macierzy A
     mat Q, R;
@@ -103,7 +107,11 @@ cx_mat my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
 
     mat bb = R( span(N+1, 2*N), span(N+1, 2*N) );
     mat x = solve(bb, AA);
-   cout << "x: \n" <<x  << endl; 
+    
+    Q.reset();
+    R.reset();
+    AA.reset();
+    bb.reset();
     
     // przy pomocy metody wartosci wlasnych macierzy obliczanie zer funkcji sigma - szukane bieguny
 
@@ -140,6 +148,94 @@ cx_mat my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
     mat H = poles_diag_real - b_ones * x_trans;
     cx_mat Hi = cx_mat(H, zeros<mat>(N,N));
 	poles = eig_gen(Hi);
+    H.reset();
+    Hi.reset();
 
-    return poles;
+//=============================================
+// obliczanie residuów szukanej funkcji
+// ============================================
+    // sparwdzenie ktore bieguny sa zespolone
+    imag_check = zeros<mat>(1,N);
+    for ( int i = 0; i < N; i++ )
+    {
+        if ( imag(poles(i)) > 1e-10 ) 
+        {
+            if ( i == 0 )
+            {
+                imag_check(i) = 1;
+            }
+            else
+            {
+                if ( imag_check(i-1) == 0 || imag_check(i-1) == 2 )
+                {
+                    imag_check(i) = 1; imag_check(i+1) = 2;
+                }
+                else
+                {
+                    imag_check(i) = 2;
+                }
+            }
+        }
+    }
+
+    cx_mat AA_res = zeros<cx_mat>(Ns, N+1);
+
+    // wypelnienie lewej strony macierzy AA_res
+    for ( int m = 0; m < N; m++ )
+    {
+        if ( imag_check(m) == 0 )
+        {
+            AA_res.col(m) = 1 / (s - poles(m));
+        }
+        else if ( imag_check(m) == 1 )
+        {
+            AA_res.col(m) = 1 / (s - poles(m)) + 1 / (s - conj(poles(m)));
+            AA_res.col(m+1) = 1i / (s - poles(m)) - 1i / (s - conj(poles(m)));
+        }
+    }
+
+    AA_res.col(N) = ones<cx_mat>(1, Ns).st();
+
+    mat AA_res_real = join_vert( real(AA_res), imag(AA_res) );
+
+    // obliczenie metoda najmniejszych kwadratow residuów szukanej funkcji
+    x = inv( (AA_res_real.st() * AA_res_real ) ) * AA_res_real.st() * f_lsp_real;
+    x.print("x=");
+
+    // zapis residuów w postaci zespolonej (jesli takie istnieja)
+    wynik.res = zeros<cx_mat>(1, N);
+    
+    m = 0;
+    for ( int i = 0; i < N ; i++ )
+    {
+        if ( imag_check(i) == 0 )
+        {
+            wynik.res(m) = x(i);
+        }
+        else if ( imag_check(i) == 1 )
+        {
+            wynik.res(m) = x(i) + 1i * x(i+1);
+            wynik.res(m+1) = conj(wynik.res(m));
+        }
+        m++;
+    }
+
+    wynik.h = x(x.n_elem - 1);
+    wynik.poles = poles;
+
+     // obliczanie bledu metody najmniejszych kwadratow
+     cx_mat f_check = zeros<cx_mat>(1,Ns);
+     for ( int i = 0; i < Ns; i++ )
+     {
+         for ( int j = 0; j < N; j++ )
+         {
+             f_check(i) = f_check(i) + wynik.res(j) / ( s(i) - wynik.poles(j));
+         }
+         f_check(i) = f_check(i) + wynik.h;
+     }
+     
+     wynik.err = sqrt( accu( pow(abs(f - f_check), 2) ) );
+
+
+    return wynik;
 }

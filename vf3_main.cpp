@@ -41,12 +41,12 @@ int main()
 
 // wlaczenie algorytmu
     clock_t tStart = clock();
-    poles = my_vectorfit3(f, s, poles, weight); 
+    wynik = my_vectorfit3(f, s, poles, weight); 
     double executionTime = (double)(clock() - tStart)/CLOCKS_PER_SEC;
 
     printf("Czas wykonania algorytmu: %.6fs \n", executionTime); 
 
-    cout << "Poles: \n" <<  poles << endl;
+    cout << "Poles: \n" <<  wynik.poles << endl;
     cout << "Res: \n" <<  wynik.res << endl;
     cout << "h: " <<  wynik.h << endl;
     cout << "err: " <<  wynik.err << endl;
