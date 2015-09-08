@@ -12,10 +12,10 @@ int main()
     SER wynik;
 
     
-    int Ns = 101;
+    int Ns = 1010;
     int N = 3;
     f = zeros<cx_mat>(1, Ns);
-    s = 2 * 3.14 * 1i * linspace<cx_mat>(0, 350, Ns);
+    s = 2 * 3.14 * 1.0I * linspace<cx_mat>(0, 350, Ns);
 
     for ( int k = 0; k < Ns ; k++ )
     {
