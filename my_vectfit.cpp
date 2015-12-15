@@ -77,7 +77,7 @@ SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
         else if ( imag_check(m) == 1 )
         {
             A.col(m) = cx_double(1,0) / (s - poles(m)) + cx_double(1,0) / (s - conj(poles(m)) );
-            A.col(m+1) = 1i / (s-poles(m)) - 1i / (s - conj(poles(m)) );
+            A.col(m+1) = 1.0i / (s-poles(m)) - 1.0i / (s - conj(poles(m)) );
         }
     }
 
@@ -100,7 +100,7 @@ SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
 
     // dokompozycja QR macierzy A
     mat Q, R;
-    qr(Q, R, A_real);
+    qr_econ(Q, R, A_real);
 
     mat AA = Q.st() * f_lsp_real;
     AA = AA.rows(N+1, 2*N);
@@ -190,7 +190,7 @@ SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
         else if ( imag_check(m) == 1 )
         {
             AA_res.col(m) = 1 / (s - poles(m)) + 1 / (s - conj(poles(m)));
-            AA_res.col(m+1) = 1i / (s - poles(m)) - 1i / (s - conj(poles(m)));
+            AA_res.col(m+1) = 1.0i / (s - poles(m)) - 1.0i / (s - conj(poles(m)));
         }
     }
 
@@ -214,7 +214,7 @@ SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
         }
         else if ( imag_check(i) == 1 )
         {
-            wynik.res(m) = x(i) + 1i * x(i+1);
+            wynik.res(m) = x(i) + 1.0i * x(i+1);
             wynik.res(m+1) = conj(wynik.res(m));
         }
         m++;

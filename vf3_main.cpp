@@ -1,5 +1,4 @@
 #include "my_vectfit.h"
-#include <time.h>
 
 int main()
 {
@@ -12,7 +11,7 @@ int main()
     SER wynik;
 
     
-    int Ns = 1010;
+    int Ns = 1010000;
     int N = 3;
     f = zeros<cx_mat>(1, Ns);
     s = 2 * 3.14 * 1.0I * linspace<cx_mat>(0, 350, Ns);
@@ -39,10 +38,11 @@ int main()
 
     poles = -2 * 3.14 * logspace(0,4,N);
 
+    wall_clock timer;
 // wlaczenie algorytmu
-    clock_t tStart = clock();
+    timer.tic();
     wynik = my_vectorfit3(f, s, poles, weight); 
-    double executionTime = (double)(clock() - tStart)/CLOCKS_PER_SEC;
+    double executionTime = timer.toc();
 
     printf("Czas wykonania algorytmu: %.6fs \n", executionTime); 
 
