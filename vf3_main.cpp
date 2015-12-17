@@ -11,16 +11,23 @@ int main()
     SER wynik;
 
     
-    int Ns = 1010000;
+    int Ns = 101;
     int N = 3;
-    f = zeros<cx_mat>(1, Ns);
+    f = zeros<cx_mat>(2, Ns);
     s = 2 * 3.14 * 1.0I * linspace<cx_mat>(0, 350, Ns);
 
     for ( int k = 0; k < Ns ; k++ )
     {
         cx_double sk = s(k);
         
-        f(k) = cx_double(2,0)/(sk+cx_double(5,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(0.5, 0);
+        f(0, k) = cx_double(2,0)/(sk+cx_double(5,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(0.5, 0);
+    } 
+
+    for ( int kk = 0; kk < Ns ; kk++ )
+    {
+        cx_double sk = s(kk);
+        
+        f(1, kk) = cx_double(3,0)/(sk+cx_double(5,0)) + cx_double(300, 40)/(sk - cx_double(-100,500)) + cx_double(300,-40)/(sk-cx_double(-100, -500)) + cx_double(0.9, 0);
     } 
 /*
     f_real.load( "f_real.dat", raw_ascii );
@@ -39,17 +46,19 @@ int main()
     poles = -2 * 3.14 * logspace(0,4,N);
 
     wall_clock timer;
-// wlaczenie algorytmu
+    // wlaczenie algorytmu
+    cout << "Vector fitting" << endl;
     timer.tic();
     wynik = my_vectorfit3(f, s, poles, weight); 
     double executionTime = timer.toc();
 
     printf("Czas wykonania algorytmu: %.6fs \n", executionTime); 
 
-    cout << "Poles: \n" <<  wynik.poles << endl;
-    cout << "Res: \n" <<  wynik.res << endl;
-    cout << "h: " <<  wynik.h << endl;
-    cout << "err: " <<  wynik.err << endl;
+    wynik.poles.print("poles=");
+    wynik.res.print("residues=");
+    wynik.h.print("h=");
+    wynik.err.print("RMS-err=");
+
     return 0;
 }
 

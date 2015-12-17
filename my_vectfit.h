@@ -26,8 +26,8 @@ struct SER
 {
     cx_mat res;
     cx_mat poles;
-    double h;
-    double err;
+    mat h;
+    mat err;
 };
 
 SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight);

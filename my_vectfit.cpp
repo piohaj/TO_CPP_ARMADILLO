@@ -36,12 +36,21 @@ int sign( double x )
 // mozliwe zespolone dane
 // do rozwiazania rownania metoda najmniejszych kwadratow uzyto dekompozycji QR
 // algorymt zaklada istnienie stalej h
+// algorytm przystosowany do obliczenia modelu wieloportowego
 SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
 {
     int N = poles.n_elem, //rzad rozwiazania
-        Ns = f.n_elem; // liczba probek pomiarowych
-    mat imag_check = zeros<mat>(1, N); //wektor informujacy czy dany biegun jest zespolony
+        Ns = s.n_elem, // liczba probek pomiarowych
+        Nc = f.n_rows; // liczba portow do symulacji
     SER wynik; // struktura z wynikiem dzialania algorytmu
+
+    if ( Nc > Ns )
+    {
+       cout << "Podane zle dane do algorymtu" << endl;
+       return wynik;
+    }
+
+    mat imag_check = zeros<mat>(1, N); //wektor informujacy czy dany biegun jest zespolony
 
     for ( int i = 0; i < N; i++ )
     {
@@ -83,35 +92,45 @@ SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
 
     A.col(N) = ones<cx_mat>(1,Ns).st();
 
-    // wypelnienie prawej strony macierzy A
+    // przygotowanie macierzy pod wiele portow
+    mat AA_poles = zeros<mat>(Nc*N, N);
+    mat bb_poles = zeros<mat>(Nc*N, 1);
 
-    for ( int i = 0; i < N; i++ )
+    for ( int m = 0; m < Nc; m++ )
     {
-        A.col(i+N+1) = - strans(f(0, span(0, Ns-1))) % A( span(0, Ns-1), i);
+        cx_mat AA_port = A;
+        // wypelnienie prawej strony macierzy A
+        for ( int i = 0; i < N; i++ )
+        {
+            AA_port.col(i+N+1) = - strans(f(m, span(0, Ns-1))) % A( span(0, Ns-1), i);
+        }
+
+        // obliczanie x metoda najmniejszych kwadratow Ax=b
+        mat A_real = join_vert( real(AA_port), imag(AA_port) );
+        AA_port.reset();
+  
+        cx_mat f_lsp = f.row(m).st();
+        mat f_lsp_real = join_vert( real(f_lsp), imag(f_lsp) );
+
+        // dokompozycja QR macierzy A
+        mat Q, R;
+        qr_econ(Q, R, A_real);
+        A_real.reset();
+
+        mat bb = Q.st() * f_lsp_real;
+        Q.reset();
+
+
+        bb_poles.rows(m*N, (m+1)*N-1) = bb.rows(N+1, 2*N); 
+        AA_poles( span(m*N, (m+1)*N-1), span( 0, N-1 ) ) = R( span(N+1, 2*N), span(N+1, 2*N) );
+
+        R.reset();
+        bb.reset();
     }
 
-    // obliczanie x metoda najmniejszych kwadratow Ax=b
-    mat A_real = join_vert( real(A), imag(A) );
-    A.reset();
+    // obliczenie x dla wszystkich portow badanego ukladu
+    mat x = solve(AA_poles, bb_poles, solve_opts::fast);
 
-    cx_mat f_lsp = f.st();
-    mat f_lsp_real = join_vert( real(f_lsp), imag(f_lsp) );
-    f_lsp.reset();
-
-    // dokompozycja QR macierzy A
-    mat Q, R;
-    qr_econ(Q, R, A_real);
-
-    mat AA = Q.st() * f_lsp_real;
-    AA = AA.rows(N+1, 2*N);
-
-    mat bb = R( span(N+1, 2*N), span(N+1, 2*N) );
-    mat x = solve(bb, AA);
-    
-    Q.reset();
-    R.reset();
-    AA.reset();
-    bb.reset();
     
     // przy pomocy metody wartosci wlasnych macierzy obliczanie zer funkcji sigma - szukane bieguny
 
@@ -129,12 +148,12 @@ SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
         {
             if ( abs(poles_diag(m,m)) > abs(real(poles_diag(m,m))) ) // sprawdzenie czy otrzymany biegun jest zespolony
             {
-				poles_diag_real(m+1,m)=-imag(poles_diag(m,m));
-				poles_diag_real(m,m+1)=imag(poles_diag(m,m));
-				poles_diag_real(m,m)=real(poles_diag(m,m));
-				poles_diag_real(m+1,m+1)=poles_diag_real(m,m);
-				b_ones(m,1)=2; b_ones(m+1,1)=0;
-				m=m+1;
+                poles_diag_real(m+1,m)=-imag(poles_diag(m,m));
+                poles_diag_real(m,m+1)=imag(poles_diag(m,m));
+                poles_diag_real(m,m)=real(poles_diag(m,m));
+                poles_diag_real(m+1,m+1)=poles_diag_real(m,m);
+                b_ones(m,1)=2; b_ones(m+1,1)=0;
+                m=m+1;
             }
             else
             {
@@ -147,7 +166,8 @@ SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
     //obliczanie wartosci wlasnych macierzy
     mat H = poles_diag_real - b_ones * x_trans;
     cx_mat Hi = cx_mat(H, zeros<mat>(N,N));
-	poles = eig_gen(Hi);
+    poles = eig_gen(Hi);
+  
     H.reset();
     Hi.reset();
 
@@ -199,42 +219,68 @@ SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
     mat AA_res_real = join_vert( real(AA_res), imag(AA_res) );
 
     // obliczenie metoda najmniejszych kwadratow residuów szukanej funkcji
-    x = inv( (AA_res_real.st() * AA_res_real ) ) * AA_res_real.st() * f_lsp_real;
-    x.print("x=");
+    // dla kazdego portu ukladu
+    mat f_lsp_res = zeros<mat>(2*Ns, Nc);
 
-    // zapis residuów w postaci zespolonej (jesli takie istnieja)
-    wynik.res = zeros<cx_mat>(1, N);
-    
-    m = 0;
-    for ( int i = 0; i < N ; i++ )
+    for (int m = 0; m < Nc; m++)
     {
-        if ( imag_check(i) == 0 )
-        {
-            wynik.res(m) = x(i);
-        }
-        else if ( imag_check(i) == 1 )
-        {
-            wynik.res(m) = x(i) + 1.0i * x(i+1);
-            wynik.res(m+1) = conj(wynik.res(m));
-        }
-        m++;
+        f_lsp_res.col(m) = join_vert( real(f.row(m)).st(), imag(f.row(m)).st() );
     }
 
-    wynik.h = x(x.n_elem - 1);
+    //x = inv( (AA_res_real.st() * AA_res_real ) ) * AA_res_real.st() * f_lsp_real;
+    x = solve(AA_res_real, f_lsp_res);
+
+    // zapis residuów w postaci zespolonej (jesli takie istnieja)
+    wynik.res = zeros<cx_mat>(Nc, N);
+    
+    for ( int m_port = 0; m_port < Nc; m_port++ )
+    {
+        m = 0;
+        for ( int i = 0; i < imag_check.n_elem ; i++ )
+        {
+            if ( imag_check(i) == 0 )
+            {
+                wynik.res(m_port, m) = x(i, m_port);
+            }
+            else if ( imag_check(i) == 1 )
+            {
+                wynik.res(m_port, m) = x(i, m_port) + 1.0i * x(i+1, m_port);
+                wynik.res(m_port, m+1) = conj(wynik.res(m_port, m));
+            }
+            m++;
+        }
+    }
+
+    // rzeczywiste wspolczynniki h
+    wynik.h = zeros<mat>(Nc, 1);
+    for ( int m = 0; m < Nc; m++ )
+    {
+        wynik.h(m, 0) = x(N, m);
+    }
+
+    // wstawienie biegunow do struktury wynikow
     wynik.poles = poles;
 
-     // obliczanie bledu metody najmniejszych kwadratow
-     cx_mat f_check = zeros<cx_mat>(1,Ns);
-     for ( int i = 0; i < Ns; i++ )
+     // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
+     cx_mat f_check = zeros<cx_mat>(Nc, Ns);
+     for ( int m = 0; m < Nc; m++ )
      {
-         for ( int j = 0; j < N; j++ )
+         for ( int i = 0; i < Ns; i++ )
          {
-             f_check(i) = f_check(i) + wynik.res(j) / ( s(i) - wynik.poles(j));
-         }
-         f_check(i) = f_check(i) + wynik.h;
+             for ( int j = 0; j < N; j++ )
+             {
+                 f_check(m, i) = f_check(m, i) + wynik.res(m, j) / ( s(i) - wynik.poles(j));
+             }
+             f_check(m, i) = f_check(m, i) + wynik.h(m, 0);
+         } 
      }
      
-     wynik.err = sqrt( accu( pow(abs(f - f_check), 2) ) );
+     wynik.err = zeros<mat>(Nc, 1);
+
+     for ( int m = 0; m < Nc; m++ )
+     {
+         wynik.err(m, 0) = sqrt( accu( pow(abs(f.row(m) - f_check.row(m)), 2) ) );
+     }
 
 
     return wynik;
