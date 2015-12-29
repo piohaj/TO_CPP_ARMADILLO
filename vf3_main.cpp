@@ -11,10 +11,10 @@ int main()
     SER wynik;
 
     
-    int Ns = 101;
+    int Ns = 1010000;
     int N = 3;
     f = zeros<cx_mat>(2, Ns);
-    s = 2 * 3.14 * 1.0I * linspace<cx_mat>(0, 350, Ns);
+    s = 2 * 3.14 * 1.0I * linspace<cx_mat>(0, 550, Ns);
 
     for ( int k = 0; k < Ns ; k++ )
     {
@@ -49,7 +49,16 @@ int main()
     // wlaczenie algorytmu
     cout << "Vector fitting" << endl;
     timer.tic();
-    wynik = my_vectorfit3(f, s, poles, weight); 
+    int iter = 1;
+    for ( iter = 1; i < 11; i++ )
+    {
+        wynik = my_vectorfit3(f, s, poles, weight); 
+        
+        if ( wynik.err.max() < 1e-5 )
+        {
+            break;
+        }
+    }
     double executionTime = timer.toc();
 
     printf("Czas wykonania algorytmu: %.6fs \n", executionTime); 
@@ -58,6 +67,7 @@ int main()
     wynik.res.print("residues=");
     wynik.h.print("h=");
     wynik.err.print("RMS-err=");
+    cout << "Iter: " << iter << endl;
 
     return 0;
 }

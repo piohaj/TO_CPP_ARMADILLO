@@ -37,7 +37,7 @@ int sign( double x )
 // do rozwiazania rownania metoda najmniejszych kwadratow uzyto dekompozycji QR
 // algorymt zaklada istnienie stalej h
 // algorytm przystosowany do obliczenia modelu wieloportowego
-SER my_vectorfit3(cx_mat f, cx_mat s, cx_vec poles, cx_mat weight)
+SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
 {
     int N = poles.n_elem, //rzad rozwiazania
         Ns = s.n_elem, // liczba probek pomiarowych
