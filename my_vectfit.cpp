@@ -54,7 +54,7 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
 
     for ( int i = 0; i < N; i++ )
     {
-        if ( imag(poles(i)) > 0 ) 
+        if ( imag(poles(i)) != 0 ) 
         {
             if ( i == 0 )
             {
@@ -102,7 +102,7 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
         // wypelnienie prawej strony macierzy A
         for ( int i = 0; i < N; i++ )
         {
-            AA_port.col(i+N+1) = - strans(f(m, span(0, Ns-1))) % A( span(0, Ns-1), i);
+            AA_port.col(i+N+1) = -strans(f(m, span(0, Ns-1))) % A( span(0, Ns-1), i);
         }
 
         // obliczanie x metoda najmniejszych kwadratow Ax=b
@@ -113,13 +113,13 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
         mat f_lsp_real = join_vert( real(f_lsp), imag(f_lsp) );
 
         // dokompozycja QR macierzy A
+        //cout<< "QR " << m << endl; 
         mat Q, R;
         qr_econ(Q, R, A_real);
         A_real.reset();
 
         mat bb = Q.st() * f_lsp_real;
         Q.reset();
-
 
         bb_poles.rows(m*N, (m+1)*N-1) = bb.rows(N+1, 2*N); 
         AA_poles( span(m*N, (m+1)*N-1), span( 0, N-1 ) ) = R( span(N+1, 2*N), span(N+1, 2*N) );
@@ -129,18 +129,19 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
     }
 
     // obliczenie x dla wszystkich portow badanego ukladu
-    mat x = solve(AA_poles, bb_poles, solve_opts::fast);
+    mat x = solve(AA_poles, bb_poles);
+
+    //x.print("x=");
 
     
     // przy pomocy metody wartosci wlasnych macierzy obliczanie zer funkcji sigma - szukane bieguny
-
-    cx_mat poles_diag = diagmat(poles);
+    cx_mat poles_diag = diagmat(poles); // tu jeszcze bieguny wejsciowe
     mat b_ones = ones<mat>(N,1);
     mat x_trans = x.st();
     //int x_trans_end = x_trans.n_elem - 1;
     //x_trans = x_trans( 1, span( x_trans_end-N, x_trans_end ) );
-    int m = 0;
 
+    int m = 0;
     mat poles_diag_real = zeros<mat>(N, N);
     for ( int n = 0 ; n < N ; n++ )
     {
@@ -152,7 +153,7 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
                 poles_diag_real(m,m+1)=imag(poles_diag(m,m));
                 poles_diag_real(m,m)=real(poles_diag(m,m));
                 poles_diag_real(m+1,m+1)=poles_diag_real(m,m);
-                b_ones(m,1)=2; b_ones(m+1,1)=0;
+                b_ones(m,0)=2; b_ones(m+1,0)=0;
                 m=m+1;
             }
             else
@@ -161,12 +162,20 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
             }
         }
         m++;
+      //  cout << "m="<<m<<endl;
+     //   cout << "n="<<n<<endl;
     }
 
     //obliczanie wartosci wlasnych macierzy
     mat H = poles_diag_real - b_ones * x_trans;
+    poles_diag_real.print("poles_diag_real=");
+    b_ones.print("b_ones=");
+    x_trans.print("x_trans=");
+
     cx_mat Hi = cx_mat(H, zeros<mat>(N,N));
     poles = eig_gen(Hi);
+
+    cout << "poles: "<< poles << endl;
   
     H.reset();
     Hi.reset();
@@ -178,7 +187,7 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
     imag_check = zeros<mat>(1,N);
     for ( int i = 0; i < N; i++ )
     {
-        if ( imag(poles(i)) > 1e-10 ) 
+        if ( imag(poles(i)) != 0 ) 
         {
             if ( i == 0 )
             {
@@ -196,8 +205,11 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
                 }
             }
         }
+        //cout << "imag_check("<<i<<")="<<imag_check(i)<<endl;
     }
 
+
+    //cout << "imag_check " << imag_check << endl;
     cx_mat AA_res = zeros<cx_mat>(Ns, N+1);
 
     // wypelnienie lewej strony macierzy AA_res
@@ -258,6 +270,8 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
         wynik.h(m, 0) = x(N, m);
     }
 
+
+//    cout << "Wynik.h: " << wynik.h << endl;
     // wstawienie biegunow do struktury wynikow
     wynik.poles = poles;
 
