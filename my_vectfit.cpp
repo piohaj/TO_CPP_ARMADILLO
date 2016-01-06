@@ -168,12 +168,12 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
 
     //obliczanie wartosci wlasnych macierzy
     mat H = poles_diag_real - b_ones * x_trans;
-    poles_diag_real.print("poles_diag_real=");
-    b_ones.print("b_ones=");
-    x_trans.print("x_trans=");
+    //poles_diag_real.print("poles_diag_real=");
+    //b_ones.print("b_ones=");
+    //x_trans.print("x_trans=");
 
     poles = eig_gen(H);
-    cout << "poles: "<< poles << endl;
+    //cout << "poles: "<< poles << endl;
   
     H.reset();
 
@@ -202,7 +202,7 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
                 }
             }
         }
-       cout << "imag_check("<<i<<")="<<imag_check(i)<<endl;
+     //  cout << "imag_check("<<i<<")="<<imag_check(i)<<endl;
     }
 
 

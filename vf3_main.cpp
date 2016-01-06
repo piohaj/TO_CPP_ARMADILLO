@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     int iter = 1;
     for ( iter = 1; iter < 11; iter++ )
     {
-        poles.print("Input poles: ");
+//        poles.print("Input poles: ");
         wynik = my_vectorfit3(data.f, data.s, poles, weight); 
         poles = wynik.poles;
         
@@ -107,10 +107,10 @@ int main(int argc, char* argv[])
 
     printf("Czas wykonania algorytmu: %.6fs \n", executionTime); 
 
-    wynik.poles.print("poles=");
-    wynik.res.print("residues=");
-    wynik.h.print("h=");
-    wynik.err.print("RMS-err=");
+//    wynik.poles.print("poles=");
+//    wynik.res.print("residues=");
+//    wynik.h.print("h=");
+//    wynik.err.print("RMS-err=");
     cout << "Iter: " << iter << endl;
 
     return 0;
