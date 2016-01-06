@@ -326,3 +326,40 @@ input_data prepare_sample_data()
     return data;
 }
  
+
+input_data load_data_from_file( int N, int Nc, int Ns )
+{
+    input_data data;
+    mat f_real, f_imag, s_real, s_imag;
+    ostringstream oss;
+    oss << "N" << N << "_Nc" << Nc << "_Ns" << Ns << ".dat";
+    string file_sufix = oss.str();
+
+    string f_real_file = "f_real_" + file_sufix;
+    string f_imag_file = "f_imag_" + file_sufix;
+    string s_real_file = "s_real_" + file_sufix;
+    string s_imag_file = "s_imag_" + file_sufix;
+   
+    if ( f_real.load(f_real_file) == false )
+    {
+        throw "Brak pliku " + f_real_file;
+    }
+    if ( f_real.load(f_imag_file) == false )
+    {
+        throw "Brak pliku " + f_imag_file;
+    }
+    if ( f_real.load(s_real_file) == false )
+    {
+        throw "Brak pliku " + s_real_file;
+    }
+    if ( f_real.load(s_imag_file) == false )
+    {
+        throw "Brak pliku " + s_imag_file;
+    }
+     
+    data.f = cx_mat(f_real, f_imag);
+    data.s = cx_mat(s_real, s_imag);
+
+    return data;
+}
+

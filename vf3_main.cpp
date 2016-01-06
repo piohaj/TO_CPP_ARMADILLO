@@ -32,12 +32,20 @@ int main(int argc, char* argv[])
         N = atoi( argv[1] );
         Nc = atoi( argv[2] );
         Ns = atoi( argv[3] );
-        cout << N << " " << Nc << " " << Ns << endl;
-        return 2;
+
+        try 
+        {
+            data = load_data_from_file(N, Nc, Ns);
+        }
+        catch(string err)
+        {
+           cout << err << endl;
+           return 1;
+        }
     }
     else
     {
-        cout << "TODO\n";
+        cout << "Nieprawidlowa liczba argumentow wejsciowych\n";
         return 1;
     }
     

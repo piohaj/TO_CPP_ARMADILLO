@@ -1,6 +1,7 @@
 #define ARMA_64BIT_WORD
 #include <armadillo>
 #include <iostream>
+#include <string>
 
 using namespace std;
 using namespace arma;
