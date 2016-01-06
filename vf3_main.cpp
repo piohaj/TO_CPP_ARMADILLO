@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
     }
     else if ( argc == 4 )
     {
+        cout << "=== Dane z pliku ===\n";
         N = atoi( argv[1] );
         Nc = atoi( argv[2] );
         Ns = atoi( argv[3] );
@@ -48,7 +49,6 @@ int main(int argc, char* argv[])
         cout << "Nieprawidlowa liczba argumentow wejsciowych\n";
         return 1;
     }
-    
 
 /*
     f_real.load( "f_real.dat", raw_ascii );
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
     //poles = -2 * 3.14 * logspace(0,4,N);
     // complex starting poles
     poles = zeros<cx_vec>(N);
-    mat bet = linspace<mat>(1, imag(data.s(Ns-1)), N/2);
+    mat bet = linspace<mat>(imag(data.s(0)), imag(data.s(Ns-1)), N/2);
     int m = 0;
     for ( int n = 0; n < N-1; n=n+2 )
     {

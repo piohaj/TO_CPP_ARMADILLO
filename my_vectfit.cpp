@@ -172,13 +172,10 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
     b_ones.print("b_ones=");
     x_trans.print("x_trans=");
 
-    cx_mat Hi = cx_mat(H, zeros<mat>(N,N));
-    poles = eig_gen(Hi);
-
+    poles = eig_gen(H);
     cout << "poles: "<< poles << endl;
   
     H.reset();
-    Hi.reset();
 
 //=============================================
 // obliczanie residuów szukanej funkcji
@@ -205,7 +202,7 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
                 }
             }
         }
-        //cout << "imag_check("<<i<<")="<<imag_check(i)<<endl;
+       cout << "imag_check("<<i<<")="<<imag_check(i)<<endl;
     }
 
 
@@ -344,21 +341,21 @@ input_data load_data_from_file( int N, int Nc, int Ns )
     {
         throw "Brak pliku " + f_real_file;
     }
-    if ( f_real.load(f_imag_file) == false )
+    if ( f_imag.load(f_imag_file) == false )
     {
         throw "Brak pliku " + f_imag_file;
     }
-    if ( f_real.load(s_real_file) == false )
+    if ( s_real.load(s_real_file) == false )
     {
         throw "Brak pliku " + s_real_file;
     }
-    if ( f_real.load(s_imag_file) == false )
+    if ( s_imag.load(s_imag_file) == false )
     {
         throw "Brak pliku " + s_imag_file;
     }
      
     data.f = cx_mat(f_real, f_imag);
-    data.s = cx_mat(s_real, s_imag);
+    data.s = cx_mat(s_real, s_imag).st();
 
     return data;
 }
