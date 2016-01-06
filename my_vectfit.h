@@ -30,6 +30,16 @@ struct SER
     mat err;
 };
 
+struct input_data
+{
+    cx_mat f;
+    cx_mat s;
+};
+
 SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight);
 cx_mat logspace(double a, double b, int n);
 int sign( double x );
+
+//funkcje do generowania lub ladowaniai z pliku danych testowych
+input_data prepare_sample_data();
+input_data load_data_from_file( int N, int Nc, int Ns );

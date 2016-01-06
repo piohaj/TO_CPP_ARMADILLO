@@ -299,3 +299,30 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
 
     return wynik;
 }
+
+
+input_data prepare_sample_data()
+{
+    input_data data;
+    int Ns = 101;
+    int N = 3;
+    data.f = zeros<cx_mat>(2, Ns);
+    data.s = 2 * 3.14 * 1.0I * linspace<cx_mat>(1, 550, Ns);
+
+    for ( int k = 0; k < Ns ; k++ )
+    {
+        cx_double sk = data.s(k);
+        
+        data.f(0, k) = cx_double(2,0)/(sk+cx_double(5,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(0.5, 0);
+    } 
+
+    for ( int kk = 0; kk < Ns ; kk++ )
+    {
+        cx_double sk = data.s(kk);
+        
+        data.f(1, kk) = cx_double(3,0)/(sk+cx_double(5,0)) + cx_double(300, 40)/(sk - cx_double(-100,500)) + cx_double(300,-40)/(sk-cx_double(-100, -500)) + cx_double(0.9, 0);
+    } 
+
+    return data;
+}
+ 
