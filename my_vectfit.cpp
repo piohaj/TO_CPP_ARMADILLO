@@ -44,7 +44,7 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
         Nc = f.n_rows; // liczba portow do symulacji
     SER wynik; // struktura z wynikiem dzialania algorytmu
 
-    if ( Nc > Ns )
+    if ( N > Ns )
     {
        cout << "Podane zle dane do algorymtu" << endl;
        return wynik;
@@ -332,10 +332,10 @@ input_data load_data_from_file( int N, int Nc, int Ns )
     oss << "N" << N << "_Nc" << Nc << "_Ns" << Ns << ".dat";
     string file_sufix = oss.str();
 
-    string f_real_file = "f_real_" + file_sufix;
-    string f_imag_file = "f_imag_" + file_sufix;
-    string s_real_file = "s_real_" + file_sufix;
-    string s_imag_file = "s_imag_" + file_sufix;
+    string f_real_file = "./benczmarki/f_real_" + file_sufix;
+    string f_imag_file = "./benczmarki/f_imag_" + file_sufix;
+    string s_real_file = "./benczmarki/s_real_" + file_sufix;
+    string s_imag_file = "./benczmarki/s_imag_" + file_sufix;
    
     if ( f_real.load(f_real_file) == false )
     {

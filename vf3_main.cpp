@@ -113,6 +113,14 @@ int main(int argc, char* argv[])
 //    wynik.err.print("RMS-err=");
     cout << "Iter: " << iter << endl;
 
+    //zapis statystyk do pliku
+    fstream plik;
+    plik.open("stats_cpp.txt", ios::out | ios::app);
+    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err.max() << ";" << executionTime << endl;
+    plik.flush();
+
+    plik.close();
+
     return 0;
 }
 
