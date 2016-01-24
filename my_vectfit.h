@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include<tbb/tbb.h>
+#include<mkl_service.h>
 
 using namespace std;
 using namespace arma;
