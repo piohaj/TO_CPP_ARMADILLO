@@ -2,9 +2,11 @@
 #include <armadillo>
 #include <iostream>
 #include <string>
+#include<tbb/tbb.h>
 
 using namespace std;
 using namespace arma;
+using namespace tbb;
 
 struct opts
 {
