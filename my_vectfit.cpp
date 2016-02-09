@@ -297,15 +297,11 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
          } 
      }
      
-     wynik.err = zeros<mat>(Nc, 1);
+     cx_mat diff = f - f_check;
 
-     for ( int m = 0; m < Nc; m++ )
-     {
-         wynik.err(m, 0) = sqrt( accu( pow(abs(f.row(m) - f_check.row(m)), 2) ) );
-     }
+     wynik.err = sqrt( accu ( accu( pow(abs(diff), 2) ) ) );
 
-
-    return wynik;
+     return wynik;
 }
 
 

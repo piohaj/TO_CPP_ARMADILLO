@@ -1,5 +1,5 @@
 #include "my_vectfit.h"
-#define VF_REPEAT 4
+#define VF_REPEAT 1
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
 // $1 - N rzad przyblizenia
@@ -96,13 +96,12 @@ int main(int argc, char* argv[])
         iter = 1;
         for ( iter = 1; iter < 11; iter++ )
         {
-	//        poles.print("Input poles: ");
             wynik = my_vectorfit3(data.f, data.s, poles, weight); 
 	    poles = wynik.poles;
 		
 	    cout << "Iter: " << iter << endl;
-	    cout << "Err: " << wynik.err.max() << endl;
-	    if ( wynik.err.max() < 1e-5 )
+	    cout << "Err: " << wynik.err << endl;
+	    if ( wynik.err < 1e-5 )
             {
 	        break;
 	    }
@@ -125,7 +124,7 @@ int main(int argc, char* argv[])
     //zapis statystyk do pliku
     fstream plik;
     plik.open("stats_cpp_parallel.txt", ios::out | ios::app);
-    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err.max() << ";" << exec_time << endl;
+    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << exec_time << endl;
     plik.flush();
 
     plik.close();
