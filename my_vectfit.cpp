@@ -38,14 +38,16 @@ void QR_calculation::operator() ( const blocked_range<int>& r ) const
     {
         cx_mat AA_port = A;
         // wypelnienie prawej strony macierzy A
+        cx_mat part;
         for ( int i = 0; i < N; i++ )
         {
-            AA_port.col(i+N+1) = -strans(f(m, span(0, Ns-1))) % A( span(0, Ns-1), i);
+            part = -strans(f(m, span(0, Ns-1))) % A( span(0, Ns-1), i);
+            AA_port.col(i+N+1) = part;
         }
 
         // obliczanie x metoda najmniejszych kwadratow Ax=b
         mat A_real = join_vert( real(AA_port), imag(AA_port) );
-        AA_port.reset();
+        //AA_port.reset();
   
         cx_mat f_lsp = f.row(m).st();
         mat f_lsp_real = join_vert( real(f_lsp), imag(f_lsp) );
@@ -54,16 +56,16 @@ void QR_calculation::operator() ( const blocked_range<int>& r ) const
         //cout<< "QR " << m << endl; 
         mat Q, R;
         qr_econ(Q, R, A_real);
-        A_real.reset();
+        //A_real.reset();
 
         mat bb = Q.st() * f_lsp_real;
-        Q.reset();
+        //Q.reset();
 
         bb_poles.rows(m*N, (m+1)*N-1) = bb.rows(N+1, 2*N); 
         AA_poles( span(m*N, (m+1)*N-1), span( 0, N-1 ) ) = R( span(N+1, 2*N), span(N+1, 2*N) );
 
-        R.reset();
-        bb.reset();
+        //R.reset();
+        //bb.reset();
     }
 }
 
@@ -134,7 +136,7 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
 
     MKL_Set_Num_Threads(1);
     // wielowatkowe (TTB) oblicznie wspolczynnikow AA_poles - QR rownolegle
-    task_scheduler_init init(4);
+    task_scheduler_init init();
     parallel_for(blocked_range<int>(0, Nc),
            QR_calculation( A, f, N, Ns, AA_poles, bb_poles) );
 
