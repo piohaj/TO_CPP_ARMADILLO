@@ -28,7 +28,7 @@ struct SER
     cx_mat res;
     cx_mat poles;
     mat h;
-    mat err;
+    double err;
 };
 
 struct input_data

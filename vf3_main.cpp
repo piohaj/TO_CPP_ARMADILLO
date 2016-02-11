@@ -97,8 +97,8 @@ int main(int argc, char* argv[])
         poles = wynik.poles;
         
         cout << "Iter: " << iter << endl;
-        cout << "Err: " << wynik.err.max() << endl;
-        if ( wynik.err.max() < 1e-5 )
+        cout << "Err: " << wynik.err << endl;
+        if ( wynik.err < 1e-5 )
         {
             break;
         }
@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
     //zapis statystyk do pliku
     fstream plik;
     plik.open("stats_cpp.txt", ios::out | ios::app);
-    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err.max() << ";" << executionTime << endl;
+    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << executionTime << endl;
     plik.flush();
 
     plik.close();
