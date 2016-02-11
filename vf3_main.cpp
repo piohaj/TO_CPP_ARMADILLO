@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
 
     //zapis statystyk do pliku
     fstream plik;
-    plik.open("stats_cpp.txt", ios::out | ios::app);
+    plik.open("stats_cpp_lapack.txt", ios::out | ios::app);
     plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err.max() << ";" << executionTime << endl;
     plik.flush();
 
