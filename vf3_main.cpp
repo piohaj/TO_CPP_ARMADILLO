@@ -12,7 +12,6 @@ int main(int argc, char* argv[])
 {
 
     // przygotowanie danych testowych
-    MKL_Set_Num_Threads(1);
     input_data data;
     cx_vec poles;
     cx_mat weight;
@@ -124,7 +123,7 @@ int main(int argc, char* argv[])
 
     //zapis statystyk do pliku
     fstream plik;
-    plik.open("stats_cpp_parallel.txt", ios::out | ios::app);
+    plik.open("stats_cpp_lapack_parallel.txt", ios::out | ios::app);
     plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << exec_time << endl;
     plik.flush();
 
