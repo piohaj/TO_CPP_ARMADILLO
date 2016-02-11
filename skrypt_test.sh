@@ -11,4 +11,5 @@ echo "N;Nc;Ns;iters;RMS_err;time_consumed" > stats_cpp_parallel.txt
 for i in {0..23}
 do
     ./vf3 ${poles_N[$i]} ${ports_Nc[$i]} ${samples_Ns[$i]}
+    sleep 1
 done

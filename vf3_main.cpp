@@ -12,6 +12,7 @@ int main(int argc, char* argv[])
 {
 
     // przygotowanie danych testowych
+    MKL_Set_Num_Threads(1);
     input_data data;
     cx_vec poles;
     cx_mat weight;
