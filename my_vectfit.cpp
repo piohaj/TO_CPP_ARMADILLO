@@ -96,18 +96,21 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
     mat AA_poles = zeros<mat>(Nc*N, N);
     mat bb_poles = zeros<mat>(Nc*N, 1);
 
+    cx_mat right_side_column;
+
     for ( int m = 0; m < Nc; m++ )
     {
-        cx_mat AA_port = A;
+//        cx_mat AA_port = A;
         // wypelnienie prawej strony macierzy A
         for ( int i = 0; i < N; i++ )
         {
-            AA_port.col(i+N+1) = -strans(f(m, span(0, Ns-1))) % A( span(0, Ns-1), i);
+            right_side_column = -strans(f(m, span(0, Ns-1))) % A( span(0, Ns-1), i); 
+            A.col(i+N+1) = right_side_column;
         }
 
         // obliczanie x metoda najmniejszych kwadratow Ax=b
-        mat A_real = join_vert( real(AA_port), imag(AA_port) );
-        AA_port.reset();
+        mat A_real = join_vert( real(A), imag(A) );
+        //AA_port.reset();
   
         cx_mat f_lsp = f.row(m).st();
         mat f_lsp_real = join_vert( real(f_lsp), imag(f_lsp) );
@@ -116,16 +119,16 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
         //cout<< "QR " << m << endl; 
         mat Q, R;
         qr_econ(Q, R, A_real);
-        A_real.reset();
+        //A_real.reset();
 
         mat bb = Q.st() * f_lsp_real;
-        Q.reset();
+        //Q.reset();
 
         bb_poles.rows(m*N, (m+1)*N-1) = bb.rows(N+1, 2*N); 
         AA_poles( span(m*N, (m+1)*N-1), span( 0, N-1 ) ) = R( span(N+1, 2*N), span(N+1, 2*N) );
 
-        R.reset();
-        bb.reset();
+        //R.reset();
+        //bb.reset();
     }
 
     // obliczenie x dla wszystkich portow badanego ukladu
