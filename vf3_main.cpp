@@ -15,7 +15,6 @@ int main(int argc, char* argv[])
     MKL_Set_Num_Threads(1);
     input_data data;
     cx_vec poles;
-    cx_mat weight;
     SER wynik;
     int N = 0,
         Ns = 0,
@@ -97,7 +96,7 @@ int main(int argc, char* argv[])
         iter = 1;
         for ( iter = 1; iter < 11; iter++ )
         {
-            wynik = my_vectorfit3(data.f, data.s, poles, weight); 
+            wynik = my_vectorfit(data.f, data.s, poles); 
 	    poles = wynik.poles;
 		
 	    cout << "Iter: " << iter << endl;

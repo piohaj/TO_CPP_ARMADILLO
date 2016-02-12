@@ -75,7 +75,7 @@ void QR_calculation::operator() ( const blocked_range<int>& r ) const
 // do rozwiazania rownania metoda najmniejszych kwadratow uzyto dekompozycji QR
 // algorymt zaklada istnienie stalej h
 // algorytm przystosowany do obliczenia modelu wieloportowego
-SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
+SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles)
 {
     int N = poles.n_elem, //rzad rozwiazania
         Ns = s.n_elem, // liczba probek pomiarowych
