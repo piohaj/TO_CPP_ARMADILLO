@@ -26,6 +26,7 @@ struct opts
     int legend;
 };
 
+// struktura wyjsciowa z algorytmu VF
 struct SER
 {
     cx_mat res;
@@ -40,7 +41,16 @@ struct input_data
     cx_vec s;
 };
 
+// Funckja my_vectorfit
+// Funkcja znajduje model ukladu w postaci funkcji wymiernej
+// na podstawie danych pomiarowych.
+// Dane wejsciowe:
+// f - macierz zawierajaca wartosci pomiarow dla kazdego elementu macierzy Y
+// s - wektor zawierajacy probki wartosci czestotliwosci dla wartosci pomiaru z f
+// poles - wektor z biegunami poczatkowymi
 SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles);
+
+
 cx_mat logspace(double a, double b, int n);
 int sign( double x );
 
