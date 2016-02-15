@@ -31,13 +31,18 @@ int sign( double x )
         return 1;
     }
 }
+SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
+{
+    SER wynik;
 
+    return wynik;
+}
 // funkcja oblicza wspolczynniki modelu 
 // mozliwe zespolone dane
 // do rozwiazania rownania metoda najmniejszych kwadratow uzyto dekompozycji QR
 // algorymt zaklada istnienie stalej h
 // algorytm przystosowany do obliczenia modelu wieloportowego
-SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
+SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles)
 {
     int N = poles.n_elem, //rzad rozwiazania
         Ns = s.n_elem, // liczba probek pomiarowych

@@ -26,7 +26,7 @@ struct opts
 struct SER
 {
     cx_mat res;
-    cx_mat poles;
+    cx_vec poles;
     mat h;
     double err;
 };
@@ -34,10 +34,13 @@ struct SER
 struct input_data
 {
     cx_mat f;
-    cx_mat s;
+    cx_vec s;
 };
 
-SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight);
+SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles);
+
+SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles);
+
 cx_mat logspace(double a, double b, int n);
 int sign( double x );
 
