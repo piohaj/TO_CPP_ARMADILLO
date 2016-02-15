@@ -34,6 +34,12 @@ int sign( double x )
 SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
 {
     SER wynik;
+    int Nc = f.n_rows;
+
+    for (int i = 0; i < Nc; i++ )
+    {
+       //wywolanie vf
+    }
 
     return wynik;
 }
