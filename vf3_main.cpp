@@ -12,6 +12,7 @@ int main(int argc, char* argv[])
 {
 
     // przygotowanie danych testowych
+    MKL_Set_Num_Threads(1);
     input_data data;
     cx_mat poles;
     SER wynik;
@@ -73,7 +74,7 @@ int main(int argc, char* argv[])
     for ( iter = 1; iter < 11; iter++ )
     {
 //        poles.print("Input poles: ");
-        wynik = my_vf_all_splitting(data.f, data.s, poles); 
+        wynik = my_vf_all_splitting( &data.f, &data.s, &poles); 
         poles = wynik.poles;
         
         cout << "Iter: " << iter << endl;
@@ -87,9 +88,9 @@ int main(int argc, char* argv[])
 
     printf("Czas wykonania algorytmu: %.6fs \n", executionTime); 
 
-    wynik.poles.print("poles=");
-    wynik.res.print("residues=");
-    wynik.h.print("h=");
+//    wynik.poles.print("poles=");
+//    wynik.res.print("residues=");
+//    wynik.h.print("h=");
     cout << "RMS-err= " << wynik.err << endl;
     cout << "Iter: " << iter << endl;
 

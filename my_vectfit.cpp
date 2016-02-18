@@ -96,7 +96,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
     
         // dokompozycja QR macierzy A
         mat Q, R;
-        qr(Q, R, A_real);
+        qr_econ(Q, R, A_real);
     
         mat bb = Q.st() * f_lsp_real;
         bb = bb.rows(N+1, 2*N);
@@ -104,7 +104,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         mat AA = R( span(N+1, 2*N), span(N+1, 2*N) );
 
         // rozwiazanie ukladu rownan
-        mat x = solve(AA, bb);
+        mat x = solve(AA, bb, solve_opts::fast);
 
         // przy pomocy metody wartosci wlasnych macierzy obliczanie zer funkcji sigma - szukane bieguny
         cx_mat poles_diag = diagmat(poles);
@@ -215,12 +215,12 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
 } 
 
 
-SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
+SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
 {
     SER wynik;
-    int Nc = f.n_rows;
-    int N = poles.n_cols;
-    int Ns = s.n_elem;
+    int Nc = f->n_rows;
+    int N = poles->n_cols;
+    int Ns = s->n_elem;
 
     // prealokacja
     wynik.res = zeros<cx_mat>(Nc, N);
@@ -228,8 +228,10 @@ SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
     wynik.h = zeros<mat>(Nc,1);
     wynik.err = 0.0;
 
+    // wielowatkowe uruchomienie algorytmu VF
+    task_scheduler_init init();
     parallel_for( blocked_range<int>(0, Nc),
-              vf_all(&f, &s, &poles, &wynik) );
+              vf_all(f, s, poles, &wynik) );
 
     // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
     cx_mat f_check = zeros<cx_mat>(Nc, Ns);
@@ -239,13 +241,13 @@ SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
         {
             for ( int j = 0; j < N; j++ )
             {
-                f_check(m, i) = f_check(m, i) + wynik.res(m, j) / ( s(i) - wynik.poles(m,j));
+                f_check(m, i) = f_check(m, i) + wynik.res(m, j) / ( s->operator()(i) - wynik.poles(m,j));
             }
             f_check(m, i) = f_check(m, i) + wynik.h(m, 0);
         } 
     }
      
-    cx_mat diff = f - f_check;
+    cx_mat diff = *f - f_check;
 
     wynik.err = sqrt( accu ( accu( pow(abs(diff), 2) ) ) );
 

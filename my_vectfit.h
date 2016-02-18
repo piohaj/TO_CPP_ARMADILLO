@@ -42,7 +42,7 @@ struct input_data
 
 SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles);
 
-SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles);
+SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles);
 
 cx_mat logspace(double a, double b, int n);
 int sign( double x );
