@@ -44,7 +44,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
     
         for ( int i = 0; i < N; i++ )
         {
-            if ( imag(poles(i)) > 0 ) 
+            if ( imag(poles(i)) != 0 ) 
             {
                 if ( i == 0 )
                 {
@@ -63,7 +63,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
                 }
             }
         }
-    
+
         cx_mat A = zeros<cx_mat>(Ns, 2*N+1);
     
         // wypelnienie lewej strony macierzy A
@@ -85,7 +85,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         // wypelnienie prawej strony macierzy A
         for ( int i = 0; i < N; i++ )
         {
-            A.col(i+N+1) = - strans(f->operator()(rr, span(0, Ns-1))) % A( span(0, Ns-1), i);
+            A.col(i+N+1) = -strans(f->row(rr)) % A( span(0, Ns-1), i);
         }
     
         // obliczanie x metoda najmniejszych kwadratow Ax=b
@@ -102,11 +102,11 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         bb = bb.rows(N+1, 2*N);
     
         mat AA = R( span(N+1, 2*N), span(N+1, 2*N) );
+
+        // rozwiazanie ukladu rownan
         mat x = solve(AA, bb);
 
-
         // przy pomocy metody wartosci wlasnych macierzy obliczanie zer funkcji sigma - szukane bieguny
-    
         cx_mat poles_diag = diagmat(poles);
         mat b_ones = ones<mat>(N,1);
         mat x_trans = x.st();
@@ -230,6 +230,7 @@ SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
 
     parallel_for( blocked_range<int>(0, Nc),
               vf_all(&f, &s, &poles, &wynik) );
+
     // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
     cx_mat f_check = zeros<cx_mat>(Nc, Ns);
     for ( int m = 0; m < Nc; m++ )
@@ -535,7 +536,7 @@ input_data prepare_sample_data()
     for ( int kk = 0; kk < Ns ; kk++ )
     {
         cx_double sk = data.s(kk);
-        
+       
         data.f(1, kk) = cx_double(3,0)/(sk+cx_double(5,0)) + cx_double(100, 40)/(sk - cx_double(-100,500)) + cx_double(100,-40)/(sk-cx_double(-100, -500)) + cx_double(0.9, 0);
     } 
 
