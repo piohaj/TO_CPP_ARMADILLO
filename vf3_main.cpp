@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 
     // przygotowanie danych testowych
     input_data data;
-    cx_vec poles;
+    cx_mat poles;
     SER wynik;
     int N = 0,
         Ns = 0,
@@ -25,6 +25,7 @@ int main(int argc, char* argv[])
         data = prepare_sample_data();
         N = 3;
         Ns = 101;
+        Nc = 2;
     }
     else if ( argc == 4 )
     {
@@ -49,40 +50,20 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-/*
-    f_real.load( "f_real.dat", raw_ascii );
-    f_imag.load( "f_imag.dat", raw_ascii );
-    f = cx_mat(f_real, f_imag);
-    f_imag.reset();
-    f_real.reset();
-
-	s_real.load( "s_real.dat", raw_ascii );
-	s_imag.load( "s_imag.dat", raw_ascii );
-	s = cx_mat(s_real, s_imag).st();
-    s_imag.reset();
-    s_real.reset();
-
-*/
-//    f_real.load("test_real.dat");
-//    f_imag.load("test_imag.dat");
-//    f = cx_mat(f_real, f_imag);
-
-//    f.print("f=");
-
-
-    //poles = -2 * 3.14 * logspace(0,4,N);
-    // complex starting poles
-    poles = zeros<cx_vec>(N);
+    poles = zeros<cx_mat>(Nc, N);
     mat bet = linspace<mat>(imag(data.s(0)), imag(data.s(Ns-1)), N/2);
-    int m = 0;
-    for ( int n = 0; n < N-1; n=n+2 )
+    
+    for ( int mm = 0; mm < Nc; mm++ )
     {
-        double alf = -bet(m)*1e-2;
-        poles(n) = cx_double(alf, bet(m));
-        poles(n+1) = conj(poles(n));
-        m++;
+        int m = 0;
+        for ( int n = 0; n < N-1; n=n+2 )
+        {
+            double alf = -bet(m)*1e-2;
+            poles(mm, n) = cx_double(alf, bet(m));
+            poles(mm, n+1) = conj(poles(n));
+            m++;
+        }
     }
-
 
     wall_clock timer;
     // wlaczenie algorytmu
@@ -92,7 +73,7 @@ int main(int argc, char* argv[])
     for ( iter = 1; iter < 11; iter++ )
     {
 //        poles.print("Input poles: ");
-        wynik = my_vectorfit(data.f, data.s, poles); 
+        wynik = my_vf_all_splitting(data.f, data.s, poles); 
         poles = wynik.poles;
         
         cout << "Iter: " << iter << endl;
@@ -106,10 +87,10 @@ int main(int argc, char* argv[])
 
     printf("Czas wykonania algorytmu: %.6fs \n", executionTime); 
 
-//    wynik.poles.print("poles=");
-//    wynik.res.print("residues=");
-//    wynik.h.print("h=");
-//    wynik.err.print("RMS-err=");
+    wynik.poles.print("poles=");
+    wynik.res.print("residues=");
+    wynik.h.print("h=");
+    cout << "RMS-err= " << wynik.err << endl;
     cout << "Iter: " << iter << endl;
 
     //zapis statystyk do pliku

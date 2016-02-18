@@ -37,10 +37,10 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
 {
     for ( int rr = r.begin(); rr != r.end() ; rr++ )
     {
-        int N = poles1.n_elem, //rzad rozwiazania
-            Ns = f->n_elem; // liczba probek pomiarowych
+        int N = poles1->n_cols, //rzad rozwiazania
+            Ns = f->n_cols; // liczba probek pomiarowych
         mat imag_check = zeros<mat>(1, N); //wektor informujacy czy dany biegun jest zespolony
-        cx_vec poles = poles1;
+        cx_mat poles = poles1->row(rr);
     
         for ( int i = 0; i < N; i++ )
         {
@@ -83,16 +83,15 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         A.col(N) = ones<cx_mat>(1,Ns).st();
     
         // wypelnienie prawej strony macierzy A
-    
         for ( int i = 0; i < N; i++ )
         {
-            A.col(i+N+1) = - strans(f->operator()(0, span(0, Ns-1))) % A( span(0, Ns-1), i);
+            A.col(i+N+1) = - strans(f->operator()(rr, span(0, Ns-1))) % A( span(0, Ns-1), i);
         }
     
         // obliczanie x metoda najmniejszych kwadratow Ax=b
         mat A_real = join_vert( real(A), imag(A) );
     
-        cx_mat f_lsp = f->st();
+        cx_mat f_lsp = f->row(rr).st();
         mat f_lsp_real = join_vert( real(f_lsp), imag(f_lsp) );
     
         // dokompozycja QR macierzy A
@@ -104,7 +103,8 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
     
         mat AA = R( span(N+1, 2*N), span(N+1, 2*N) );
         mat x = solve(AA, bb);
-        
+
+
         // przy pomocy metody wartosci wlasnych macierzy obliczanie zer funkcji sigma - szukane bieguny
     
         cx_mat poles_diag = diagmat(poles);
@@ -113,7 +113,6 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         //int x_trans_end = x_trans.n_elem - 1;
         //x_trans = x_trans( 1, span( x_trans_end-N, x_trans_end ) );
         int m = 0;
-    
         mat poles_diag_real = zeros<mat>(N, N);
         for ( int n = 0 ; n < N ; n++ )
         {
@@ -125,7 +124,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
     			poles_diag_real(m,m+1)=imag(poles_diag(m,m));
     			poles_diag_real(m,m)=real(poles_diag(m,m));
     			poles_diag_real(m+1,m+1)=poles_diag_real(m,m);
-    			b_ones(m,1)=2; b_ones(m+1,1)=0;
+    			b_ones(m,0)=2; b_ones(m+1,0)=0;
     			m=m+1;
                 }
                 else
@@ -140,6 +139,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         mat H = poles_diag_real - b_ones * x_trans;
         //cx_mat Hi = cx_mat(H, zeros<mat>(N,N));
     	poles = eig_gen(H);
+     
     
     //=============================================
     // obliczanie residuów szukanej funkcji
@@ -192,47 +192,44 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         x = inv( (AA_res_real.st() * AA_res_real ) ) * AA_res_real.st() * f_lsp_real;
     
         // zapis residuów w postaci zespolonej (jesli takie istnieja)
-   //     wynik.res = zeros<cx_mat>(1, N);
+        //wynik.res = zeros<cx_mat>(1, N);
         
         m = 0;
         for ( int i = 0; i < N ; i++ )
         {
             if ( imag_check(i) == 0 )
             {
-     //           wynik.res(m) = x(i);
+                wynik->res(rr,m) = x(i);
             }
             else if ( imag_check(i) == 1 )
             {
-     //           wynik.res(m) = x(i) + 1i * x(i+1);
-       //         wynik.res(m+1) = conj(wynik.res(m));
+                wynik->res(rr, m) = x(i) + 1.0i * x(i+1);
+                wynik->res(rr, m+1) = conj(wynik->res(rr, m));
             }
             m++;
         }
     
-        //wynik.h = x(x.n_elem - 1);
-        //wynik.poles = poles;
+        wynik->h(rr,0) = x(x.n_elem - 1);
+        wynik->poles.row(rr) = poles.st();
     }
 } 
 
 
-SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
+SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
 {
     SER wynik;
     int Nc = f.n_rows;
-    int N = poles.n_elem;
+    int N = poles.n_cols;
     int Ns = s.n_elem;
 
     // prealokacja
     wynik.res = zeros<cx_mat>(Nc, N);
-    wynik.poles = zeros<cx_vec>(Nc, N);
+    wynik.poles = zeros<cx_mat>(Nc, N);
     wynik.h = zeros<mat>(Nc,1);
     wynik.err = 0.0;
 
-    for (int i = 0; i < Nc; i++ )
-    {
-       //wywolanie vf
-    }
-
+    parallel_for( blocked_range<int>(0, Nc),
+              vf_all(&f, &s, &poles, &wynik) );
     // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
     cx_mat f_check = zeros<cx_mat>(Nc, Ns);
     for ( int m = 0; m < Nc; m++ )
@@ -241,7 +238,7 @@ SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
         {
             for ( int j = 0; j < N; j++ )
             {
-                f_check(m, i) = f_check(m, i) + wynik.res(m, j) / ( s(i) - wynik.poles(j));
+                f_check(m, i) = f_check(m, i) + wynik.res(m, j) / ( s(i) - wynik.poles(m,j));
             }
             f_check(m, i) = f_check(m, i) + wynik.h(m, 0);
         } 
@@ -258,6 +255,7 @@ SER my_vf_all_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
 // do rozwiazania rownania metoda najmniejszych kwadratow uzyto dekompozycji QR
 // algorymt zaklada istnienie stalej h
 // algorytm przystosowany do obliczenia modelu wieloportowego
+/*
 SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles)
 {
     int N = poles.n_elem, //rzad rozwiazania
@@ -516,6 +514,7 @@ SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles)
 
     return wynik;
 }
+*/
 
 
 input_data prepare_sample_data()
@@ -530,14 +529,14 @@ input_data prepare_sample_data()
     {
         cx_double sk = data.s(k);
         
-        data.f(0, k) = cx_double(2,0)/(sk+cx_double(5,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(0.5, 0);
+        data.f(0, k) = cx_double(2,0)/(sk+cx_double(15,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(0.5, 0);
     } 
 
     for ( int kk = 0; kk < Ns ; kk++ )
     {
         cx_double sk = data.s(kk);
         
-        data.f(1, kk) = cx_double(3,0)/(sk+cx_double(5,0)) + cx_double(300, 40)/(sk - cx_double(-100,500)) + cx_double(300,-40)/(sk-cx_double(-100, -500)) + cx_double(0.9, 0);
+        data.f(1, kk) = cx_double(3,0)/(sk+cx_double(5,0)) + cx_double(100, 40)/(sk - cx_double(-100,500)) + cx_double(100,-40)/(sk-cx_double(-100, -500)) + cx_double(0.9, 0);
     } 
 
     return data;
