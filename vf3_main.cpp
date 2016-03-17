@@ -18,7 +18,8 @@ int main(int argc, char* argv[])
     SER wynik;
     int N = 0,
         Ns = 0,
-        Nc = 0;
+        Nc = 0,
+        column_num = 0;
 
     if ( argc == 1 )
     {
@@ -26,7 +27,7 @@ int main(int argc, char* argv[])
         data = prepare_sample_data();
         N = 3;
         Ns = 101;
-        Nc = 2;
+        Nc = 4;
     }
     else if ( argc == 4 )
     {
@@ -50,11 +51,12 @@ int main(int argc, char* argv[])
         cout << "Nieprawidlowa liczba argumentow wejsciowych\n";
         return 1;
     }
+    column_num = sqrt(Nc);
 
-    poles = zeros<cx_mat>(Nc, N);
+    poles = zeros<cx_mat>(column_num, N);
     mat bet = linspace<mat>(imag(data.s(0)), imag(data.s(Ns-1)), N/2);
     
-    for ( int mm = 0; mm < Nc; mm++ )
+    for ( int mm = 0; mm < column_num; mm++ )
     {
         int m = 0;
         for ( int n = 0; n < N-1; n=n+2 )
@@ -71,10 +73,10 @@ int main(int argc, char* argv[])
     cout << "Vector fitting" << endl;
     timer.tic();
     int iter = 1;
-    for ( iter = 1; iter < 11; iter++ )
+    for ( iter = 1; iter < 2; iter++ )
     {
-//        poles.print("Input poles: ");
-        wynik = my_vf_all_splitting( &data.f, &data.s, &poles); 
+        poles.print("Input poles: ");
+        wynik = my_vf_column_splitting( &data.f, &data.s, &poles); 
         poles = wynik.poles;
         
         cout << "Iter: " << iter << endl;
@@ -88,9 +90,9 @@ int main(int argc, char* argv[])
 
     printf("Czas wykonania algorytmu: %.6fs \n", executionTime); 
 
-//    wynik.poles.print("poles=");
-//    wynik.res.print("residues=");
-//    wynik.h.print("h=");
+    wynik.poles.print("poles=");
+    wynik.res.print("residues=");
+    wynik.h.print("h=");
     cout << "RMS-err= " << wynik.err << endl;
     cout << "Iter: " << iter << endl;
 

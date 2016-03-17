@@ -4,6 +4,7 @@
 #include <string>
 #include<tbb/tbb.h>
 #include<mkl_service.h>
+#include<cstdlib>
 
 using namespace std;
 using namespace arma;
@@ -42,7 +43,7 @@ struct input_data
 
 SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles);
 
-SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles);
+SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles);
 
 cx_mat logspace(double a, double b, int n);
 int sign( double x );
@@ -51,7 +52,7 @@ int sign( double x );
 input_data prepare_sample_data();
 input_data load_data_from_file( int N, int Nc, int Ns );
 
-class vf_all
+class vf_column
 {
     const cx_mat *f;
     const cx_vec *s;
@@ -59,7 +60,7 @@ class vf_all
     SER *wynik;
 
 public:
-    vf_all( const cx_mat *f_in, const cx_vec *s_in, cx_mat *poles_in, SER *wynik_in )
+    vf_column( const cx_mat *f_in, const cx_vec *s_in, cx_mat *poles_in, SER *wynik_in )
          : f(f_in),
            s(s_in),
            poles1(poles_in),
