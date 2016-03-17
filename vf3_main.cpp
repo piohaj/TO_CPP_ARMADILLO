@@ -10,9 +10,7 @@
 // w przydapku niepodania wartosci wejsciowych zostanie uruchomiony przebieg testowy 
 int main(int argc, char* argv[])
 {
-
     // przygotowanie danych testowych
-    MKL_Set_Num_Threads(1);
     input_data data;
     cx_mat poles;
     SER wynik;
@@ -98,7 +96,7 @@ int main(int argc, char* argv[])
 
     //zapis statystyk do pliku
     fstream plik;
-    plik.open("stats_cpp_column_split.txt", ios::out | ios::app);
+    plik.open("stats_cpp_single_column_split.txt", ios::out | ios::app);
     plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << executionTime << endl;
     plik.flush();
 
