@@ -254,7 +254,7 @@ SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     wynik.err = 0.0;
 
     // wielowatkowe uruchomienie algorytmu VF
-    task_scheduler_init init(1);
+    task_scheduler_init init();
     parallel_for( blocked_range<int>(0, column_num),
               vf_column(f, s, poles, &wynik) );
 
