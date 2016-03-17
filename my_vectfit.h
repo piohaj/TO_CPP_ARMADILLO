@@ -2,12 +2,10 @@
 #include <armadillo>
 #include <iostream>
 #include <string>
-#include<tbb/tbb.h>
 #include<mkl_service.h>
 
 using namespace std;
 using namespace arma;
-using namespace tbb;
 
 struct opts
 {
@@ -51,20 +49,4 @@ int sign( double x );
 input_data prepare_sample_data();
 input_data load_data_from_file( int N, int Nc, int Ns );
 
-class vf_all
-{
-    const cx_mat *f;
-    const cx_vec *s;
-    cx_mat *poles1;
-    SER *wynik;
-
-public:
-    vf_all( const cx_mat *f_in, const cx_vec *s_in, cx_mat *poles_in, SER *wynik_in )
-         : f(f_in),
-           s(s_in),
-           poles1(poles_in),
-           wynik(wynik_in)
-         {}
-
-    void operator() ( const blocked_range<int>& r ) const;
-};
+void calculate_poles_res_set(const cx_mat *f, const cx_vec *s, cx_mat *poles1, SER *wynik, int rr);

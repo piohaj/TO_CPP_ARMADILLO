@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 {
 
     // przygotowanie danych testowych
-    MKL_Set_Num_Threads(1);
+//    MKL_Set_Num_Threads(1);
     input_data data;
     cx_mat poles;
     SER wynik;
@@ -77,8 +77,8 @@ int main(int argc, char* argv[])
         wynik = my_vf_all_splitting( &data.f, &data.s, &poles); 
         poles = wynik.poles;
         
-        cout << "Iter: " << iter << endl;
-        cout << "Err: " << wynik.err << endl;
+//        cout << "Iter: " << iter << endl;
+//        cout << "Err: " << wynik.err << endl;
         if ( wynik.err < 1e-5 )
         {
             break;
