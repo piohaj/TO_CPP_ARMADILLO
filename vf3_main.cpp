@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
     int iter = 1;
     for ( iter = 1; iter < 11; iter++ )
     {
-        poles.print("Input poles: ");
+  //      poles.print("Input poles: ");
         wynik = my_vf_column_splitting( &data.f, &data.s, &poles); 
         poles = wynik.poles;
         
@@ -90,10 +90,10 @@ int main(int argc, char* argv[])
 
     printf("Czas wykonania algorytmu: %.6fs \n", executionTime); 
 
-    wynik.poles.print("poles=");
-    wynik.res.print("residues=");
-    wynik.h.print("h=");
-    cout << "RMS-err= " << wynik.err << endl;
+//    wynik.poles.print("poles=");
+//    wynik.res.print("residues=");
+//    wynik.h.print("h=");
+   // cout << "RMS-err= " << wynik.err << endl;
     cout << "Iter: " << iter << endl;
 
     //zapis statystyk do pliku
