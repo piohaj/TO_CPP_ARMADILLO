@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
     cout << "Vector fitting" << endl;
     timer.tic();
     int iter = 1;
-    for ( iter = 1; iter < 2; iter++ )
+    for ( iter = 1; iter < 11; iter++ )
     {
         poles.print("Input poles: ");
         wynik = my_vf_column_splitting( &data.f, &data.s, &poles); 

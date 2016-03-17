@@ -82,10 +82,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
         }
     
         A.col(N) = ones<cx_mat>(1,Ns).st();
-        
-            string tmp; // brzydkie rozwiązanie
-            sprintf((char*)tmp.c_str(), "%d", rr);
-            string str = tmp.c_str();
+
         // przygotowanie macierzy pod wszystkie elementy Y dla danej kolumny
         mat AA_poles = zeros<mat>(column_elems*N, N);
         mat bb_poles = zeros<mat>(column_elems*N, 1);
@@ -110,17 +107,10 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
             qr_econ(Q, R, A_real);
         
             mat bb = Q.st() * f_lsp_real;
-
-
-
-            bb.print("Q="+str);
-            R.print("R="+str);
         
             bb_poles.rows(n*N, (n+1)*N-1) = bb.rows(N+1, 2*N);
             AA_poles( span(n*N, (n+1)*N-1 ), span( 0, N-1 ) ) = R( span(N+1, 2*N), span(N+1, 2*N) );
 
-            bb_poles.print("bb_poles="+str);
-            AA_poles.print("AA_poles="+str);
             n++;
         } 
         // rozwiazanie ukladu rownan
@@ -160,11 +150,9 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
         //cx_mat Hi = cx_mat(H, zeros<mat>(N,N));
     	poles = eig_gen(H);
 
-        poles.print("poles="+str);
-    
-    //=============================================
-    // obliczanie residuów szukanej funkcji
-    // ============================================
+       //=============================================
+       // obliczanie residuów szukanej funkcji
+       // ============================================
         // sparwdzenie ktore bieguny sa zespolone
         imag_check = zeros<mat>(1,N);
         for ( int i = 0; i < N; i++ )
@@ -222,8 +210,6 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
 
         x = solve(AA_res_real, f_lsp_res);
 
-        x.st().print("x_res=");
-
         for ( int m = 0; m < column_elems; m++ )
         {
             wynik->h(rr*column_elems+m,0) = x(N, m);
@@ -272,26 +258,34 @@ SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     parallel_for( blocked_range<int>(0, column_num),
               vf_column(f, s, poles, &wynik) );
 
-
     // obliczanie bledu metody najmniejszych kwadratow do obliczonego modelu
+    rms_err_calculation(&wynik, f, s, N);
+
+    return wynik;
+}
+
+void rms_err_calculation(SER *wynik, const cx_mat *f, const cx_vec *s, int N)
+{
+    int Nc = f->n_rows;
+    int Ns = s->n_elem;
+    int column_num = sqrt(Nc);
     cx_mat f_check = zeros<cx_mat>(Nc, Ns);
+
     for ( int m = 0; m < Nc; m++ )
     {
         for ( int i = 0; i < Ns; i++ )
         {
             for ( int j = 0; j < N; j++ )
             {
-                f_check(m, i) = f_check(m, i) + wynik.res(m, j) / ( s->operator()(i) - wynik.poles(m,j));
+                f_check(m, i) = f_check(m, i) + wynik->res(m, j) / ( s->operator()(i) - wynik->poles(m/column_num, j) );
             }
-            f_check(m, i) = f_check(m, i) + wynik.h(m, 0);
+            f_check(m, i) = f_check(m, i) + wynik->h(m, 0);
         } 
     }
-     
+
     cx_mat diff = *f - f_check;
 
-    wynik.err = sqrt( accu ( accu( pow(abs(diff), 2) ) ) );
-
-    return wynik;
+    wynik->err = sqrt( accu ( accu( pow(abs(diff), 2) ) ) );
 }
 
 
@@ -307,7 +301,7 @@ input_data prepare_sample_data()
     {
         cx_double sk = data.s(k);
         
-        data.f(0, k) = cx_double(2,0)/(sk+cx_double(15,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(0.5, 0);
+        data.f(0, k) = cx_double(2,0)/(sk+cx_double(12,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(0.5, 0);
     } 
 
     for ( int kk = 0; kk < Ns ; kk++ )
@@ -321,7 +315,7 @@ input_data prepare_sample_data()
     {
         cx_double sk = data.s(k);
         
-        data.f(2, k) = cx_double(3,0)/(sk+cx_double(123,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(13.5, 0);
+        data.f(2, k) = cx_double(3,0)/(sk+cx_double(153,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(13.5, 0);
     } 
 
     for ( int kk = 0; kk < Ns ; kk++ )

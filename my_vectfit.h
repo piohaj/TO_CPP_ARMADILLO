@@ -52,6 +52,8 @@ int sign( double x );
 input_data prepare_sample_data();
 input_data load_data_from_file( int N, int Nc, int Ns );
 
+void rms_err_calculation(SER *wynik, const cx_mat *f, const cx_vec *s, int N);
+
 class vf_column
 {
     const cx_mat *f;
