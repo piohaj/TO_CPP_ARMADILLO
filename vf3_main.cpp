@@ -1,4 +1,5 @@
 #include "my_vectfit.h"
+#define VF_REPEAT 5
 
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
@@ -50,62 +51,49 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-/*
-    f_real.load( "f_real.dat", raw_ascii );
-    f_imag.load( "f_imag.dat", raw_ascii );
-    f = cx_mat(f_real, f_imag);
-    f_imag.reset();
-    f_real.reset();
-
-	s_real.load( "s_real.dat", raw_ascii );
-	s_imag.load( "s_imag.dat", raw_ascii );
-	s = cx_mat(s_real, s_imag).st();
-    s_imag.reset();
-    s_real.reset();
-
-*/
-//    f_real.load("test_real.dat");
-//    f_imag.load("test_imag.dat");
-//    f = cx_mat(f_real, f_imag);
-
-//    f.print("f=");
-
-
-    //poles = -2 * 3.14 * logspace(0,4,N);
-    // complex starting poles
-    poles = zeros<cx_vec>(N);
-    mat bet = linspace<mat>(imag(data.s(0)), imag(data.s(Ns-1)), N/2);
-    int m = 0;
-    for ( int n = 0; n < N-1; n=n+2 )
-    {
-        double alf = -bet(m)*1e-2;
-        poles(n) = cx_double(alf, bet(m));
-        poles(n+1) = conj(poles(n));
-        m++;
-    }
-
-
     wall_clock timer;
-    // wlaczenie algorytmu
-    cout << "Vector fitting" << endl;
-    timer.tic();
-    int iter = 1;
-    for ( iter = 1; iter < 11; iter++ )
-    {
-//        poles.print("Input poles: ");
-        wynik = my_vectorfit3(data.f, data.s, poles, weight); 
-        poles = wynik.poles;
-        
-        cout << "Iter: " << iter << endl;
-        cout << "Err: " << wynik.err << endl;
-        if ( wynik.err < 1e-5 )
-        {
-            break;
-        }
-    }
-    double executionTime = timer.toc();
+    int iter;
+    double exec_time = 0;
 
-    printf("Czas wykonania algorytmu: %.6fs \n", executionTime); 
+    // wlaczenie algorytmu
+    cout << "Vector fitting " << VF_REPEAT << " times" << endl;
+    for ( int k = 0; k < VF_REPEAT; k++ )
+    {
+        // complex starting poles
+        poles = zeros<cx_vec>(N);
+        mat bet = linspace<mat>(imag(data.s(0)), imag(data.s(Ns-1)), N/2);
+        int m = 0;
+        for ( int n = 0; n < N-1; n=n+2 )
+        {
+            double alf = -bet(m)*1e-2;
+            poles(n) = cx_double(alf, bet(m));
+            poles(n+1) = conj(poles(n));
+            m++;
+        }
+    
+    
+        timer.tic();
+        int iter = 1;
+        for ( iter = 1; iter < 11; iter++ )
+        {
+    //        poles.print("Input poles: ");
+            wynik = my_vectorfit3(data.f, data.s, poles, weight); 
+            poles = wynik.poles;
+            
+            cout << "Iter: " << iter << endl;
+            cout << "Err: " << wynik.err << endl;
+            if ( wynik.err < 1e-5 )
+            {
+                break;
+            }
+        }
+        double executionTime = timer.toc();
+        exec_time = exec_time + executionTime;
+        cout << "Sample exec time: " << executionTime << endl;
+    }
+
+    exec_time = exec_time / VF_REPEAT;
+    printf("Sredni czas wykonania algorytmu po %d wywolaniach: %.6fs \n", VF_REPEAT, exec_time); 
 
 //    wynik.poles.print("poles=");
 //    wynik.res.print("residues=");
@@ -115,8 +103,8 @@ int main(int argc, char* argv[])
 
     //zapis statystyk do pliku
     fstream plik;
-    plik.open("stats_cpp.txt", ios::out | ios::app);
-    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << executionTime << endl;
+    plik.open("stats_cpp_no_split_one_thread.txt", ios::out | ios::app);
+    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << exec_time << endl;
     plik.flush();
 
     plik.close();
