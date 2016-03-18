@@ -1,5 +1,5 @@
 #include "my_vectfit.h"
-#define VF_REPEAT 1
+#define VF_REPEAT 5
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
 // $1 - N rzad przyblizenia
@@ -49,30 +49,6 @@ int main(int argc, char* argv[])
         cout << "Nieprawidlowa liczba argumentow wejsciowych\n";
         return 1;
     }
-
-/*
-    f_real.load( "f_real.dat", raw_ascii );
-    f_imag.load( "f_imag.dat", raw_ascii );
-    f = cx_mat(f_real, f_imag);
-    f_imag.reset();
-    f_real.reset();
-
-	s_real.load( "s_real.dat", raw_ascii );
-	s_imag.load( "s_imag.dat", raw_ascii );
-	s = cx_mat(s_real, s_imag).st();
-    s_imag.reset();
-    s_real.reset();
-
-*/
-//    f_real.load("test_real.dat");
-//    f_imag.load("test_imag.dat");
-//    f = cx_mat(f_real, f_imag);
-
-//    f.print("f=");
-
-
-    //poles = -2 * 3.14 * logspace(0,4,N);
-    // complex starting poles
 
 
     double exec_time=0;
