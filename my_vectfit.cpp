@@ -247,6 +247,12 @@ SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     int Ns = s->n_elem;
     int column_num = sqrt(Nc);
 
+    if ( pow(column_num, 2) != Nc )
+    {
+        cout << "Bledne dane wejsciowe, macierz Y nie jest kwadratowa" << endl;
+        return wynik;
+    }
+
     // prealokacja
     wynik.res = zeros<cx_mat>(Nc, N);
     wynik.poles = zeros<cx_mat>(column_num, N);
@@ -308,7 +314,7 @@ input_data prepare_sample_data()
     {
         cx_double sk = data.s(kk);
        
-        data.f(1, kk) = cx_double(3,0)/(sk+cx_double(15,0)) + cx_double(100, 40)/(sk - cx_double(-100,500)) + cx_double(100,-40)/(sk-cx_double(-100, -500)) + cx_double(0.9, 0);
+        data.f(1, kk) = cx_double(3,0)/(sk+cx_double(12,0)) + cx_double(100, 40)/(sk - cx_double(-100,500)) + cx_double(100,-40)/(sk-cx_double(-100, -500)) + cx_double(0.9, 0);
     } 
 
     for ( int k = 0; k < Ns ; k++ )
@@ -322,7 +328,7 @@ input_data prepare_sample_data()
     {
         cx_double sk = data.s(kk);
        
-        data.f(3, kk) = cx_double(4,0)/(sk+cx_double(123,0)) + cx_double(100, 40)/(sk - cx_double(-100,500)) + cx_double(100,-40)/(sk-cx_double(-100, -500)) + cx_double(1.9, 0);
+        data.f(3, kk) = cx_double(4,0)/(sk+cx_double(153,0)) + cx_double(100, 40)/(sk - cx_double(-100,500)) + cx_double(100,-40)/(sk-cx_double(-100, -500)) + cx_double(1.9, 0);
     } 
 
     return data;
