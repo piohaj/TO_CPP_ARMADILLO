@@ -244,6 +244,12 @@ SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     int Ns = s->n_elem;
     int column_num = sqrt(Nc);
 
+    if ( pow(column_num, 2) != Nc )
+    {
+        cout << "Podano bledne dane, macierz Y nie jest kwadratowa" << endl;
+        return wynik;
+    }
+
     // prealokacja
     wynik.res = zeros<cx_mat>(Nc, N);
     wynik.poles = zeros<cx_mat>(column_num, N);
