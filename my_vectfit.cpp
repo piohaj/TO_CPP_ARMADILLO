@@ -188,7 +188,7 @@ void calculate_poles_res_set(const cx_mat *f, const cx_vec *s, cx_mat *poles1, S
     mat AA_res_real = join_vert( real(AA_res), imag(AA_res) );
 
     // obliczenie metoda najmniejszych kwadratow residuów szukanej funkcji
-    x = inv( (AA_res_real.st() * AA_res_real ) ) * AA_res_real.st() * f_lsp_real;
+    x = solve( AA_res_real, f_lsp_real);
 
     // zapis residuów w postaci zespolonej (jesli takie istnieja)
     //wynik.res = zeros<cx_mat>(1, N);
