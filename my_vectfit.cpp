@@ -240,7 +240,8 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
         {
             for ( int j = 0; j < N; j++ )
             {
-                f_check(m, i) = f_check(m, i) + wynik.res(m, j) / ( s->operator()(i) - wynik.poles(m,j));
+                f_check(m, i) = f_check(m, i) + wynik.res(m, j)
+                                / ( s->operator()(i) - wynik.poles(m,j));
             }
             f_check(m, i) = f_check(m, i) + wynik.h(m, 0);
         } 
