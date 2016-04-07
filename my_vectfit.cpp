@@ -41,7 +41,8 @@ void QR_calculation::operator() ( const blocked_range<int>& r ) const
         cx_mat part;
         for ( int i = 0; i < N; i++ )
         {
-            part = -strans(f->operator()(m, span(0, Ns-1))) % A->operator()( span(0, Ns-1), i);
+            part = -strans(f->operator()(m, span(0, Ns-1))) 
+                   % A->operator()( span(0, Ns-1), i);
             AA_port.col(i+N+1) = part;
         }
 
@@ -58,7 +59,8 @@ void QR_calculation::operator() ( const blocked_range<int>& r ) const
         mat bb = Q.st() * f_lsp_real;
 
         bb_poles->rows(m*N, (m+1)*N-1) = bb.rows(N+1, 2*N); 
-        AA_poles->operator()( span(m*N, (m+1)*N-1), span( 0, N-1 ) ) = R( span(N+1, 2*N), span(N+1, 2*N) );
+        AA_poles->operator()( span(m*N, (m+1)*N-1), span( 0, N-1 ) ) 
+                               = R( span(N+1, 2*N), span(N+1, 2*N) );
 
     }
 }
