@@ -62,7 +62,8 @@ class vf_column
     SER *wynik;
 
 public:
-    vf_column( const cx_mat *f_in, const cx_vec *s_in, cx_mat *poles_in, SER *wynik_in )
+    vf_column( const cx_mat *f_in, const cx_vec *s_in, cx_mat *poles_in,
+               SER *wynik_in )
          : f(f_in),
            s(s_in),
            poles1(poles_in),
