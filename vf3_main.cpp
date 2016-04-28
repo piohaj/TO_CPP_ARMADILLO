@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
     input_data data;
     cx_vec poles;
     SER wynik;
-    Y_network_data siec_dane;
+    Y_network_data *siec_dane;
     int N = 0,
         Ns = 0,
         Nc = 0;
@@ -26,6 +26,7 @@ int main(int argc, char* argv[])
         data = prepare_sample_data();
         N = 3;
         Ns = 101;
+        Nc = 2;
     }
     else if ( argc == 4 )
     {
@@ -97,7 +98,15 @@ int main(int argc, char* argv[])
     //wynik.err.print("RMS-err=");
     cout << "Iter: " << iter << endl;
 
-    parse_SER( &wynik, &siec_dane );
+    siec_dane = new Y_network_data[Nc];
+
+    parse_SER( &wynik, siec_dane );
+
+
+    for ( int i = 0; i < Nc ; i++ )
+    {
+        print_network_data( siec_dane, i);
+    }
     //zapis statystyk do pliku
 /*
     fstream plik;
