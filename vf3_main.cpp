@@ -1,4 +1,5 @@
 #include "my_vectfit.h"
+#include "network_model.h"
 #define VF_REPEAT 5
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
@@ -51,6 +52,7 @@ int main(int argc, char* argv[])
     }
 
 
+    Y_network_data test;
     double exec_time=0;
     int iter;
     wall_clock timer;
@@ -91,10 +93,10 @@ int main(int argc, char* argv[])
 
     printf("Sredni czas wykonania algorytmu po %d wywolaniach: %.6fs \n", VF_REPEAT, exec_time); 
 
-//    wynik.poles.print("poles=");
-//    wynik.res.print("residues=");
-//    wynik.h.print("h=");
-//    wynik.err.print("RMS-err=");
+    wynik.poles.print("poles=");
+    wynik.res.print("residues=");
+    wynik.h.print("h=");
+    //wynik.err.print("RMS-err=");
     cout << "Iter: " << iter << endl;
 
     //zapis statystyk do pliku
