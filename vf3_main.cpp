@@ -1,4 +1,3 @@
-#include "my_vectfit.h"
 #include "network_model.h"
 #define VF_REPEAT 5
 
@@ -11,12 +10,12 @@
 // w przydapku niepodania wartosci wejsciowych zostanie uruchomiony przebieg testowy 
 int main(int argc, char* argv[])
 {
-
     // przygotowanie danych testowych
     MKL_Set_Num_Threads(1);
     input_data data;
     cx_vec poles;
     SER wynik;
+    Y_network_data siec_dane;
     int N = 0,
         Ns = 0,
         Nc = 0;
@@ -52,7 +51,6 @@ int main(int argc, char* argv[])
     }
 
 
-    Y_network_data test;
     double exec_time=0;
     int iter;
     wall_clock timer;
@@ -99,14 +97,16 @@ int main(int argc, char* argv[])
     //wynik.err.print("RMS-err=");
     cout << "Iter: " << iter << endl;
 
+    parse_SER( &wynik, &siec_dane );
     //zapis statystyk do pliku
+/*
     fstream plik;
     plik.open("stats_cpp_parallel.txt", ios::out | ios::app);
     plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << exec_time << endl;
     plik.flush();
 
     plik.close();
-
+*/
     return 0;
 }
 

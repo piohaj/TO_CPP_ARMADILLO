@@ -1,45 +1,4 @@
-#define ARMA_64BIT_WORD
-#include <armadillo>
-#include <iostream>
-#include <string>
-#include<tbb/tbb.h>
-#include<mkl_service.h>
-
-using namespace std;
-using namespace arma;
-using namespace tbb;
-
-struct opts
-{
-    int relax;
-    int stable;
-    int asymp;
-    int spy1;
-    int spy2;
-    int logx;
-    int logy;
-    int errplot;
-    int phaseplot;
-    int skip_pole;
-    int skip_res;
-    int complx_ss;
-    int legend;
-};
-
-// struktura wyjsciowa z algorytmu VF
-struct SER
-{
-    cx_mat res;
-    cx_mat poles;
-    mat h;
-    double err;
-};
-
-struct input_data
-{
-    cx_mat f;
-    cx_vec s;
-};
+#include "data_model.h"
 
 // Funckja my_vectorfit
 // Funkcja znajduje model ukladu w postaci funkcji wymiernej
