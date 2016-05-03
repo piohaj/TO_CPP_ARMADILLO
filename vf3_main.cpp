@@ -107,6 +107,9 @@ int main(int argc, char* argv[])
     {
         print_network_data( siec_dane, i);
     }
+
+
+    create_cir( siec_dane, N, Nc);
     //zapis statystyk do pliku
 /*
     fstream plik;

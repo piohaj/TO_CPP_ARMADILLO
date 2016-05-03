@@ -96,7 +96,7 @@ imag_pole_net parse_imag_pole( cx_double res, cx_double poles )
     cout << "Res " << res << endl;
 
     net.L = 1/(2 * res_real);
-    net.R = (-2*poles_real + 2*( res_real*poles_real + res_imag*poles_imag )*net.L ) * net.L; 
+    net.R = 2*net.L*(net.L*(res_real*poles_real + res_imag*poles_imag) - poles_real); 
     net.C = 1 / ( net.L*( pow(poles_real,2) + pow(poles_imag,2) + 2*net.R*(res_real*poles_real + res_imag*poles_imag)) ); 
     net.G = -2*( res_real*poles_real + res_imag*poles_imag) * net.C * net.L;
 
@@ -132,4 +132,20 @@ void print_network_data( Y_network_data *Y, int i )
 }
 
 
+void create_cir( Y_network_data *data, int N, int Nc)
+{
+    int Nc_port = sqrt(Nc);
 
+    cout << Nc << endl;
+    cout << N << endl;
+
+    for ( int i = 0; i < Nc_port; i++ )
+    {
+        int index_help=1;
+        for ( int j = i*Nc_port; j < i*Nc_port+Nc_port; j++ )
+        {
+            cout << "Y" << index_help*10 + i + 1 <<endl;
+            index_help++;
+        }
+    }
+}
