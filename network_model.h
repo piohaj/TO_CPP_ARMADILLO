@@ -9,3 +9,7 @@ void print_network_data( Y_network_data *Y, int i);
 
 void create_subckt( Y_network_data data, int index );
 void create_cir( Y_network_data *data, int N, int Nc);
+
+// funkcja do wyciagania danych z jednowymiarowej tablicy z danymi do cira
+// wyciagniecie Y11 to get_Y( data, 1, 1, 2 ); w przypadku dwuwrotnika
+Y_network_data get_Y( Y_network_data *input, int i, int j, int Nc_port );

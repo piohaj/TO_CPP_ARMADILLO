@@ -136,20 +136,33 @@ void create_cir( Y_network_data *data, int N, int Nc)
 {
     int Nc_port = sqrt(Nc);
 
-    cout << Nc << endl;
-    cout << N << endl;
+    if ( pow(Nc_port, 2) != Nc )
+    {
+        cout << "Podana macierz nie jest kwadratowa - model nie bedzie syntezowany" <<endl;
+        return;
+    }
 
     // przygotowanie subckt dla kazdego elementu macierzy Y
+    for ( int j = 1; j <= Nc_port; j++ )
+    {
+        for ( int i = 1; i <= Nc_port; i++ )
+        {
+            Y_network_data Y_temp = get_Y( data, i, j, Nc_port);
+            int y_inx = i*10+j;
+            create_subckt( Y_temp, y_inx );
+        }
+    }       
+
+    /*
+    // zlozenie calego modelu obwodoweg do cira (subckt i zrodla sterowane)
     for ( int i = 0; i < Nc_port; i++ )
     {
-        int index_help=1;
-        for ( int j = i*Nc_port; j < i*Nc_port+Nc_port; j++ )
-        {
-          //  cout << "Y" << index_help*10 + i + 1 <<endl;
-            create_subckt( data[j], index_help*10+i+1 );
-            index_help++;
-        }
+        //cout <<Y_index[i]<< endl; 
+        int inout_net = 1;
+        cout << "V" << inout_net << " 0 AC 1" << endl; 
+        cout << Y_index[i] << "_net " << inout_net << " 0 " << Y_index[i] << endl; 
     }
+*/
 }
 
 
@@ -192,10 +205,16 @@ void create_subckt( Y_network_data data, int index )
          G_index++;
          node++;
      }
-
+     cout << ".ends" << endl;
 }
 
 
+Y_network_data get_Y( Y_network_data *input, int i, int j, int Nc_port )
+{
+    i=i-1;
+    j=j-1;
+    return input[i+j*Nc_port];
+}
 
 
 
