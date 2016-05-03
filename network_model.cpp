@@ -152,17 +152,48 @@ void create_cir( Y_network_data *data, int N, int Nc)
             create_subckt( Y_temp, y_inx );
         }
     }       
+    
+    cout << endl;
+    cout << "*** Complete cir ***" <<endl;
 
-    /*
+    int current_index = 1; // indeks zrodel pradowych sterowanych pradem 
+    int voltage_index = 1; // indeks zrodel napieciowych sterowanych napieciem
+
+    int node_volt = 0; // nr wezla od zrodla napieciowego sterowanego napieciem
+
     // zlozenie calego modelu obwodoweg do cira (subckt i zrodla sterowane)
     for ( int i = 0; i < Nc_port; i++ )
     {
-        //cout <<Y_index[i]<< endl; 
-        int inout_net = 1;
-        cout << "V" << inout_net << " 0 AC 1" << endl; 
-        cout << Y_index[i] << "_net " << inout_net << " 0 " << Y_index[i] << endl; 
+        node_volt = (i+1)*1000;
+
+        for ( int j = 0; j < Nc_port; j++ )
+        {
+            if ( j == i ) // element z przekatnej Y
+            {
+                int node = i+1;
+                cout << "V" << node << " " << node << " 0 AC 1" << endl; // port
+                cout << "Y" << node << node << "_net " << node << " 0 " << "Y" << node << node << endl; // element z przekatnej macierzy Y 
+              
+                // dodanie zrodel pradowych sterowanych pradem
+                for ( int k = 1; k <= Nc_port; k++ )
+                {
+                    if ( k != node )
+                    {
+                        cout << "F" << current_index << " " << node << " 0 " << "E" << k << " 1" << endl;
+                        current_index++;
+                    }
+                }
+            }
+            else // element spoza przekatnej
+            {
+                cout << "Y" << i+1 << j+1 << "_net " << node_volt << " 0 " << "Y" << i+1 << j+1 << endl;
+                // zrodlo napieciowe sterowane napieciem
+                cout << "E" << j+1 << " 0 " << node_volt << " " << j+1 << " 0 1" <<endl;
+
+                node_volt++;
+            }
+        }
     }
-*/
 }
 
 
