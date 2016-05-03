@@ -139,13 +139,67 @@ void create_cir( Y_network_data *data, int N, int Nc)
     cout << Nc << endl;
     cout << N << endl;
 
+    // przygotowanie subckt dla kazdego elementu macierzy Y
     for ( int i = 0; i < Nc_port; i++ )
     {
         int index_help=1;
         for ( int j = i*Nc_port; j < i*Nc_port+Nc_port; j++ )
         {
-            cout << "Y" << index_help*10 + i + 1 <<endl;
+          //  cout << "Y" << index_help*10 + i + 1 <<endl;
+            create_subckt( data[j], index_help*10+i+1 );
             index_help++;
         }
     }
 }
+
+
+void create_subckt( Y_network_data data, int index )
+{
+     int node = 3;
+     int R_index = 1;
+     int L_index = 0;
+     int C_index = 1;
+     int G_index = 0;
+
+     cout << endl;
+     cout << "*** Subcircuit for Y" << index << endl;
+     cout << ".subckt Y" << index << " 1 2" <<endl;
+     cout << "R0 1 2 " << data.R << endl;
+
+     // real poles
+     for ( int i = 0; i < data.real_pole_nets.size(); i++ )
+     {
+         cout << "*** Real pole ***" <<endl;
+         cout << "R" << R_index << " 1 " << node << " " << data.real_pole_nets[i].R << endl; 
+         cout << "L" << L_index << " " << node << " 2 " << data.real_pole_nets[i].L << endl; 
+         R_index++;
+         L_index++;
+         node++;
+     }
+
+     // imag poles
+     for ( int i = 0; i < data.imag_pole_nets.size(); i++ )
+     {
+         cout << "*** Imag pole ***" <<endl;
+         cout << "R" << R_index << " 1 " << node << " " << data.imag_pole_nets[i].R << endl; 
+         cout << "L" << L_index << " " << node << " " << ++node << " " << data.imag_pole_nets[i].L << endl; 
+         cout << "C" << C_index << " " << node << " 2 " << data.imag_pole_nets[i].C << endl; 
+         cout << "G" << G_index << " " << node << " 2 " << data.imag_pole_nets[i].G << endl; 
+
+         R_index++;
+         L_index++;
+         C_index++;
+         G_index++;
+         node++;
+     }
+
+}
+
+
+
+
+
+
+
+
+
