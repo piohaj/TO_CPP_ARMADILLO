@@ -142,6 +142,9 @@ void create_cir( Y_network_data *data, int N, int Nc)
         return;
     }
 
+    //pierwsza linika cira
+    cout << "Generated model" << endl;
+
     // przygotowanie subckt dla kazdego elementu macierzy Y
     for ( int j = 1; j <= Nc_port; j++ )
     {
@@ -172,7 +175,7 @@ void create_cir( Y_network_data *data, int N, int Nc)
             {
                 int node = i+1;
                 cout << "V" << node << " " << node << " 0 AC 1" << endl; // port
-                cout << "Y" << node << node << "_net " << node << " 0 " << "Y" << node << node << endl; // element z przekatnej macierzy Y 
+                cout << "X_Y" << node << node << " " << node << " 0 " << "Y" << node << node << endl; // element z przekatnej macierzy Y 
               
                 // dodanie zrodel pradowych sterowanych pradem
                 for ( int k = 1; k <= Nc_port; k++ )
@@ -186,7 +189,7 @@ void create_cir( Y_network_data *data, int N, int Nc)
             }
             else // element spoza przekatnej
             {
-                cout << "Y" << i+1 << j+1 << "_net " << node_volt << " 0 " << "Y" << i+1 << j+1 << endl;
+                cout << "X_Y" << i+1 << j+1 << " " << node_volt << " 0 " << "Y" << i+1 << j+1 << endl;
                 // zrodlo napieciowe sterowane napieciem
                 cout << "E" << j+1 << " 0 " << node_volt << " " << j+1 << " 0 1" <<endl;
 
@@ -194,6 +197,7 @@ void create_cir( Y_network_data *data, int N, int Nc)
             }
         }
     }
+    cout << ".end";
 }
 
 
@@ -203,7 +207,6 @@ void create_subckt( Y_network_data data, int index )
      int R_index = 1;
      int L_index = 0;
      int C_index = 1;
-     int G_index = 0;
 
      cout << endl;
      cout << "*** Subcircuit for Y" << index << endl;
@@ -225,15 +228,14 @@ void create_subckt( Y_network_data data, int index )
      for ( int i = 0; i < data.imag_pole_nets.size(); i++ )
      {
          cout << "*** Imag pole ***" <<endl;
-         cout << "R" << R_index << " 1 " << node << " " << data.imag_pole_nets[i].R << endl; 
+         cout << "R" << R_index++ << " 1 " << node << " " << data.imag_pole_nets[i].R << endl; 
          cout << "L" << L_index << " " << node << " " << ++node << " " << data.imag_pole_nets[i].L << endl; 
          cout << "C" << C_index << " " << node << " 2 " << data.imag_pole_nets[i].C << endl; 
-         cout << "G" << G_index << " " << node << " 2 " << data.imag_pole_nets[i].G << endl; 
+         cout << "R" << R_index << " " << node << " 2 " << 1 / data.imag_pole_nets[i].G << endl; // G modelu przedstawione jako R 
 
          R_index++;
          L_index++;
          C_index++;
-         G_index++;
          node++;
      }
      cout << ".ends" << endl;
