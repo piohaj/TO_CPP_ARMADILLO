@@ -174,7 +174,7 @@ void create_cir( Y_network_data *data, int N, int Nc)
             if ( j == i ) // element z przekatnej Y
             {
                 int node = i+1;
-                cout << "V" << node << " " << node << " 0 AC 1" << endl; // port
+                cout << "V" << node << " " << node << " 0 AC {Vg" << node << "}" << endl; // port
                 cout << "X_Y" << node << node << " " << node << " 0 " << "Y" << node << node << endl; // element z przekatnej macierzy Y 
               
                 // dodanie zrodel pradowych sterowanych pradem
@@ -197,7 +197,14 @@ void create_cir( Y_network_data *data, int N, int Nc)
             }
         }
     }
-    cout << ".end";
+
+    // dane do symulacji
+    cout << "\n.step param run 1 " << Nc_port << " 1" << endl;
+    for ( int i = 1; i <= Nc_port; i++ )
+    {
+        cout << ".param Vg" << i << "=if(run==" << i << ",1,0)" << endl;
+    }
+    cout << "\n.end";
 }
 
 
