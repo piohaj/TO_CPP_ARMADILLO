@@ -43,20 +43,33 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
         real_pole_net real_pole_net_sample;
         imag_pole_net imag_pole_net_sample;
 
-        network_data_sample.R = 1/input_SER->h(i); // rownolegle R
+        // czy element z przekatnej macierzy Y
+        int is_diag = -1; // nie jest
+        if ( ( i - floor(i/(sqrt(Nc)+1))*(sqrt(Nc)+1) ) == 0 ) is_diag = 1; // jest
+
+        // rozwiazanie problemu z zerowym R rownoleglym
+        if ( input_SER->h(i) < 1e-12 ) 
+        {
+            network_data_sample.R = 1e12; 
+        }
+        else
+        {
+            network_data_sample.R = is_diag * 1/input_SER->h(i); // rownolegle R
+        }
 
         for ( int j = 0; j < N ; j++ ) // po wszystkich residuach
         {
+
             if ( imag_check(j) == 0 ) //biegun rzeczywisty
             {
                  // obliczanie parametrow dla galezi od bieguna real
-                 real_pole_net_sample = parse_real_pole( input_SER->res(i, j), poles(j) );
+                 real_pole_net_sample = parse_real_pole( input_SER->res(i, j), poles(j), is_diag );
                  network_data_sample.real_pole_nets.push_back(real_pole_net_sample);
             }
             else if ( imag_check(j) == 1 ) // biegun zespolony
             {
                  // obliczanie parametrow dla galezi od bieguna imag
-                 imag_pole_net_sample = parse_imag_pole( input_SER->res(i, j), poles(j) );
+                 imag_pole_net_sample = parse_imag_pole( input_SER->res(i, j), poles(j), is_diag );
                  network_data_sample.imag_pole_nets.push_back(imag_pole_net_sample);
             }
         }
@@ -66,7 +79,7 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
 }
 
 
-real_pole_net parse_real_pole( cx_double res, cx_double poles )
+real_pole_net parse_real_pole( cx_double res, cx_double poles, int is_diag )
 {
     real_pole_net net;
 
@@ -74,8 +87,8 @@ real_pole_net parse_real_pole( cx_double res, cx_double poles )
     cout << "Pole " << poles << endl;
     cout << "Res " << res << endl;
 
-    net.R = -real(poles)/real(res);
-    net.L = 1/real(res);
+    net.R = -real(poles)/real(res) * is_diag;
+    net.L = 1/real(res) * is_diag;
 
     cout << "R " << net.R << endl;
     cout << "L " << net.L << endl;
@@ -84,11 +97,11 @@ real_pole_net parse_real_pole( cx_double res, cx_double poles )
 }
 
 
-imag_pole_net parse_imag_pole( cx_double res, cx_double poles )
+imag_pole_net parse_imag_pole( cx_double res, cx_double poles, int is_diag )
 {
     imag_pole_net net;
-    double res_real = real(res);
-    double res_imag = imag(res);
+    double res_real = real(res) * is_diag;
+    double res_imag = imag(res) * is_diag;
     double poles_real = real(poles);
     double poles_imag = imag(poles);
     cout << "\nBiegun zespolony" << endl;
@@ -151,7 +164,11 @@ void create_cir( Y_network_data *data, int N, int Nc)
         for ( int i = 1; i <= Nc_port; i++ )
         {
             Y_network_data Y_temp = get_Y( data, i, j, Nc_port);
-            int y_inx = i*10+j;
+            //int y_inx = i*10+j;
+            // wygenerowanie odpowiedniego indeksu elementu macierzy Y
+            ostringstream ss;
+            ss << i << j;
+            string y_inx = ss.str();
             create_subckt( Y_temp, y_inx );
         }
     }       
@@ -208,7 +225,7 @@ void create_cir( Y_network_data *data, int N, int Nc)
 }
 
 
-void create_subckt( Y_network_data data, int index )
+void create_subckt( Y_network_data data, string index )
 {
      int node = 3;
      int R_index = 1;
