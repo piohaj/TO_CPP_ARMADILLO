@@ -150,12 +150,9 @@ void create_cir( Y_network_data *data, int N, int Nc)
     {
         for ( int i = 1; i <= Nc_port; i++ )
         {
-            bool is_diag = true; //zmienna do ustalenia czy przygotowujemy element z przekatnej Y
             Y_network_data Y_temp = get_Y( data, i, j, Nc_port);
             int y_inx = i*10+j;
-
-            if ( i != j ) is_diag = false;
-            create_subckt( Y_temp, y_inx, is_diag );
+            create_subckt( Y_temp, y_inx );
         }
     }       
     
@@ -211,32 +208,24 @@ void create_cir( Y_network_data *data, int N, int Nc)
 }
 
 
-void create_subckt( Y_network_data data, int index, bool is_diag )
+void create_subckt( Y_network_data data, int index )
 {
      int node = 3;
      int R_index = 1;
      int L_index = 0;
      int C_index = 1;
 
-     // jesli modelujemy element spoza przekatnej Y odwroc znak elementow skladowych
-     int diag_check = 1;
-     if ( !is_diag ) diag_check = -1;
-
-
-     // rozwiazanie problemu w przypadku rownoleglego R = 0
-     if ( data.R > 1e12 ) data.R = diag_check * 1e12;
-
      cout << endl;
      cout << "*** Subcircuit for Y" << index << endl;
      cout << ".subckt Y" << index << " 1 2" <<endl;
-     cout << "R0 1 2 " << diag_check * data.R << endl;
+     cout << "R0 1 2 " << data.R << endl;
 
      // real poles
      for ( int i = 0; i < data.real_pole_nets.size(); i++ )
      {
          cout << "*** Real pole ***" <<endl;
-         cout << "R" << R_index << " 1 " << node << " " << diag_check * data.real_pole_nets[i].R << endl; 
-         cout << "L" << L_index << " " << node << " 2 " << diag_check * data.real_pole_nets[i].L << endl; 
+         cout << "R" << R_index << " 1 " << node << " " << data.real_pole_nets[i].R << endl; 
+         cout << "L" << L_index << " " << node << " 2 " << data.real_pole_nets[i].L << endl; 
          R_index++;
          L_index++;
          node++;
