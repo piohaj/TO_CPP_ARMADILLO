@@ -36,8 +36,30 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
         }
     }
 
-    for ( int i = 0 ; i < Nc ; i++ )
+    // sprawdzenie strategi podzialu macierzy Y
+    // SPLLITTING_STRT
+    // 1 - no-splitting
+    // 2 - all-splitting
+    // 3 - column-splitting
+    int SPLITING_STRT = 1; // no-splitting
+    if ( N_poles == Nc ) // all_splitting
     {
+        SPLITING_STRT = 2;
+    }
+    else if ( N_poles = sqrt(Nc) ) // column splliting    
+    {
+        SPLITING_STRT = 3;
+    }
+    
+    // zmienna do prawidlowego wyboru biegunow dla danego elementu macierzy Y
+    int nn = 0;
+
+    for ( int i = 0; i < Nc ; i++ )
+    {
+        if ( SPLITING_STRT = 1 ) nn = 0;
+        else if ( SPLITING_STRT = 2 ) nn = i;
+        else if ( SPLITING_STRT = 3 ) nn = i/sqrt(Nc); 
+
         Y_network_data network_data_sample; // struktura z danymi sieci dla pojedynczego elementu macierz Y
         // wyczyszczenie struktury pomocniczej
         network_data_sample.real_pole_nets.clear();
@@ -67,13 +89,13 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
             if ( imag_check(j) == 0 ) //biegun rzeczywisty
             {
                  // obliczanie parametrow dla galezi od bieguna real
-                 real_pole_net_sample = parse_real_pole( input_SER->res(i, j), poles(j), is_diag );
+                 real_pole_net_sample = parse_real_pole( input_SER->res(i, j), poles(nn, j), is_diag );
                  network_data_sample.real_pole_nets.push_back(real_pole_net_sample);
             }
             else if ( imag_check(j) == 1 ) // biegun zespolony
             {
                  // obliczanie parametrow dla galezi od bieguna imag
-                 imag_pole_net_sample = parse_imag_pole( input_SER->res(i, j), poles(j), is_diag );
+                 imag_pole_net_sample = parse_imag_pole( input_SER->res(i, j), poles(nn, j), is_diag );
                  network_data_sample.imag_pole_nets.push_back(imag_pole_net_sample);
             }
         }
