@@ -98,8 +98,12 @@ int main(int argc, char* argv[])
     //wynik.err.print("RMS-err=");
     cout << "Iter: " << iter << endl;
 
-    // utworzenie modelu cir
-    create_model_netlist( &wynik, Nc );
+    // utworzenie modelu cir i zapis do pliku
+    ofstream myfile;
+    myfile.open("test_mgr.cir");
+    create_model_netlist( &wynik, Nc, myfile);
+
+    myfile.close();
 
     //zapis statystyk do pliku
 /*

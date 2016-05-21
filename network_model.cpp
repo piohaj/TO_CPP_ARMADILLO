@@ -171,7 +171,7 @@ void print_network_data( Y_network_data *Y, int i )
 }
 
 
-void create_model_netlist( SER *input_SER, int Nc)
+void create_model_netlist( SER *input_SER, int Nc, ofstream &cir_file )
 {
     int Nc_port = sqrt(Nc);
 
@@ -195,7 +195,7 @@ void create_model_netlist( SER *input_SER, int Nc)
     }
 
     //pierwsza linika cira
-    cout << "Generated model" << endl;
+    cir_file << "Generated model" << endl;
 
     // przygotowanie subckt dla kazdego elementu macierzy Y
     for ( int j = 1; j <= Nc_port; j++ )
@@ -208,12 +208,12 @@ void create_model_netlist( SER *input_SER, int Nc)
             ostringstream ss;
             ss << i << j;
             string y_inx = ss.str();
-            create_subckt( Y_temp, y_inx );
+            create_subckt( Y_temp, y_inx, cir_file );
         }
     }       
     
-    cout << endl;
-    cout << "*** Complete cir ***" <<endl;
+    cir_file << endl;
+    cir_file << "*** Complete cir ***" <<endl;
 
     int current_index = 1; // indeks zrodel pradowych sterowanych pradem 
     int voltage_index = 1; // indeks zrodel napieciowych sterowanych napieciem
@@ -230,24 +230,24 @@ void create_model_netlist( SER *input_SER, int Nc)
             if ( j == i ) // element z przekatnej Y
             {
                 int node = i+1;
-                cout << "V" << node << " " << node << " 0 AC {Vg" << node << "}" << endl; // port
-                cout << "X_Y" << node << node << " " << node << " 0 " << "Y" << node << node << endl; // element z przekatnej macierzy Y 
+                cir_file << "V" << node << " " << node << " 0 AC {Vg" << node << "}" << endl; // port
+                cir_file << "X_Y" << node << node << " " << node << " 0 " << "Y" << node << node << endl; // element z przekatnej macierzy Y 
               
                 // dodanie zrodel pradowych sterowanych pradem
                 for ( int k = 1; k <= Nc_port; k++ )
                 {
                     if ( k != node )
                     {
-                        cout << "F" << current_index << " " << node << " 0 " << "E" << k << " 1" << endl;
+                        cir_file << "F" << current_index << " " << node << " 0 " << "E" << k << " 1" << endl;
                         current_index++;
                     }
                 }
             }
             else // element spoza przekatnej
             {
-                cout << "X_Y" << i+1 << j+1 << " " << node_volt << " 0 " << "Y" << i+1 << j+1 << endl;
+                cir_file << "X_Y" << i+1 << j+1 << " " << node_volt << " 0 " << "Y" << i+1 << j+1 << endl;
                 // zrodlo napieciowe sterowane napieciem
-                cout << "E" << j+1 << " 0 " << node_volt << " " << j+1 << " 0 1" <<endl;
+                cir_file << "E" << j+1 << " 0 " << node_volt << " " << j+1 << " 0 1" <<endl;
 
                 node_volt++;
             }
@@ -255,35 +255,35 @@ void create_model_netlist( SER *input_SER, int Nc)
     }
 
     // dane do symulacji
-    cout << "\n.step param run 1 " << Nc_port << " 1" << endl;
+    cir_file << "\n.step param run 1 " << Nc_port << " 1" << endl;
     for ( int i = 1; i <= Nc_port; i++ )
     {
-        cout << ".param Vg" << i << "=if(run==" << i << ",1,0)" << endl;
+        cir_file << ".param Vg" << i << "=if(run==" << i << ",1,0)" << endl;
     }
-    cout << "\n.end";
+    cir_file << "\n.end";
 
     delete[] data;
 }
 
 
-void create_subckt( Y_network_data data, string index )
+void create_subckt( Y_network_data data, string index, ofstream &cir_file )
 {
      int node = 3;
      int R_index = 1;
      int L_index = 0;
      int C_index = 1;
 
-     cout << endl;
-     cout << "*** Subcircuit for Y" << index << endl;
-     cout << ".subckt Y" << index << " 1 2" <<endl;
-     cout << "R0 1 2 " << data.R << endl;
+     cir_file << endl;
+     cir_file << "*** Subcircuit for Y" << index << endl;
+     cir_file << ".subckt Y" << index << " 1 2" <<endl;
+     cir_file << "R0 1 2 " << data.R << endl;
 
      // real poles
      for ( int i = 0; i < data.real_pole_nets.size(); i++ )
      {
-         cout << "*** Real pole ***" <<endl;
-         cout << "R" << R_index << " 1 " << node << " " << data.real_pole_nets[i].R << endl; 
-         cout << "L" << L_index << " " << node << " 2 " << data.real_pole_nets[i].L << endl; 
+         cir_file << "*** Real pole ***" <<endl;
+         cir_file << "R" << R_index << " 1 " << node << " " << data.real_pole_nets[i].R << endl; 
+         cir_file << "L" << L_index << " " << node << " 2 " << data.real_pole_nets[i].L << endl; 
          R_index++;
          L_index++;
          node++;
@@ -292,18 +292,18 @@ void create_subckt( Y_network_data data, string index )
      // imag poles
      for ( int i = 0; i < data.imag_pole_nets.size(); i++ )
      {
-         cout << "*** Imag pole ***" <<endl;
-         cout << "R" << R_index++ << " 1 " << node << " " << data.imag_pole_nets[i].R << endl; 
-         cout << "L" << L_index << " " << node << " " << ++node << " " << data.imag_pole_nets[i].L << endl; 
-         cout << "C" << C_index << " " << node << " 2 " << data.imag_pole_nets[i].C << endl; 
-         cout << "R" << R_index << " " << node << " 2 " << 1 / data.imag_pole_nets[i].G << endl; // G modelu przedstawione jako R 
+         cir_file << "*** Imag pole ***" <<endl;
+         cir_file << "R" << R_index++ << " 1 " << node << " " << data.imag_pole_nets[i].R << endl; 
+         cir_file << "L" << L_index << " " << node << " " << ++node << " " << data.imag_pole_nets[i].L << endl; 
+         cir_file << "C" << C_index << " " << node << " 2 " << data.imag_pole_nets[i].C << endl; 
+         cir_file << "R" << R_index << " " << node << " 2 " << 1 / data.imag_pole_nets[i].G << endl; // G modelu przedstawione jako R 
 
          R_index++;
          L_index++;
          C_index++;
          node++;
      }
-     cout << ".ends" << endl;
+     cir_file << ".ends" << endl;
 }
 
 
