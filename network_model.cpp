@@ -3,34 +3,38 @@
 
 void parse_SER(SER *input_SER, Y_network_data *output_network_data)
 {
-    int N = input_SER->poles.n_rows;
+    int N = input_SER->poles.n_cols;
     int Nc = input_SER->res.n_rows;
     cx_mat poles = input_SER->poles;
-    //output_network_data = new Y_network_data[Nc];
 
-    mat imag_check = zeros<mat>(1, N); //wektor informujacy czy dany biegun jest zespolony
-    for ( int i = 0; i < N; i++ )
+    int N_poles = poles.n_rows;
+
+    mat imag_check = zeros<mat>(N_poles, N); //wektor informujacy czy dany biegun jest zespolony
+
+    for ( int j = 0 ; j < N_poles ; j++ )
     {
-        if ( imag(poles(i)) != 0 ) 
+        for ( int i = 0; i < N; i++ )
         {
-            if ( i == 0 )
+            if ( imag(poles(j, i)) != 0 ) 
             {
-                imag_check(i) = 1;
-            }
-            else
-            {
-                if ( imag_check(i-1) == 0 || imag_check(i-1) == 2 )
+                if ( i == 0 )
                 {
-                    imag_check(i) = 1; imag_check(i+1) = 2;
+                    imag_check(j, i) = 1;
                 }
                 else
                 {
-                    imag_check(i) = 2;
+                    if ( imag_check(j, i-1) == 0 || imag_check(j, i-1) == 2 )
+                    {
+                        imag_check(j, i) = 1; imag_check(j, i+1) = 2;
+                    }
+                    else
+                    {
+                        imag_check(j, i) = 2;
+                    }
                 }
             }
         }
     }
-
 
     for ( int i = 0 ; i < Nc ; i++ )
     {

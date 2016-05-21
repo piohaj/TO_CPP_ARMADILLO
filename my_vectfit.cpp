@@ -264,7 +264,7 @@ SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles)
 
 //    cout << "Wynik.h: " << wynik.h << endl;
     // wstawienie biegunow do struktury wynikow
-    wynik.poles = poles;
+    wynik.poles = poles.st();
 
      // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
      cx_mat f_check = zeros<cx_mat>(Nc, Ns);
