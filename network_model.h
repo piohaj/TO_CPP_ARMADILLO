@@ -8,7 +8,11 @@ imag_pole_net parse_imag_pole( cx_double res, cx_double poles, int is_diag );
 void print_network_data( Y_network_data *Y, int i);
 
 void create_subckt( Y_network_data data, string index );
-void create_cir( Y_network_data *data, int N, int Nc);
+
+// create_model_netlist - funkcja do tworzenia pliku cir do symulacji w LTspice na podstawie danych uzyskanych z algorytmu vector fitting
+// input_SER - dane uzyskane z vector fitting
+// 
+void create_model_netlist( SER *input_SER, int Nc);
 
 // funkcja do wyciagania danych z jednowymiarowej tablicy z danymi do cira
 // wyciagniecie Y11 to get_Y( data, 1, 1, 2 ); w przypadku dwuwrotnika

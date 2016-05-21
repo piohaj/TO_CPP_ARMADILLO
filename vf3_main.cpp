@@ -1,5 +1,5 @@
 #include "network_model.h"
-#define VF_REPEAT 5
+#define VF_REPEAT 1
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
 // $1 - N rzad przyblizenia
@@ -15,7 +15,6 @@ int main(int argc, char* argv[])
     input_data data;
     cx_vec poles;
     SER wynik;
-    Y_network_data *siec_dane;
     int N = 0,
         Ns = 0,
         Nc = 0;
@@ -71,6 +70,7 @@ int main(int argc, char* argv[])
         }
         timer.tic();
         iter = 1;
+        poles.print("input_poles=");
         for ( iter = 1; iter < 11; iter++ )
         {
             wynik = my_vectorfit(data.f, data.s, poles); 
@@ -98,18 +98,9 @@ int main(int argc, char* argv[])
     //wynik.err.print("RMS-err=");
     cout << "Iter: " << iter << endl;
 
-    siec_dane = new Y_network_data[Nc];
+    // utworzenie modelu cir
+    create_model_netlist( &wynik, Nc );
 
-    parse_SER( &wynik, siec_dane );
-
-
-    for ( int i = 0; i < Nc ; i++ )
-    {
-        print_network_data( siec_dane, i);
-    }
-
-
-    create_cir( siec_dane, N, Nc);
     //zapis statystyk do pliku
 /*
     fstream plik;

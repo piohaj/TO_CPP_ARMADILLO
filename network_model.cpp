@@ -171,7 +171,7 @@ void print_network_data( Y_network_data *Y, int i )
 }
 
 
-void create_cir( Y_network_data *data, int N, int Nc)
+void create_model_netlist( SER *input_SER, int Nc)
 {
     int Nc_port = sqrt(Nc);
 
@@ -179,6 +179,19 @@ void create_cir( Y_network_data *data, int N, int Nc)
     {
         cout << "Podana macierz nie jest kwadratowa - model nie bedzie syntezowany" <<endl;
         return;
+    }
+
+    // macierz ze strukturami z wartosciami elementow modelu
+    Y_network_data *data;
+    data = new Y_network_data[Nc];
+
+    // przygotowanie wartosci elementow
+    parse_SER( input_SER, data );
+
+    // wyswietlenie wartosci elementow
+    for ( int i = 0; i < Nc ; i++ )
+    {
+        print_network_data( data, i);
     }
 
     //pierwsza linika cira
@@ -190,7 +203,7 @@ void create_cir( Y_network_data *data, int N, int Nc)
         for ( int i = 1; i <= Nc_port; i++ )
         {
             Y_network_data Y_temp = get_Y( data, i, j, Nc_port);
-            //int y_inx = i*10+j;
+
             // wygenerowanie odpowiedniego indeksu elementu macierzy Y
             ostringstream ss;
             ss << i << j;
@@ -248,6 +261,8 @@ void create_cir( Y_network_data *data, int N, int Nc)
         cout << ".param Vg" << i << "=if(run==" << i << ",1,0)" << endl;
     }
     cout << "\n.end";
+
+    delete[] data;
 }
 
 
