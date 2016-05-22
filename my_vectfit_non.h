@@ -7,7 +7,7 @@
 // f - macierz zawierajaca wartosci pomiarow dla kazdego elementu macierzy Y
 // s - wektor zawierajacy probki wartosci czestotliwosci dla wartosci pomiaru z f
 // poles - wektor z biegunami poczatkowymi
-SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles);
+SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles);
 
 
 cx_mat logspace(double a, double b, int n);

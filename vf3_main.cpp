@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
         poles.print("input_poles=");
         for ( iter = 1; iter < 11; iter++ )
         {
-            wynik = my_vectorfit(data.f, data.s, poles); 
+            wynik = my_vf_non_splitting(data.f, data.s, poles); 
 	    poles = wynik.poles;
 		
 	    cout << "Iter: " << iter << endl;
