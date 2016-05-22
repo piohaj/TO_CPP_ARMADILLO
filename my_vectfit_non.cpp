@@ -1,4 +1,4 @@
-#include "my_vectfit.h"
+#include "my_vectfit_non.h"
 
 cx_mat logspace(double a, double b, int n)
 {

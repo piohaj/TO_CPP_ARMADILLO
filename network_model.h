@@ -1,4 +1,4 @@
-#include "my_vectfit.h"
+#include "my_vectfit_non.h"
 
 // obliczanie wartosci modelu i wstawienie go do 
 void parse_SER(SER *input_SER, Y_network_data *output_network_data);
