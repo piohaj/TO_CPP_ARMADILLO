@@ -1,3 +1,6 @@
+#ifndef my_vectfit_column_h
+#define my_vectfit_column_h
+
 #include "data_model.h"
 
 SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles);
@@ -21,3 +24,5 @@ public:
 
     void operator() ( const blocked_range<int>& r ) const;
 };
+
+#endif

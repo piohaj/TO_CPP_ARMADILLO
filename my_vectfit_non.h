@@ -1,3 +1,6 @@
+#ifndef my_vectfit_non_h
+#define my_vectfit_non_h
+
 #include "data_model.h"
 
 // Funckja my_vectorfit
@@ -41,3 +44,5 @@ public:
     // zadanie dla jednego watku - w TBB definiowany poprzez przeciazenie ()
     void operator() ( const blocked_range<int>& r ) const;
 };
+
+#endif

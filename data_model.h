@@ -1,3 +1,6 @@
+#ifndef data_model_h
+#define data_model_h
+
 #define ARMA_64BIT_WORD
 #include <armadillo>
 #include <iostream>
@@ -47,3 +50,5 @@ struct Y_network_data
    vector <real_pole_net> real_pole_nets;
    vector <imag_pole_net> imag_pole_nets;
 };
+
+#endif

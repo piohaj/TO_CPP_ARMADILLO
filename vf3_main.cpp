@@ -1,4 +1,8 @@
+#include "data_model.h"
 #include "network_model.h"
+#include "my_vectfit_all.h"
+#include "my_vectfit_non.h"
+#include "my_vectfit_column.h"
 #define VF_REPEAT 1
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
@@ -13,7 +17,7 @@ int main(int argc, char* argv[])
     // przygotowanie danych testowych
     MKL_Set_Num_Threads(1);
     input_data data;
-    cx_vec poles;
+    cx_mat poles;
     SER wynik;
     int N = 0,
         Ns = 0,
@@ -58,22 +62,27 @@ int main(int argc, char* argv[])
     cout << "Vector fitting " << VF_REPEAT << " times" << endl;
     for ( int k = 0; k < VF_REPEAT ; k++ )
     {
-        poles = zeros<cx_vec>(N);
+        poles = zeros<cx_mat>(Nc, N);
         mat bet = linspace<mat>(imag(data.s(0)), imag(data.s(Ns-1)), N/2);
-        int m = 0;
-        for ( int n = 0; n < N-1; n=n+2 )
+
+        for ( int mm = 0; mm < Nc; mm++ )
         {
-            double alf = -bet(m)*1e-2;
-            poles(n) = cx_double(alf, bet(m));
-            poles(n+1) = conj(poles(n));
-            m++;
+            int m = 0;
+            for ( int n = 0; n < N-1; n=n+2 )
+            {
+                double alf = -bet(m)*1e-2;
+                poles(mm, n) = cx_double(alf, bet(m));
+                poles(mm, n+1) = conj(poles(n));
+                m++;
+            }
         }
+
         timer.tic();
         iter = 1;
         poles.print("input_poles=");
         for ( iter = 1; iter < 11; iter++ )
         {
-            wynik = my_vf_non_splitting(data.f, data.s, poles); 
+            wynik = my_vf_all_splitting(&data.f, &data.s, &poles); 
 	    poles = wynik.poles;
 		
 	    cout << "Iter: " << iter << endl;

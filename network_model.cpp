@@ -86,13 +86,13 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
         for ( int j = 0; j < N ; j++ ) // po wszystkich residuach
         {
 
-            if ( imag_check(j) == 0 ) //biegun rzeczywisty
+            if ( imag_check(nn, j) == 0 ) //biegun rzeczywisty
             {
                  // obliczanie parametrow dla galezi od bieguna real
                  real_pole_net_sample = parse_real_pole( input_SER->res(i, j), poles(nn, j), is_diag );
                  network_data_sample.real_pole_nets.push_back(real_pole_net_sample);
             }
-            else if ( imag_check(j) == 1 ) // biegun zespolony
+            else if ( imag_check(nn, j) == 1 ) // biegun zespolony
             {
                  // obliczanie parametrow dla galezi od bieguna imag
                  imag_pole_net_sample = parse_imag_pole( input_SER->res(i, j), poles(nn, j), is_diag );
