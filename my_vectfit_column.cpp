@@ -32,7 +32,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
             }
         }
 
-        cx_mat A = zeros<cx_mat>(Ns, 2*N+1);
+        cx_mat A = zeros<cx_mat>(Ns, 2*N+2);
     
         // wypelnienie lewej strony macierzy A
         for ( int m = 0; m < N ; m++ )
@@ -49,6 +49,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
         }
     
         A.col(N) = ones<cx_mat>(1,Ns).st();
+        A.col(N+1) = s->st();
 
         // przygotowanie macierzy pod wszystkie elementy Y dla danej kolumny
         mat AA_poles = zeros<mat>(column_elems*N, N);
@@ -61,7 +62,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
             // wypelnienie prawej strony macierzy A
             for ( int i = 0; i < N; i++ )
             {
-                A.col(i+N+1) = -strans(f->operator()(m, span(0, Ns-1))) % A( span(0, Ns-1), i);
+                A.col(i+N+2) = -strans(f->operator()(m, span(0, Ns-1))) % A( span(0, Ns-1), i);
             }
         
             mat A_real = join_vert( real(A), imag(A) );
@@ -75,8 +76,8 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
         
             mat bb = Q.st() * f_lsp_real;
         
-            bb_poles.rows(n*N, (n+1)*N-1) = bb.rows(N+1, 2*N);
-            AA_poles( span(n*N, (n+1)*N-1 ), span( 0, N-1 ) ) = R( span(N+1, 2*N), span(N+1, 2*N) );
+            bb_poles.rows(n*N, (n+1)*N-1) = bb.rows(N+2, 2*N+1);
+            AA_poles( span(n*N, (n+1)*N-1 ), span( 0, N-1 ) ) = R( span(N+2, 2*N+1), span(N+2, 2*N+1) );
 
             n++;
         } 
@@ -144,7 +145,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
             }
         }
     
-        cx_mat AA_res = zeros<cx_mat>(Ns, N+1);
+        cx_mat AA_res = zeros<cx_mat>(Ns, N+2);
     
         // wypelnienie lewej strony macierzy AA_res
         for ( int m = 0; m < N; m++ )
@@ -161,6 +162,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
         }
     
         AA_res.col(N) = ones<cx_mat>(1, Ns).st();
+        AA_res.col(N+1) = s->st();
     
         mat AA_res_real = join_vert( real(AA_res), imag(AA_res) );
     
@@ -179,7 +181,12 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
 
         for ( int m = 0; m < column_elems; m++ )
         {
-            wynik->h(rr*column_elems+m,0) = x(N, m);
+            wynik->d(rr*column_elems+m,0) = x(N, m);
+        }
+
+        for ( int m = 0; m < column_elems; m++ )
+        {
+            wynik->h(rr*column_elems+m,0) = x(N+1, m);
         }
         wynik->poles.row(rr) = poles.st();
 
@@ -224,6 +231,7 @@ SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     wynik.res = zeros<cx_mat>(Nc, N);
     wynik.poles = zeros<cx_mat>(column_num, N);
     wynik.h = zeros<mat>(Nc,1);
+    wynik.d = zeros<mat>(Nc,1);
     wynik.err = 0.0;
 
     // wielowatkowe uruchomienie algorytmu VF
@@ -248,11 +256,12 @@ void rms_err_calculation(SER *wynik, const cx_mat *f, const cx_vec *s, int N)
     {
         for ( int i = 0; i < Ns; i++ )
         {
+            cx_double sk = s->operator()(i);
             for ( int j = 0; j < N; j++ )
             {
-                f_check(m, i) = f_check(m, i) + wynik->res(m, j) / ( s->operator()(i) - wynik->poles(m/column_num, j) );
+                f_check(m, i) = f_check(m, i) + wynik->res(m, j) / ( sk - wynik->poles(m/column_num, j) );
             }
-            f_check(m, i) = f_check(m, i) + wynik->h(m, 0);
+            f_check(m, i) = f_check(m, i) + sk * wynik->h(m, 0) + wynik->d(m,0);
         } 
     }
 

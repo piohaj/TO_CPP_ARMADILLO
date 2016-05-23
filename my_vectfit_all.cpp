@@ -31,7 +31,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
             }
         }
 
-        cx_mat A = zeros<cx_mat>(Ns, 2*N+1);
+        cx_mat A = zeros<cx_mat>(Ns, 2*N+2);
     
         // wypelnienie lewej strony macierzy A
         for ( int m = 0; m < N ; m++ )
@@ -48,11 +48,12 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         }
     
         A.col(N) = ones<cx_mat>(1,Ns).st();
+        A.col(N+1) = s->st();
     
         // wypelnienie prawej strony macierzy A
         for ( int i = 0; i < N; i++ )
         {
-            A.col(i+N+1) = -strans(f->row(rr)) % A( span(0, Ns-1), i);
+            A.col(i+N+2) = -strans(f->row(rr)) % A( span(0, Ns-1), i);
         }
     
         // obliczanie x metoda najmniejszych kwadratow Ax=b
@@ -66,9 +67,9 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         qr_econ(Q, R, A_real);
     
         mat bb = Q.st() * f_lsp_real;
-        bb = bb.rows(N+1, 2*N);
+        bb = bb.rows(N+2, 2*N+1);
     
-        mat AA = R( span(N+1, 2*N), span(N+1, 2*N) );
+        mat AA = R( span(N+2, 2*N+1), span(N+2, 2*N+1) );
 
         // rozwiazanie ukladu rownan
         mat x = solve(AA, bb, solve_opts::fast);
@@ -136,7 +137,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
             }
         }
     
-        cx_mat AA_res = zeros<cx_mat>(Ns, N+1);
+        cx_mat AA_res = zeros<cx_mat>(Ns, N+2);
     
         // wypelnienie lewej strony macierzy AA_res
         for ( int m = 0; m < N; m++ )
@@ -153,6 +154,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         }
     
         AA_res.col(N) = ones<cx_mat>(1, Ns).st();
+        AA_res.col(N+1) = s->st();
     
         mat AA_res_real = join_vert( real(AA_res), imag(AA_res) );
     
@@ -175,6 +177,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
             m++;
         }
     
+        wynik->d(rr,0) = x(x.n_elem - 2);
         wynik->h(rr,0) = x(x.n_elem - 1);
         wynik->poles.row(rr) = poles.st();
     }
@@ -192,6 +195,7 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     wynik.res = zeros<cx_mat>(Nc, N);
     wynik.poles = zeros<cx_mat>(Nc, N);
     wynik.h = zeros<mat>(Nc,1);
+    wynik.d = zeros<mat>(Nc,1);
     wynik.err = 0.0;
 
     // wielowatkowe uruchomienie algorytmu VF
@@ -205,12 +209,13 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     {
         for ( int i = 0; i < Ns; i++ )
         {
+            cx_double sk = s->operator()(i);
             for ( int j = 0; j < N; j++ )
             {
                 f_check(m, i) = f_check(m, i) + wynik.res(m, j)
-                                / ( s->operator()(i) - wynik.poles(m,j));
+                                / ( sk - wynik.poles(m,j));
             }
-            f_check(m, i) = f_check(m, i) + wynik.h(m, 0);
+            f_check(m, i) = f_check(m, i) + wynik.d(m, 0) + sk * wynik.h(m,0);
         } 
     }
      

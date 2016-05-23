@@ -21,6 +21,7 @@ struct SER
     cx_mat res;
     cx_mat poles;
     mat h;
+    mat d;
     double err;
 };
 

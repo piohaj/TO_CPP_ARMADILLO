@@ -43,7 +43,7 @@ void QR_calculation::operator() ( const blocked_range<int>& r ) const
         {
             part = -strans(f->operator()(m, span(0, Ns-1))) 
                    % A->operator()( span(0, Ns-1), i);
-            AA_port.col(i+N+1) = part;
+            AA_port.col(i+N+2) = part;
         }
 
         // obliczanie x metoda najmniejszych kwadratow Ax=b
@@ -58,10 +58,9 @@ void QR_calculation::operator() ( const blocked_range<int>& r ) const
 
         mat bb = Q.st() * f_lsp_real;
 
-        bb_poles->rows(m*N, (m+1)*N-1) = bb.rows(N+1, 2*N); 
+        bb_poles->rows(m*N, (m+1)*N-1) = bb.rows(N+2, 2*N+1); 
         AA_poles->operator()( span(m*N, (m+1)*N-1), span( 0, N-1 ) ) 
-                               = R( span(N+1, 2*N), span(N+1, 2*N) );
-
+                               = R( span(N+2, 2*N+1), span(N+2, 2*N+1) );
     }
 }
 
@@ -71,7 +70,7 @@ void QR_calculation::operator() ( const blocked_range<int>& r ) const
 // do rozwiazania rownania metoda najmniejszych kwadratow uzyto dekompozycji QR
 // algorymt zaklada istnienie stalej h
 // algorytm przystosowany do obliczenia modelu wieloportowego
-SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
+SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
 {
     int N = poles.n_elem, //rzad rozwiazania
         Ns = s.n_elem, // liczba probek pomiarowych
@@ -108,7 +107,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
         }
     }
 
-    cx_mat A = zeros<cx_mat>(Ns, 2*N+1);
+    cx_mat A = zeros<cx_mat>(Ns, 2*N+2);
 
     // wypelnienie lewej strony macierzy A
     for ( int m = 0; m < N ; m++ )
@@ -125,6 +124,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
     }
 
     A.col(N) = ones<cx_mat>(1,Ns).st();
+    A.col(N+1) = s.st();
 
     // przygotowanie macierzy pod wiele portow
     mat AA_poles = zeros<mat>(Nc*N, N);
@@ -138,7 +138,6 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
     // obliczenie x dla wszystkich portow badanego ukladu
     mat x = solve(AA_poles, bb_poles);
 
-    
     // przy pomocy metody wartosci wlasnych macierzy obliczanie zer funkcji sigma - szukane bieguny
     cx_mat poles_diag = diagmat(poles); // tu jeszcze bieguny wejsciowe
     mat b_ones = ones<mat>(N,1);
@@ -170,7 +169,6 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
     //obliczanie wartosci wlasnych macierzy
     mat H = poles_diag_real - b_ones * x_trans;
     poles = eig_gen(H);
-  
     H.reset();
 
 //=============================================
@@ -202,7 +200,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
 
 
     //cout << "imag_check " << imag_check << endl;
-    cx_mat AA_res = zeros<cx_mat>(Ns, N+1);
+    cx_mat AA_res = zeros<cx_mat>(Ns, N+2);
 
     // wypelnienie lewej strony macierzy AA_res
     for ( int m = 0; m < N; m++ )
@@ -219,6 +217,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
     }
 
     AA_res.col(N) = ones<cx_mat>(1, Ns).st();
+    AA_res.col(N+1) = s.st();
 
     mat AA_res_real = join_vert( real(AA_res), imag(AA_res) );
 
@@ -254,14 +253,19 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
         }
     }
 
-    // rzeczywiste wspolczynniki h
+    // rzeczywiste wspolczynniki d
+    wynik.d = zeros<mat>(Nc, 1);
+    for ( int m = 0; m < Nc; m++ )
+    {
+        wynik.d(m, 0) = x(N, m);
+    }
+
+    // rzeczywiste wspolczynniki h, rownolegla pojemnosc
     wynik.h = zeros<mat>(Nc, 1);
     for ( int m = 0; m < Nc; m++ )
     {
-        wynik.h(m, 0) = x(N, m);
+        wynik.h(m, 0) = x(N+1, m);
     }
-
-
 //    cout << "Wynik.h: " << wynik.h << endl;
     // wstawienie biegunow do struktury wynikow
     wynik.poles = poles.st();
@@ -276,7 +280,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
              {
                  f_check(m, i) = f_check(m, i) + wynik.res(m, j) / ( s(i) - wynik.poles(j));
              }
-             f_check(m, i) = f_check(m, i) + wynik.h(m, 0);
+             f_check(m, i) = f_check(m, i) + s(i)*wynik.h(m, 0) + wynik.d(m, 0);
          } 
      }
      
@@ -291,25 +295,38 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_vec poles)
 input_data prepare_sample_data()
 {
     input_data data;
-    int Ns = 101;
+    int Ns = 10;
     int N = 3;
-    data.f = zeros<cx_mat>(2, Ns);
+    data.f = zeros<cx_mat>(4, Ns);
     data.s = 2 * 3.14 * 1.0I * linspace<cx_mat>(1, 550, Ns);
 
     for ( int k = 0; k < Ns ; k++ )
     {
         cx_double sk = data.s(k);
         
-        data.f(0, k) = cx_double(2,0)/(sk+cx_double(5,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(0.5, 0);
+        data.f(0, k) = cx_double(2,0)/(sk+cx_double(5,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(0.5, 0) + sk * cx_double(0.001,0);
     } 
 
     for ( int kk = 0; kk < Ns ; kk++ )
     {
         cx_double sk = data.s(kk);
         
-        data.f(1, kk) = cx_double(3,0)/(sk+cx_double(5,0)) + cx_double(300, 40)/(sk - cx_double(-100,500)) + cx_double(300,-40)/(sk-cx_double(-100, -500)) + cx_double(0.9, 0);
+        data.f(1, kk) = cx_double(3,0)/(sk+cx_double(5,0)) + cx_double(300, 40)/(sk - cx_double(-100,500)) + cx_double(300,-40)/(sk-cx_double(-100, -500)) + cx_double(0.9, 0) + sk * cx_double(0.002,0);
     } 
 
+    for ( int k = 0; k < Ns ; k++ )
+    {
+        cx_double sk = data.s(k);
+        
+        data.f(2, k) = cx_double(2,0)/(sk+cx_double(5,0)) + cx_double(30, 40)/(sk - cx_double(-100,500)) + cx_double(30,-40)/(sk-cx_double(-100, -500)) + cx_double(0.5, 0) + sk * cx_double(0.001,0);
+    } 
+
+    for ( int kk = 0; kk < Ns ; kk++ )
+    {
+        cx_double sk = data.s(kk);
+        
+        data.f(3, kk) = cx_double(3,0)/(sk+cx_double(5,0)) + cx_double(300, 40)/(sk - cx_double(-100,500)) + cx_double(300,-40)/(sk-cx_double(-100, -500)) + cx_double(0.9, 0) + sk * cx_double(0.002,0);
+    } 
     return data;
 }
  
