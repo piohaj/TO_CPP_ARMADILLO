@@ -13,6 +13,11 @@ using namespace std;
 using namespace arma;
 using namespace tbb;
 
+#define NON_SPLITING 1
+#define ALL_SPLITING 2
+#define COLUMN_SPLITING 3
+
+
 /// ========= VF =========
 
 // struktura wyjsciowa z algorytmu VF

@@ -41,14 +41,14 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
     // 1 - no-splitting
     // 2 - all-splitting
     // 3 - column-splitting
-    int SPLITING_STRT = 1; // no-splitting
+    int SPLITING_STRT = NON_SPLITING; // no-splitting
     if ( N_poles == Nc ) // all_splitting
     {
-        SPLITING_STRT = 2;
+        SPLITING_STRT = ALL_SPLITING;
     }
     else if ( N_poles = sqrt(Nc) ) // column splliting    
     {
-        SPLITING_STRT = 3;
+        SPLITING_STRT = COLUMN_SPLITING;
     }
     
     // zmienna do prawidlowego wyboru biegunow dla danego elementu macierzy Y
@@ -56,9 +56,9 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
 
     for ( int i = 0; i < Nc ; i++ )
     {
-        if ( SPLITING_STRT = 1 ) nn = 0;
-        else if ( SPLITING_STRT = 2 ) nn = i;
-        else if ( SPLITING_STRT = 3 ) nn = i/sqrt(Nc); 
+        if ( SPLITING_STRT = NON_SPLITING ) nn = 0;
+        else if ( SPLITING_STRT = ALL_SPLITING ) nn = i;
+        else if ( SPLITING_STRT = COLUMN_SPLITING ) nn = i/sqrt(Nc); 
 
         Y_network_data network_data_sample; // struktura z danymi sieci dla pojedynczego elementu macierz Y
         // wyczyszczenie struktury pomocniczej
@@ -75,9 +75,9 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
         if ( ( i - floor(i/(sqrt(Nc)+1))*(sqrt(Nc)+1) ) == 0 ) is_diag = 1; // jest
 
         // rozwiazanie problemu z zerowym R rownoleglym
-        if ( input_SER->d(i) < 1e-12 ) 
+        if ( input_SER->d(i) < 1e-16 ) 
         {
-            network_data_sample.R = 1e12; 
+            network_data_sample.R = 1e16; 
         }
         else
         {
@@ -85,7 +85,14 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
         }
 
         // rownolegle C
-        network_data_sample.C = is_diag * input_SER->h(i);
+        if ( input_SER->d(i) < 1e-16 )
+        {
+            network_data_sample.C = 1e-16;
+        }
+        else
+        {
+            network_data_sample.C = is_diag * input_SER->h(i);
+        }
 
         for ( int j = 0; j < N ; j++ ) // po wszystkich residuach
         {
