@@ -28,8 +28,8 @@ int main(int argc, char* argv[])
         cout << "===Test for sample data===\n";
         data = prepare_sample_data();
         N = 3;
-        Ns = 101;
-        Nc = 2;
+        Ns = 10;
+        Nc = 4;
     }
     else if ( argc == 4 )
     {
@@ -63,10 +63,12 @@ int main(int argc, char* argv[])
     for ( int k = 0; k < VF_REPEAT ; k++ )
     {
         poles = zeros<cx_mat>(Nc, N);
+        //poles = zeros<cx_mat>(1, N);
         mat bet = linspace<mat>(imag(data.s(0)), imag(data.s(Ns-1)), N/2);
 
         for ( int mm = 0; mm < Nc; mm++ )
         {
+    //        int mm = 0;
             int m = 0;
             for ( int n = 0; n < N-1; n=n+2 )
             {
@@ -82,7 +84,9 @@ int main(int argc, char* argv[])
         poles.print("input_poles=");
         for ( iter = 1; iter < 11; iter++ )
         {
-            wynik = my_vf_all_splitting(&data.f, &data.s, &poles); 
+	   // wynik = my_vf_all_splitting(&data.f, &data.s, &poles); 
+            wynik = my_vf_column_splitting(&data.f, &data.s, &poles); 
+        //    wynik = my_vf_non_splitting(data.f, data.s, poles); 
 	    poles = wynik.poles;
 		
 	    cout << "Iter: " << iter << endl;
@@ -104,6 +108,7 @@ int main(int argc, char* argv[])
     wynik.poles.print("poles=");
     wynik.res.print("residues=");
     wynik.h.print("h=");
+    wynik.d.print("d=");
     //wynik.err.print("RMS-err=");
     cout << "Iter: " << iter << endl;
 

@@ -65,6 +65,7 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
         network_data_sample.real_pole_nets.clear();
         network_data_sample.imag_pole_nets.clear();
         network_data_sample.R = 0;
+        network_data_sample.C = 0;
 
         real_pole_net real_pole_net_sample;
         imag_pole_net imag_pole_net_sample;
@@ -74,14 +75,17 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
         if ( ( i - floor(i/(sqrt(Nc)+1))*(sqrt(Nc)+1) ) == 0 ) is_diag = 1; // jest
 
         // rozwiazanie problemu z zerowym R rownoleglym
-        if ( input_SER->h(i) < 1e-12 ) 
+        if ( input_SER->d(i) < 1e-12 ) 
         {
             network_data_sample.R = 1e12; 
         }
         else
         {
-            network_data_sample.R = is_diag * 1/input_SER->h(i); // rownolegle R
+            network_data_sample.R = is_diag * 1/input_SER->d(i); // rownolegle R
         }
+
+        // rownolegle C
+        network_data_sample.C = is_diag * input_SER->h(i);
 
         for ( int j = 0; j < N ; j++ ) // po wszystkich residuach
         {
@@ -152,6 +156,7 @@ void print_network_data( Y_network_data *Y, int i )
      cout << "\n\nNetwork data for " << i << " Y element" << endl;
 
      cout << "R0: " << Y[i].R << "om" << endl;
+     cout << "C0: " << Y[i].C << "F" << endl;
 
      cout << "Real pole branches: " << endl;
      for ( int j = 0 ; j < Y[i].real_pole_nets.size() ; j++ )
@@ -277,6 +282,7 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file )
      cir_file << "*** Subcircuit for Y" << index << endl;
      cir_file << ".subckt Y" << index << " 1 2" <<endl;
      cir_file << "R0 1 2 " << data.R << endl;
+     cir_file << "C0 1 2 " << data.C << endl;
 
      // real poles
      for ( int i = 0; i < data.real_pole_nets.size(); i++ )
