@@ -46,7 +46,7 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
     {
         SPLITING_STRT = ALL_SPLITING;
     }
-    else if ( N_poles = sqrt(Nc) ) // column splliting    
+    else if ( N_poles == sqrt(Nc) ) // column splliting    
     {
         SPLITING_STRT = COLUMN_SPLITING;
     }
@@ -56,9 +56,9 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
 
     for ( int i = 0; i < Nc ; i++ )
     {
-        if ( SPLITING_STRT = NON_SPLITING ) nn = 0;
-        else if ( SPLITING_STRT = ALL_SPLITING ) nn = i;
-        else if ( SPLITING_STRT = COLUMN_SPLITING ) nn = i/sqrt(Nc); 
+        if ( SPLITING_STRT == NON_SPLITING ) { nn = 0; }
+        else if ( SPLITING_STRT == ALL_SPLITING ) { nn = i; }
+        else if ( SPLITING_STRT == COLUMN_SPLITING ) { nn = i/sqrt(Nc); } 
 
         Y_network_data network_data_sample; // struktura z danymi sieci dla pojedynczego elementu macierz Y
         // wyczyszczenie struktury pomocniczej
