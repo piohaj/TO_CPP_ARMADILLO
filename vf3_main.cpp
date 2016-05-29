@@ -1,8 +1,7 @@
 #include "data_model.h"
 #include "network_model.h"
-#include "my_vectfit_all.h"
+#include "additional_features.h"
 #include "my_vectfit_non.h"
-#include "my_vectfit_column.h"
 #define VF_REPEAT 1
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
@@ -62,40 +61,8 @@ int main(int argc, char* argv[])
     cout << "Vector fitting " << VF_REPEAT << " times" << endl;
     for ( int k = 0; k < VF_REPEAT ; k++ )
     {
-        poles = zeros<cx_mat>(Nc, N);
-        //poles = zeros<cx_mat>(1, N);
-        mat bet = linspace<mat>(imag(data.s(0)), imag(data.s(Ns-1)), N/2);
-
-        for ( int mm = 0; mm < Nc; mm++ )
-        {
-    //        int mm = 0;
-            int m = 0;
-            for ( int n = 0; n < N-1; n=n+2 )
-            {
-                double alf = -bet(m)*1e-2;
-                poles(mm, n) = cx_double(alf, bet(m));
-                poles(mm, n+1) = conj(poles(n));
-                m++;
-            }
-        }
-
         timer.tic();
-        iter = 1;
-        poles.print("input_poles=");
-        for ( iter = 1; iter < 11; iter++ )
-        {
-	   // wynik = my_vf_all_splitting(&data.f, &data.s, &poles); 
-            wynik = my_vf_column_splitting(&data.f, &data.s, &poles); 
-        //    wynik = my_vf_non_splitting(data.f, data.s, poles); 
-	    poles = wynik.poles;
-		
-	    cout << "Iter: " << iter << endl;
-	    cout << "Err: " << wynik.err << endl;
-	    if ( wynik.err < 1e-5 )
-            {
-	        break;
-	    }
-        }
+        wynik = vf_high_level( data.f, data.s, NON_SPLITING, N-2, N+2 ); 
         double executionTime = timer.toc();
         cout<< "Exec one: "<< executionTime << endl;
         exec_time = exec_time + executionTime;
@@ -105,19 +72,19 @@ int main(int argc, char* argv[])
 
     printf("Sredni czas wykonania algorytmu po %d wywolaniach: %.6fs \n", VF_REPEAT, exec_time); 
 
+    cout << "\n\n\n";
     wynik.poles.print("poles=");
     wynik.res.print("residues=");
     wynik.h.print("h=");
     wynik.d.print("d=");
-    //wynik.err.print("RMS-err=");
-    cout << "Iter: " << iter << endl;
+    cout << "RMS-err(wybrany)= " << wynik.err <<endl;
 
     // utworzenie modelu cir i zapis do pliku
-    ofstream myfile;
-    myfile.open("test_mgr.cir");
-    create_model_netlist( &wynik, Nc, myfile);
+    //ofstream myfile;
+    //myfile.open("test_mgr.cir");
+    //create_model_netlist( &wynik, Nc, myfile);
 
-    myfile.close();
+    //myfile.close();
 
     //zapis statystyk do pliku
 /*
