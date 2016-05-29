@@ -17,7 +17,6 @@ SER vf_high_level( const cx_mat& f, const cx_vec& s, int split_strat, int min_ro
         return wynik;
     }
 
-
     if ( split_strat == NON_SPLITING )
     {
         int high_iter = 0;
@@ -40,6 +39,7 @@ SER vf_high_level( const cx_mat& f, const cx_vec& s, int split_strat, int min_ro
             }
     	    cout << "Row: " << row << endl;
     	    cout << "Err: " << wynik_iter[high_iter].err << endl;
+            high_iter++;
         }
     }
     else
@@ -80,12 +80,15 @@ cx_mat prepare_input_poles( const cx_vec& s, int split_strat, int Nc, int N, int
 
 int choose_best_aprox( SER *input, int size )
 {
-    int result = 1e6;
+    int result = 0;
+    double err = 10e6;
     for ( int i = 0; i < size; i++ )
     {
-        if ( input[i].err < result )
+        if ( input[i].err < err )
         {
-            result = input[i].err;
+            err = input[i].err;
+            result = i;
         }
     }
+    return result;
 }  
