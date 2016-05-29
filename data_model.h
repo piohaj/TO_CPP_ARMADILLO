@@ -28,6 +28,7 @@ struct SER
     mat h;
     mat d;
     double err;
+    mat err_table;
 };
 
 struct input_data
