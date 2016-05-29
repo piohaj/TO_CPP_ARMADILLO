@@ -9,13 +9,13 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
 
     int N_poles = poles.n_rows;
 
-    mat imag_check = zeros<mat>(N_poles, N); //wektor informujacy czy dany biegun jest zespolony
+    mat imag_check = NO_ELEM*ones<mat>(N_poles, N); //wektor informujacy czy dany biegun jest zespolony
 
     for ( int j = 0 ; j < N_poles ; j++ )
     {
         for ( int i = 0; i < N; i++ )
         {
-            if ( imag(poles(j, i)) != 0 ) 
+            if ( imag(poles(j, i)) != 0 && abs(poles(j,i)) != 0.0 ) 
             {
                 if ( i == 0 )
                 {
@@ -33,8 +33,14 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
                     }
                 }
             }
+            else if ( abs(poles(j,i)) != 0.0 )
+            {
+                imag_check(j, i) = 0;
+            }
         }
     }
+
+    imag_check.print("imag_check=");
 
     // sprawdzenie strategi podzialu macierzy Y
     // SPLLITTING_STRT
@@ -97,13 +103,13 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data)
         for ( int j = 0; j < N ; j++ ) // po wszystkich residuach
         {
 
-            if ( imag_check(nn, j) == 0 ) //biegun rzeczywisty
+            if ( imag_check(nn, j) == 0 && imag_check(nn, j) != NO_ELEM ) //biegun rzeczywisty
             {
                  // obliczanie parametrow dla galezi od bieguna real
                  real_pole_net_sample = parse_real_pole( input_SER->res(i, j), poles(nn, j), is_diag );
                  network_data_sample.real_pole_nets.push_back(real_pole_net_sample);
             }
-            else if ( imag_check(nn, j) == 1 ) // biegun zespolony
+            else if ( imag_check(nn, j) == 1 && imag_check(nn, j) != NO_ELEM ) // biegun zespolony
             {
                  // obliczanie parametrow dla galezi od bieguna imag
                  imag_pole_net_sample = parse_imag_pole( input_SER->res(i, j), poles(nn, j), is_diag );

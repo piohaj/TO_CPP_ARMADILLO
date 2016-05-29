@@ -80,9 +80,9 @@ int main(int argc, char* argv[])
     cout << "RMS-err(wybrany)= " << wynik.err <<endl;
 
     // utworzenie modelu cir i zapis do pliku
-    //ofstream myfile;
-    //myfile.open("test_mgr.cir");
-    //create_model_netlist( &wynik, Nc, myfile);
+    ofstream myfile;
+    myfile.open("test_mgr.cir");
+    create_model_netlist( &wynik, Nc, myfile);
 
     //myfile.close();
 
