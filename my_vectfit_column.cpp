@@ -233,6 +233,7 @@ SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     wynik.h = zeros<mat>(Nc,1);
     wynik.d = zeros<mat>(Nc,1);
     wynik.err = 0.0;
+    wynik.err_table = zeros<mat>(column_num, 1);
 
     // wielowatkowe uruchomienie algorytmu VF
     task_scheduler_init init();
@@ -268,4 +269,11 @@ void rms_err_calculation(SER *wynik, const cx_mat *f, const cx_vec *s, int N)
     cx_mat diff = *f - f_check;
 
     wynik->err = sqrt( accu ( accu( pow(abs(diff), 2) ) ) );
+
+    // wypelnienie macierzy z RMS dla kazdego z elementow Y
+    for ( int j = 0; j < Nc; j++ )
+    {
+        wynik->err_table.row(j/sqrt(Nc)) += sqrt( accu ( pow(abs(diff.row(j)), 2)) ) ;
+    }
+    wynik->err_table.print("err_table=");
 }

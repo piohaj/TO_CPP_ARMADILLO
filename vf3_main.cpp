@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
     for ( int k = 0; k < VF_REPEAT ; k++ )
     {
         timer.tic();
-        wynik = vf_high_level( data.f, data.s, ALL_SPLITING, N-2, N+2 ); 
+        wynik = vf_high_level( data.f, data.s, COLUMN_SPLITING, N-2, N+2 ); 
         double executionTime = timer.toc();
         cout<< "Exec one: "<< executionTime << endl;
         exec_time = exec_time + executionTime;
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
     myfile.open("test_mgr.cir");
     create_model_netlist( &wynik, Nc, myfile);
 
-    //myfile.close();
+    myfile.close();
 
     //zapis statystyk do pliku
 /*
