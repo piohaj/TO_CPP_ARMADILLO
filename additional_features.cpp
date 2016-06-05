@@ -322,3 +322,17 @@ cx_cube make_cube( cx_mat& y )
     return yy;
 }
 
+bool ispassive(cx_mat& y)
+{
+    cx_cube s_params = y2s( y );
+    bool result = true;
+    int Ns = s_params.n_slices;
+
+    for ( int i = 0; i < Ns; i++ )
+    {
+        result = !( norm(s_params.slice(i), 2) > (1+sqrt(1e-16)) );
+    }
+
+    return result;
+}
+

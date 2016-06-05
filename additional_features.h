@@ -16,6 +16,6 @@ void read_conf();
 cx_cube make_cube( cx_mat& y );
 cx_cube y2s(cx_mat y, int z0 = 50);
 cx_mat s2y(cx_mat s_params, int z0 =50);
-bool ispassive(cx_mat s_params);
+bool ispassive(cx_mat& y);
 
 #endif
