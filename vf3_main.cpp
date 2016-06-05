@@ -4,6 +4,7 @@
 #include "my_vectfit_non.h"
 #define VF_REPEAT 1
 
+vf_opts global_conf;
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
 // $1 - N rzad przyblizenia
 // $2 - Nc liczba portow badanego ukladu
@@ -21,6 +22,9 @@ int main(int argc, char* argv[])
     int N = 0,
         Ns = 0,
         Nc = 0;
+    int split_strat = 1;
+
+    read_conf();
 
     if ( argc == 1 )
     {
@@ -30,12 +34,17 @@ int main(int argc, char* argv[])
         Ns = 10;
         Nc = 4;
     }
-    else if ( argc == 4 )
+    else if ( argc == 2)
+    {
+        split_strat = atoi( argv[1] );
+    }
+    else if ( argc == 5 )
     {
         cout << "=== Dane z pliku ===\n";
         N = atoi( argv[1] );
         Nc = atoi( argv[2] );
         Ns = atoi( argv[3] );
+        split_strat = atoi( argv[4] );
 
         try 
         {
@@ -53,7 +62,6 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-
     double exec_time=0;
     int iter;
     wall_clock timer;
@@ -62,7 +70,9 @@ int main(int argc, char* argv[])
     for ( int k = 0; k < VF_REPEAT ; k++ )
     {
         timer.tic();
-        wynik = vf_high_level( data.f, data.s, COLUMN_SPLITING, N-2, N+2 ); 
+        wynik = vf_high_level( data.f, data.s,
+                               global_conf.split_strat, global_conf.start_row,
+                               global_conf.end_row, global_conf.max_iters ); 
         double executionTime = timer.toc();
         cout<< "Exec one: "<< executionTime << endl;
         exec_time = exec_time + executionTime;
@@ -81,9 +91,22 @@ int main(int argc, char* argv[])
 
     // utworzenie modelu cir i zapis do pliku
     ofstream myfile;
-    myfile.open("test_mgr.cir");
-    create_model_netlist( &wynik, Nc, myfile);
+    string file_name = "test_mgr.cir";
+    if ( split_strat == NON_SPLITING )
+    {
+        file_name = "test_mgr_non.cir";
+    }
+    else if ( split_strat == ALL_SPLITING )
+    {
+        file_name = "test_mgr_all.cir";
+    }
+    else if ( split_strat == COLUMN_SPLITING )
+    {
+        file_name = "test_mgr_column.cir";
+    }
 
+    myfile.open( file_name.c_str() );
+    create_model_netlist( &wynik, Nc, myfile);
     myfile.close();
 
     //zapis statystyk do pliku

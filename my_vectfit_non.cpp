@@ -284,9 +284,10 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
          } 
      }
      
-     cx_mat diff = f - f_check;
+     mat diff_real = real(f - f_check);
+     mat diff_imag = imag(f - f_check);
 
-     wynik.err = sqrt( accu ( accu( pow(abs(diff), 2) ) ) );
+     wynik.err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
 
      return wynik;
 }

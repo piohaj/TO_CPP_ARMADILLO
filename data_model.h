@@ -19,6 +19,20 @@ using namespace tbb;
 #define NO_ELEM 5.0
 
 
+struct vf_opts
+{
+    string out_file_name;
+    double tol;
+    int start_row;
+    int end_row;
+    int max_iters;
+    double R_max;
+    double C_min;
+    int split_strat;
+};
+
+// global configuration structure
+extern vf_opts global_conf;
 /// ========= VF =========
 
 // struktura wyjsciowa z algorytmu VF

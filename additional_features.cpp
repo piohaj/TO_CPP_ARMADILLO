@@ -32,7 +32,7 @@ SER vf_high_level( const cx_mat& f, const cx_vec& s, int split_strat, int min_ro
                 wynik_iter[high_iter] = my_vf_non_splitting(f, s, poles); 
     	        poles = wynik_iter[high_iter].poles;
     		
-    	        if ( wynik_iter[high_iter].err < 1e-10 )
+    	        if ( wynik_iter[high_iter].err < global_conf.tol )
                 {
     	            break;
     	        }
@@ -59,7 +59,7 @@ SER vf_high_level( const cx_mat& f, const cx_vec& s, int split_strat, int min_ro
                 wynik_iter[high_iter] = my_vf_all_splitting(&f, &s, &poles); 
     	        poles = wynik_iter[high_iter].poles;
     		
-    	        if ( wynik_iter[high_iter].err < 1e-10 )
+    	        if ( wynik_iter[high_iter].err < global_conf.tol )
                 {
     	            break;
     	        }
@@ -93,7 +93,7 @@ SER vf_high_level( const cx_mat& f, const cx_vec& s, int split_strat, int min_ro
                 wynik_iter[high_iter] = my_vf_column_splitting(&f, &s, &poles); 
     	        poles = wynik_iter[high_iter].poles;
     		
-    	        if ( wynik_iter[high_iter].err < 1e-10 )
+    	        if ( wynik_iter[high_iter].err < global_conf.tol )
                 {
     	            break;
     	        }
@@ -270,3 +270,55 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
 
     return wynik;
 }
+
+
+void read_conf()
+{
+    global_conf.out_file_name = "test_mgr.cir";
+    global_conf.tol = 1e-10;
+    global_conf.start_row = 1;
+    global_conf.end_row = 5;
+    global_conf.max_iters = 10;
+    global_conf.R_max = 1e15;
+    global_conf.C_min = 1e-15;
+    global_conf.split_strat = 1;
+}
+
+cx_cube y2s(cx_mat y, int z0)
+{
+    int Ns = y.n_cols;
+    int Nc = y.n_rows;
+    int Nc_ports = sqrt(Nc);
+    cx_cube s_params = zeros<cx_cube>(Nc_ports, Nc_ports, Ns);
+    cx_cube yy = make_cube( y );
+
+    cx_mat I = eye<cx_mat>(Nc_ports, Nc_ports);
+
+    for ( int k = 0; k < Ns; k++ )
+    {
+        s_params.slice(k) = solve( I + z0 * yy.slice(k), I - z0 * yy.slice(k) );
+    }
+
+    return s_params;
+}
+
+cx_cube make_cube( cx_mat& y )
+{
+    int Ns = y.n_cols;
+    int Nc = y.n_rows;
+
+    cx_cube yy = zeros<cx_cube>(sqrt(Nc), sqrt(Nc), Ns); 
+
+    for ( int i = 0; i < Ns; i++ )
+    {
+        cx_mat temp = zeros<cx_mat>(sqrt(Nc), sqrt(Nc));
+        for ( int j = 0 ; j < sqrt(Nc) ; j++ )
+        {
+            temp.col(j) = y( span(sqrt(Nc)*j, sqrt(Nc) + sqrt(Nc)*j - 1), i );   
+        }
+        yy.slice(i) = temp;
+    }
+
+    return yy;
+}
+
