@@ -4,7 +4,6 @@
 #include "my_vectfit_non.h"
 #define VF_REPEAT 1
 
-vf_opts global_conf;
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
 // $1 - N rzad przyblizenia
 // $2 - Nc liczba portow badanego ukladu
@@ -19,11 +18,12 @@ int main(int argc, char* argv[])
     input_data data;
     cx_mat poles;
     SER wynik;
+    vf_opts global_conf;
     int N = 0,
         Ns = 0,
         Nc = 0;
 
-    read_conf();
+    read_conf( global_conf );
     int split_strat = global_conf.split_strat;
 
     if ( argc == 1 )
@@ -65,9 +65,7 @@ int main(int argc, char* argv[])
     for ( int k = 0; k < VF_REPEAT ; k++ )
     {
         timer.tic();
-        wynik = vf_high_level( data.f, data.s,
-                               global_conf.split_strat, global_conf.start_row,
-                               global_conf.end_row, global_conf.max_iters ); 
+        wynik = vf_high_level( data.f, data.s, global_conf ); 
         double executionTime = timer.toc();
         cout<< "Exec one: "<< executionTime << endl;
         exec_time = exec_time + executionTime;

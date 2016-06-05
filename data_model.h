@@ -23,8 +23,8 @@ struct vf_opts
 {
     string out_file_name;
     double tol;
-    int start_row;
-    int end_row;
+    int min_row;
+    int max_row;
     int max_iters;
     double R_max;
     double C_min;
@@ -32,8 +32,6 @@ struct vf_opts
     int pasivity_check;
 };
 
-// global configuration structure
-extern vf_opts global_conf;
 /// ========= VF =========
 
 // struktura wyjsciowa z algorytmu VF

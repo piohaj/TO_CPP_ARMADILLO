@@ -1,16 +1,17 @@
 #include "additional_features.h"
 
-SER vf_high_level( cx_mat& f, const cx_vec& s, int split_strat, int min_row, int max_row, int max_iters )
+SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
 {
     SER wynik;
-    int row_iterations_num = max_row - min_row + 1;
+    int row_iterations_num = conf.max_row - conf.min_row + 1;
     SER *wynik_iter = new SER[row_iterations_num];
     cx_mat poles;
     int Nc = f.n_rows;
     int Ns = f.n_cols;
     mat result_idx;
+    int split_strat = conf.split_strat;
     
-    if ( max_row < min_row )
+    if ( conf.max_row < conf.min_row )
     {
         cout << "Podano nieprawidlowy przedzial rzedow przyblizenia" << endl;
         delete[] wynik_iter;
@@ -18,7 +19,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, int split_strat, int min_row, int
     }
 
     // sprawdzenie i ewentualne wymuszenie pasywnosci
-    if ( global_conf.pasivity_check )
+    if ( conf.pasivity_check )
     {
         if ( check_and_make_passive( f ) != 0 )
         { 
@@ -31,19 +32,19 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, int split_strat, int min_row, int
     if ( split_strat == NON_SPLITING )
     {
         int high_iter = 0;
-        for ( int row = min_row; row <= max_row; row++ )
+        for ( int row = conf.min_row; row <= conf.max_row; row++ )
         {
             //biguny poczatkowe
             poles = prepare_input_poles(s, split_strat, Nc, row, Ns);
 
             int iter = 0;
             // wywolanie algorytmu
-            for ( iter = 1; iter < max_iters; iter++ )
+            for ( iter = 1; iter <= conf.max_iters; iter++ )
             {
                 wynik_iter[high_iter] = my_vf_non_splitting(f, s, poles); 
     	        poles = wynik_iter[high_iter].poles;
     		
-    	        if ( wynik_iter[high_iter].err < global_conf.tol )
+    	        if ( wynik_iter[high_iter].err < conf.tol )
                 {
     	            break;
     	        }
@@ -58,19 +59,19 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, int split_strat, int min_row, int
     else if ( split_strat == ALL_SPLITING )
     {
         int high_iter = 0;
-        for ( int row = min_row; row <= max_row; row++ )
+        for ( int row = conf.min_row; row <= conf.max_row; row++ )
         {
             //bieguny poczatkowe
             poles = prepare_input_poles(s, split_strat, Nc, row, Ns);
 
             int iter = 0;
             // wywolanie algorytmu
-            for ( iter = 1; iter < max_iters; iter++ )
+            for ( iter = 1; iter <= conf.max_iters; iter++ )
             {
                 wynik_iter[high_iter] = my_vf_all_splitting(&f, &s, &poles); 
     	        poles = wynik_iter[high_iter].poles;
     		
-    	        if ( wynik_iter[high_iter].err < global_conf.tol )
+    	        if ( wynik_iter[high_iter].err < conf.tol )
                 {
     	            break;
     	        }
@@ -87,24 +88,24 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, int split_strat, int min_row, int
        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat );
        // wynik = wynik_iter[result_idx];dd
        result_idx.print("result_idx");
-       wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, max_row);
+       wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
     else if ( split_strat == COLUMN_SPLITING )
     {
         int high_iter = 0;
-        for ( int row = min_row; row <= max_row; row++ )
+        for ( int row = conf.min_row; row <= conf.max_row; row++ )
         {
             //bieguny poczatkowe
             poles = prepare_input_poles(s, split_strat, Nc, row, Ns);
 
             int iter = 0;
             // wywolanie algorytmu
-            for ( iter = 1; iter < max_iters; iter++ )
+            for ( iter = 1; iter <= conf.max_iters; iter++ )
             {
                 wynik_iter[high_iter] = my_vf_column_splitting(&f, &s, &poles); 
     	        poles = wynik_iter[high_iter].poles;
     		
-    	        if ( wynik_iter[high_iter].err < global_conf.tol )
+    	        if ( wynik_iter[high_iter].err < conf.tol )
                 {
     	            break;
     	        }
@@ -122,7 +123,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, int split_strat, int min_row, int
         result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat );
         cout << "Result idx = " << result_idx << endl;
         result_idx.print("result_idx");
-        wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, max_row);
+        wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
     else
     {
@@ -283,12 +284,12 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
 }
 
 
-void read_conf()
+void read_conf( vf_opts& global_conf )
 {
     global_conf.out_file_name = "test_mgr.cir";
     global_conf.tol = 1e-10;
-    global_conf.start_row = 1;
-    global_conf.end_row = 5;
+    global_conf.min_row = 1;
+    global_conf.max_row = 5;
     global_conf.max_iters = 10;
     global_conf.R_max = 1e15;
     global_conf.C_min = 1e-15;
