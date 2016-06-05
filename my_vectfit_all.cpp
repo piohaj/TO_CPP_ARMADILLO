@@ -220,14 +220,16 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
         } 
     }
      
-    cx_mat diff = *f - f_check;
+    mat diff_real = real(*f - f_check);
+    mat diff_imag = imag(*f - f_check);
 
-    wynik.err = sqrt( accu ( accu( pow(abs(diff), 2) ) ) );
+    wynik.err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
 
     // wypelnienie macierzy z RMS dla kazdego z elementow Y
     for ( int j = 0; j < Nc; j++ )
     {
-        wynik.err_table.row(j) = sqrt( accu ( pow(abs(diff.row(j)), 2)) ) ;
+        wynik.err_table.row(j) = sqrt( accu ( pow(diff_real.row(j), 2)
+                                 + pow(diff_imag.row(j), 2) ) / Ns ) ;
     }
 
     return wynik;
