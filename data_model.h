@@ -29,6 +29,7 @@ struct vf_opts
     double R_max;
     double C_min;
     int split_strat;
+    int pasivity_check;
 };
 
 // global configuration structure

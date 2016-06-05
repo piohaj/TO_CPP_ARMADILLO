@@ -1,6 +1,6 @@
 #include "additional_features.h"
 
-SER vf_high_level( const cx_mat& f, const cx_vec& s, int split_strat, int min_row, int max_row, int max_iters )
+SER vf_high_level( cx_mat& f, const cx_vec& s, int split_strat, int min_row, int max_row, int max_iters )
 {
     SER wynik;
     int row_iterations_num = max_row - min_row + 1;
@@ -15,6 +15,17 @@ SER vf_high_level( const cx_mat& f, const cx_vec& s, int split_strat, int min_ro
         cout << "Podano nieprawidlowy przedzial rzedow przyblizenia" << endl;
         delete[] wynik_iter;
         return wynik;
+    }
+
+    // sprawdzenie i ewentualne wymuszenie pasywnosci
+    if ( global_conf.pasivity_check )
+    {
+        if ( check_and_make_passive( f ) != 0 )
+        { 
+            cout << "Problem podczas wymuszania pasywnosci" << endl;
+            delete[] wynik_iter;
+            return wynik;
+        }
     }
 
     if ( split_strat == NON_SPLITING )
@@ -282,6 +293,141 @@ void read_conf()
     global_conf.R_max = 1e15;
     global_conf.C_min = 1e-15;
     global_conf.split_strat = 1;
+    global_conf.pasivity_check = 1;
+}
+
+bool ispassive_s( cx_cube& s_params )
+{
+    bool result = true;
+    int Ns = s_params.n_slices;
+
+    int ii = 0;
+    while ( result && ii < Ns )
+    {
+        result = ispassive_slice( s_params.slice(ii) );
+        ii++;
+    }
+  
+    return result; 
+} 
+
+bool ispassive_slice(cx_mat& s_slice)
+{
+    return !( norm(s_slice, 2) > (1+sqrt(1e-16)) );
+}
+
+int makepassive( cx_cube& s_params )
+{
+    double threshold = 1 - sqrt(1e-16);
+    int Ns = s_params.n_slices;
+    bool result = true;
+
+    for ( int j = 0; j < Ns; j++ )
+    {
+        result = ispassive_slice( s_params.slice(j) );    
+        cout << "Brak pasywnosci w plastrze " << j << endl;
+        int idx = 0;
+        
+        while ( result == false && idx < 10 )
+        {
+            cx_mat U, V;
+            vec zigm;
+            svd( U, zigm, V, s_params.slice(j) );
+            int nzigma = zigm.n_elem;
+            mat zigma = diagmat( zigm );
+            cx_mat upsilon = eye<cx_mat>(nzigma, nzigma);
+            cx_mat psi = eye<cx_mat>(nzigma, nzigma);
+           
+            for ( int ii = 0; ii < nzigma; ii++ )
+            {
+                if ( zigma(ii, ii) <= threshold )
+                {
+                    upsilon(ii, ii) = 0;
+                    psi(ii, ii) = 0;
+                }
+                else
+                {
+                    upsilon(ii, ii) = 1;
+                    psi(ii, ii) = threshold;
+                }
+             }
+             cx_mat zigma_viol = zigma*upsilon - psi;
+             cx_mat s_viol = U*zigma_viol*V.t();
+
+             // compensate data
+             s_params.slice(j) = s_params.slice(j) - s_viol;
+             idx = idx + 1;
+             result = ispassive_slice( s_params.slice(j) );
+         }
+
+         if ( result == false )
+         {
+             cout << "Nie udalo sie wymusic pasywnosci" << endl;
+             return 1;
+         }
+    }
+
+    return 0;
+}
+
+int check_and_make_passive( cx_mat& y ) 
+{
+    int result = 0;
+    cx_cube s_params = y2s( y );
+
+    if ( !ispassive_s( s_params ) )
+    {
+        cout << "Dane nie sa pasywne, wymuszanie pasywnosci..." << endl;
+        result = makepassive( s_params );
+        y = s2y( s_params );
+    }
+    else
+    {
+        cout << "Dane dla modelu pasywnego, wymuszanie pasywnosci nie jest potrzebne" << endl;
+    }
+
+    return result;
+}
+
+
+cx_mat s2y(cx_cube s_params, int z0)
+{
+    int Ns = s_params.n_slices;
+    int Nc_ports = s_params.n_cols;
+    
+    cx_cube yy = zeros<cx_cube>(Nc_ports, Nc_ports, Ns);
+
+    cx_mat I = eye<cx_mat>(Nc_ports, Nc_ports);
+
+    for ( int k = 0; k < Ns; k++ )
+    {
+        yy.slice(k) = ( I - s_params.slice(k) ) * inv( z0 * (I + s_params.slice(k) ) );
+    }
+
+    return cube2mat( yy );
+}
+
+cx_mat cube2mat( cx_cube& cube )
+{
+    int Ns = cube.n_slices;
+    int Nc_ports = cube.n_cols;
+    int Nc = pow( Nc_ports, 2 );
+    cx_mat y = zeros<cx_mat>(Nc, Ns);
+
+    for ( int i = 0; i < Ns; i++ )
+    {
+        // kolumna z danymi dla danej probki czestotliwosciowej
+        cx_mat temp = zeros<cx_mat>(Nc, 1);
+
+        for ( int k = 0; k < Nc_ports; k++ )
+        {
+            temp.rows(Nc_ports * k, Nc_ports*k + Nc_ports - 1) = cube.slice(i).col(k);
+        }
+
+        y.col(i) = temp;
+    }
+
+    return y;
 }
 
 cx_cube y2s(cx_mat y, int z0)
@@ -314,25 +460,10 @@ cx_cube make_cube( cx_mat& y )
         cx_mat temp = zeros<cx_mat>(sqrt(Nc), sqrt(Nc));
         for ( int j = 0 ; j < sqrt(Nc) ; j++ )
         {
-            temp.col(j) = y( span(sqrt(Nc)*j, sqrt(Nc) + sqrt(Nc)*j - 1), i );   
+           temp.col(j) = y( span(sqrt(Nc)*j, sqrt(Nc) + sqrt(Nc)*j - 1), i );   
         }
         yy.slice(i) = temp;
     }
 
     return yy;
 }
-
-bool ispassive(cx_mat& y)
-{
-    cx_cube s_params = y2s( y );
-    bool result = true;
-    int Ns = s_params.n_slices;
-
-    for ( int i = 0; i < Ns; i++ )
-    {
-        result = !( norm(s_params.slice(i), 2) > (1+sqrt(1e-16)) );
-    }
-
-    return result;
-}
-

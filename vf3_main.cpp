@@ -22,9 +22,9 @@ int main(int argc, char* argv[])
     int N = 0,
         Ns = 0,
         Nc = 0;
-    int split_strat = 1;
 
     read_conf();
+    int split_strat = global_conf.split_strat;
 
     if ( argc == 1 )
     {
@@ -34,17 +34,12 @@ int main(int argc, char* argv[])
         Ns = 10;
         Nc = 4;
     }
-    else if ( argc == 2)
-    {
-        split_strat = atoi( argv[1] );
-    }
-    else if ( argc == 5 )
+    else if ( argc == 4 )
     {
         cout << "=== Dane z pliku ===\n";
         N = atoi( argv[1] );
         Nc = atoi( argv[2] );
         Ns = atoi( argv[3] );
-        split_strat = atoi( argv[4] );
 
         try 
         {
