@@ -133,6 +133,9 @@ real_pole_net parse_real_pole( cx_double res, cx_double poles, int is_diag )
     net.R = -real(poles)/real(res) * is_diag;
     net.L = 1/real(res) * is_diag;
 
+    net.res = real(res);
+    net.pole = real(poles);
+
     cout << "R " << net.R << endl;
     cout << "L " << net.L << endl;
 
@@ -155,6 +158,9 @@ imag_pole_net parse_imag_pole( cx_double res, cx_double poles, int is_diag )
     net.R = 2*net.L*(net.L*(res_real*poles_real + res_imag*poles_imag) - poles_real); 
     net.C = 1 / ( net.L*( pow(poles_real,2) + pow(poles_imag,2) + 2*net.R*(res_real*poles_real + res_imag*poles_imag)) ); 
     net.G = -2*( res_real*poles_real + res_imag*poles_imag) * net.C * net.L;
+
+    net.res = cx_double(res_real, res_imag);
+    net.pole = cx_double(poles_real, poles_imag);
 
     cout << "\nR " << net.R << endl;
     cout << "L " << net.L << endl;
@@ -300,7 +306,8 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file )
      // real poles
      for ( int i = 0; i < data.real_pole_nets.size(); i++ )
      {
-         cir_file << "*** Real pole ***" <<endl;
+         cir_file << "*** Real pole: (res=" << data.real_pole_nets[i].res 
+                  << " pole=" << data.real_pole_nets[i].pole << ") ***" << endl;
          cir_file << "R" << R_index << " 1 " << node << " " << data.real_pole_nets[i].R << endl; 
          cir_file << "L" << L_index << " " << node << " 2 " << data.real_pole_nets[i].L << endl; 
          R_index++;
@@ -311,7 +318,8 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file )
      // imag poles
      for ( int i = 0; i < data.imag_pole_nets.size(); i++ )
      {
-         cir_file << "*** Imag pole ***" <<endl;
+         cir_file << "*** Imag pole: para (res=" << data.imag_pole_nets[i].res 
+                  << " pole=" << data.imag_pole_nets[i].pole << ") ***" << endl;
          cir_file << "R" << R_index++ << " 1 " << node << " " << data.imag_pole_nets[i].R << endl; 
          cir_file << "L" << L_index << " " << node << " " << ++node << " " << data.imag_pole_nets[i].L << endl; 
          cir_file << "C" << C_index << " " << node << " 2 " << data.imag_pole_nets[i].C << endl; 

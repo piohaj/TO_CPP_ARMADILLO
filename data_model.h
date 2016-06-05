@@ -57,11 +57,13 @@ struct input_data
 struct real_pole_net
 {
     double R, L;
+    double res, pole;
 };
 
 struct imag_pole_net
 {
     double R, L, C, G; 
+    cx_double res, pole;
 };
 
 
