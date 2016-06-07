@@ -23,8 +23,16 @@ int main(int argc, char* argv[])
         Ns = 0,
         Nc = 0;
 
-    read_conf( global_conf );
+    // read config
+    int err = read_conf( global_conf );
+    // something went wrong, exit
+    if ( err )
+    {
+        return err;
+    }
+
     int split_strat = global_conf.split_strat;
+
 
     if ( argc == 1 )
     {
@@ -84,21 +92,8 @@ int main(int argc, char* argv[])
 
     // utworzenie modelu cir i zapis do pliku
     ofstream myfile;
-    string file_name = "test_mgr.cir";
-    if ( split_strat == NON_SPLITING )
-    {
-        file_name = "test_mgr_non.cir";
-    }
-    else if ( split_strat == ALL_SPLITING )
-    {
-        file_name = "test_mgr_all.cir";
-    }
-    else if ( split_strat == COLUMN_SPLITING )
-    {
-        file_name = "test_mgr_column.cir";
-    }
 
-    myfile.open( file_name.c_str() );
+    myfile.open( global_conf.out_file_name.c_str() );
     create_model_netlist( &wynik, Nc, myfile);
     myfile.close();
 

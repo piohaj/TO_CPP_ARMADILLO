@@ -11,7 +11,7 @@ cx_mat prepare_input_poles( const cx_vec& s, int split_strat, int Nc, int N, int
 mat choose_best_aprox( SER *input, int size, int Nc, int split_strat );
 SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int max_row );
 
-void read_conf( vf_opts& global_conf );
+int read_conf( vf_opts& global_conf );
 
 cx_cube make_cube( cx_mat& y );
 cx_cube y2s(cx_mat y, int z0 = 50);

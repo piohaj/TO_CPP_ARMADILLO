@@ -284,17 +284,48 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
 }
 
 
-void read_conf( vf_opts& global_conf )
+int read_conf( vf_opts& global_conf )
 {
-    global_conf.out_file_name = "test_mgr.cir";
-    global_conf.tol = 1e-10;
-    global_conf.min_row = 1;
-    global_conf.max_row = 5;
-    global_conf.max_iters = 10;
-    global_conf.R_max = 1e15;
-    global_conf.C_min = 1e-15;
-    global_conf.split_strat = 1;
-    global_conf.pasivity_check = 1;
+    Config cfg;
+
+    // Read the file. If there is an error, report it and exit.
+    try
+    {
+        cfg.readFile("file.conf");
+    }
+    catch(const FileIOException &fioex)
+    {
+        std::cerr << "I/O error while reading file." << std::endl;
+        return 1;
+    }
+    catch(const ParseException &pex)
+    {
+        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
+                  << " - " << pex.getError() << std::endl;
+       return 1;
+    }
+
+    try
+    {
+        const Setting &root = cfg.getRoot();
+        root.lookupValue("out_file_name", global_conf.out_file_name);
+        root.lookupValue("min_rms", global_conf.tol);
+        root.lookupValue("min_row", global_conf.min_row);
+        root.lookupValue("max_row", global_conf.max_row);
+        root.lookupValue("max_iters", global_conf.max_iters);
+        root.lookupValue("R_max", global_conf.R_max);
+        root.lookupValue("C_min", global_conf.C_min);
+        root.lookupValue("spliting_strategy", global_conf.split_strat);
+        root.lookupValue("pasivity_check", global_conf.pasivity_check);
+    }
+    catch (const SettingNotFoundException &nfex)
+    {
+        cerr << "No 'name' setting in configuration file." << endl;
+        return 1;
+    }
+
+    return 0;
+
 }
 
 bool ispassive_s( cx_cube& s_params )
