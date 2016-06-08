@@ -368,3 +368,35 @@ input_data load_data_from_file( int N, int Nc, int Ns )
     return data;
 }
 
+
+input_data load_vf_data( string file_name )
+{
+    input_data data;
+    mat all_data, f_real, f_imag;
+
+    // wczytaj dane z pliku
+    if ( all_data.load( file_name ) == false )
+    {
+        throw "Plik z danymi " + file_name + " nie istnieje, sprawdz konfiguracje!";
+    }
+
+    int Nc = ( all_data.n_cols / 2 ) - 1; // liczba elementow macierzy Y podanej w pliku
+
+    data.s = 2*3.14*1.0i * all_data.row(0);
+
+    for ( int i = 1; i < all_data.n_rows; i=i+2 )
+    {
+        f_real =  join_vert( f_real, all_data.row(i) );
+        f_imag = join_vert( f_imag, all_data.row(i+1) );
+    }
+
+    data.f = cx_mat( f_real, f_imag );
+
+    return data;
+}
+
+
+        
+
+
+    

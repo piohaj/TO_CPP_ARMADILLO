@@ -36,11 +36,27 @@ int main(int argc, char* argv[])
 
     if ( argc == 1 )
     {
-        cout << "===Test for sample data===\n";
-        data = prepare_sample_data();
-        N = 3;
-        Ns = 10;
-        Nc = 4;
+        if ( global_conf.in_file_name == "test" )
+        {
+            cout << "===Test for sample data===\n";
+            data = prepare_sample_data();
+            N = 3;
+            Ns = 10;
+            Nc = 4;
+        }
+        else
+        {
+            try
+            {
+                data = load_vf_data( global_conf.in_file_name );
+                Nc = data.f.n_rows;
+            }
+            catch (string err)
+            {
+                cout << err << endl;
+                return 1;
+            }
+        }
     }
     else if ( argc == 4 )
     {

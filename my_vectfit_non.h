@@ -20,6 +20,7 @@ int sign( double x );
 input_data prepare_sample_data();
 input_data load_data_from_file( int N, int Nc, int Ns );
 
+input_data load_vf_data( string file_name );
 // klasa potrzebna do zrownoleglenia dekompozycji QR w TBB
 class QR_calculation
 {

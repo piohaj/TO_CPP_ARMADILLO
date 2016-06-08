@@ -309,6 +309,7 @@ int read_conf( vf_opts& global_conf )
     {
         const Setting &root = cfg.getRoot();
         root.lookupValue("out_file_name", global_conf.out_file_name);
+        root.lookupValue("in_file_name", global_conf.in_file_name);
         root.lookupValue("min_rms", global_conf.tol);
         root.lookupValue("min_row", global_conf.min_row);
         root.lookupValue("max_row", global_conf.max_row);

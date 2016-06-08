@@ -215,7 +215,7 @@ void create_model_netlist( SER *input_SER, int Nc, ofstream &cir_file )
     // wyswietlenie wartosci elementow
     for ( int i = 0; i < Nc ; i++ )
     {
-        print_network_data( data, i);
+        print_network_data( data, i );
     }
 
     //pierwsza linika cira
