@@ -1,7 +1,7 @@
 #include "network_model.h"
 
 
-void parse_SER(SER *input_SER, Y_network_data *output_network_data)
+void parse_SER(SER *input_SER, Y_network_data *output_network_data )
 {
     int N = input_SER->poles.n_cols;
     int Nc = input_SER->res.n_rows;
@@ -195,7 +195,7 @@ void print_network_data( Y_network_data *Y, int i )
 }
 
 
-void create_model_netlist( SER *input_SER, int Nc, ofstream &cir_file )
+void create_model_netlist( SER *input_SER, int Nc, ofstream &cir_file, vf_opts& conf )
 {
     int Nc_port = sqrt(Nc);
 
@@ -232,7 +232,7 @@ void create_model_netlist( SER *input_SER, int Nc, ofstream &cir_file )
             ostringstream ss;
             ss << i << j;
             string y_inx = ss.str();
-            create_subckt( Y_temp, y_inx, cir_file );
+            create_subckt( Y_temp, y_inx, cir_file, conf );
         }
     }       
     
@@ -290,7 +290,7 @@ void create_model_netlist( SER *input_SER, int Nc, ofstream &cir_file )
 }
 
 
-void create_subckt( Y_network_data data, string index, ofstream &cir_file )
+void create_subckt( Y_network_data data, string index, ofstream &cir_file, vf_opts& conf )
 {
      int node = 3;
      int R_index = 1;
@@ -300,8 +300,24 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file )
      cir_file << endl;
      cir_file << "*** Subcircuit for Y" << index << endl;
      cir_file << ".subckt Y" << index << " 1 2" <<endl;
-     cir_file << "R0 1 2 " << data.R << endl;
-     cir_file << "C0 1 2 " << data.C << endl;
+
+     if ( data.R > conf.R_max )
+     {
+         cout << "Rownolegle R dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl; 
+     }
+     else
+     {
+         cir_file << "R0 1 2 " << data.R << endl;
+     }
+  
+     if ( data.C < conf.C_min )
+     {
+         cout << "Rownolegle C dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl; 
+     }
+     else
+     {
+         cir_file << "C0 1 2 " << data.C << endl;
+     }
 
      // real poles
      for ( int i = 0; i < data.real_pole_nets.size(); i++ )

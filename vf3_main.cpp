@@ -81,6 +81,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    cout << "Nc = " << Nc << endl;
     double exec_time=0;
     int iter;
     wall_clock timer;
@@ -110,7 +111,7 @@ int main(int argc, char* argv[])
     ofstream myfile;
 
     myfile.open( global_conf.out_file_name.c_str() );
-    create_model_netlist( &wynik, Nc, myfile);
+    create_model_netlist( &wynik, Nc, myfile, global_conf );
     myfile.close();
 
     //zapis statystyk do pliku
