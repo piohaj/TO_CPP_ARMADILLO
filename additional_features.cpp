@@ -86,7 +86,6 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             high_iter++;
         }
        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat );
-       // wynik = wynik_iter[result_idx];dd
        result_idx.print("result_idx");
        wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
@@ -110,9 +109,8 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	            break;
     	        }
             }
-            cout << "=============================================================" << endl;
-    	    cout << "======Row: " << row << endl;
-    	    cout << "======Err: " << wynik_iter[high_iter].err << endl;
+    	    cout << "Row: " << row << endl;
+    	    cout << "Err: " << wynik_iter[high_iter].err << endl;
             wynik_iter[high_iter].poles.print("poles=");
             wynik_iter[high_iter].res.print("residues=");
             wynik_iter[high_iter].h.print("h=");
@@ -121,7 +119,6 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             high_iter++;
         }
         result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat );
-        cout << "Result idx = " << result_idx << endl;
         result_idx.print("result_idx");
         wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
@@ -258,10 +255,15 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
     
         for ( int n = 0; n < Nc ; n++ )
         {
-            wynik.poles.row(n) = iter_models[int(indexes(n))].poles.row(n);
-            wynik.res.row(n) = iter_models[int(indexes(n))].res.row(n);
-            wynik.d.row(n) = iter_models[int(indexes(n))].d.row(n);
-            wynik.h.row(n) = iter_models[int(indexes(n))].h.row(n);
+            cx_mat poles_temp = iter_models[int(indexes(n))].poles.row(n);
+            cx_mat res_temp = iter_models[int(indexes(n))].res.row(n);
+            mat d_temp = iter_models[int(indexes(n))].d.row(n);
+            mat h_temp = iter_models[int(indexes(n))].h.row(n);
+
+            wynik.poles.row(n) = poles_temp;
+            wynik.res.row(n) = res_temp;
+            wynik.d.row(n) = d_temp;
+            wynik.h.row(n) = h_temp;
         }
     }
     else if ( split_strat == COLUMN_SPLITING )
@@ -273,10 +275,15 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
     
         for ( int n = 0; n < Nc ; n++ )
         {
-            wynik.poles.row(n/sqrt(Nc)) = iter_models[int(indexes(n/sqrt(Nc)))].poles.row(n/sqrt(Nc));
-            wynik.res.row(n) = iter_models[int(indexes(n/sqrt(Nc)))].res.row(n);
-            wynik.d.row(n) = iter_models[int(indexes(n/sqrt(Nc)))].d.row(n);
-            wynik.h.row(n) = iter_models[int(indexes(n/sqrt(Nc)))].h.row(n);
+            cx_mat poles_temp = iter_models[int(indexes(n/sqrt(Nc)))].poles.row(n/sqrt(Nc));
+            cx_mat res_temp = iter_models[int(indexes(n/sqrt(Nc)))].res.row(n);
+            mat d_temp = iter_models[int(indexes(n/sqrt(Nc)))].d.row(n);
+            mat h_temp = iter_models[int(indexes(n/sqrt(Nc)))].h.row(n);
+
+            wynik.poles.row(n/sqrt(Nc)) = poles_temp;
+            wynik.res.row(n) = res_temp;
+            wynik.d.row(n) = d_temp;
+            wynik.h.row(n) = h_temp;
         }
     }
 
