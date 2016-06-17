@@ -26,6 +26,7 @@ struct vf_opts
     string out_file_name;
     string in_file_name;
     double tol;
+    double rms_diff;
     int min_row;
     int max_row;
     int max_iters;

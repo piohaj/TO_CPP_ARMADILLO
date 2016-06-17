@@ -53,7 +53,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	    cout << "Err: " << wynik_iter[high_iter].err << endl;
             high_iter++;
         }
-        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat );
+        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
         wynik = wynik_iter[int(result_idx(0))];
     }
     else if ( split_strat == ALL_SPLITING )
@@ -85,7 +85,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
 
             high_iter++;
         }
-       result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat );
+       result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
        result_idx.print("result_idx");
        wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
@@ -118,7 +118,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
 
             high_iter++;
         }
-        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat );
+        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
         result_idx.print("result_idx");
         wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
@@ -189,7 +189,7 @@ cx_mat prepare_input_poles( const cx_vec& s, int split_strat, int Nc, int N, int
     return poles;
 }
 
-mat choose_best_aprox( SER *input, int size, int Nc, int split_strat )
+mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double rms_diff )
 {
     mat result;
     if ( split_strat == NON_SPLITING )
@@ -213,7 +213,9 @@ mat choose_best_aprox( SER *input, int size, int Nc, int split_strat )
             double err = 10e6;
             for ( int j = 0; j < size; j++ )
             {
-                if ( input[j].err_table[i] < err )
+                double err_temp = input[j].err_table[i];
+
+                if ( abs( err - err_temp ) > rms_diff )
                 {
                     err = input[j].err_table[i];
                     result(i) = j;
@@ -318,6 +320,7 @@ int read_conf( vf_opts& global_conf )
         root.lookupValue("out_file_name", global_conf.out_file_name);
         root.lookupValue("in_file_name", global_conf.in_file_name);
         root.lookupValue("min_rms", global_conf.tol);
+        root.lookupValue("rms_diff", global_conf.rms_diff);
         root.lookupValue("min_row", global_conf.min_row);
         root.lookupValue("max_row", global_conf.max_row);
         root.lookupValue("max_iters", global_conf.max_iters);
