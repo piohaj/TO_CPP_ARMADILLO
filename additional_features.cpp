@@ -140,31 +140,46 @@ cx_mat prepare_input_poles( const cx_vec& s, int split_strat, int Nc, int N, int
     if ( split_strat == NON_SPLITING )
     {
         poles = zeros<cx_mat>(1, N);
-        mat bet = linspace<mat>(imag(s(0)), imag(s(Ns-1)), N/2);
+        mat bet = linspace<mat>(imag(s(0))+10, imag(s(Ns-1)), N/2);
     
         int m = 0;
-        for ( int n = 0; n < N-1; n=n+2 )
+        int n = 0;
+        for ( n = 0; n < N-1; n=n+2 )
         {
             double alf = -bet(m)*1e-2;
             poles(0, n) = cx_double(alf, bet(m));
             poles(0, n+1) = conj(poles(n));
             m++;
         }
+
+        // zabezpieczenie przed zerowymi biegunami, ktore sa niebezpieczne gdy dane wejsciowe maja probke freq=0
+        for ( int nn = 0; nn < N; nn++ )
+        {
+            if ( poles(0, nn) == cx_double(0, 0) )
+            {
+                poles(0, nn) = cx_double(10, 0);
+            }
+        }
     }
     else if ( split_strat == ALL_SPLITING )
     {
         poles = zeros<cx_mat>(Nc, N);
-        mat bet = linspace<mat>(imag(s(0)), imag(s(Ns-1)), N/2);
+        mat bet = linspace<mat>(imag(s(0))+10, imag(s(Ns-1)), N/2);
         
         for ( int mm = 0; mm < Nc; mm++ )
         {
             int m = 0;
-            for ( int n = 0; n < N-1; n=n+2 )
+            int n = 0;
+            for ( n = 0; n < N-1; n=n+2 )
             {
                 double alf = -bet(m)*1e-2;
                 poles(mm, n) = cx_double(alf, bet(m));
                 poles(mm, n+1) = conj(poles(n));
                 m++;
+            }
+            if ( poles(mm, n) == cx_double(0, 0) )
+            {
+                poles(mm, n) = cx_double(10, 0);
             }
         }
     }
@@ -172,17 +187,22 @@ cx_mat prepare_input_poles( const cx_vec& s, int split_strat, int Nc, int N, int
     {
         int column_num = sqrt(Nc);
         poles = zeros<cx_mat>(column_num, N);
-        mat bet = linspace<mat>(imag(s(0)), imag(s(Ns-1)), N/2);
+        mat bet = linspace<mat>(imag(s(0))+10, imag(s(Ns-1)), N/2);
         
         for ( int mm = 0; mm < column_num; mm++ )
         {
             int m = 0;
-            for ( int n = 0; n < N-1; n=n+2 )
+            int n = 0;
+            for ( n = 0; n < N-1; n=n+2 )
             {
                 double alf = -bet(m)*1e-2;
                 poles(mm, n) = cx_double(alf, bet(m));
                 poles(mm, n+1) = conj(poles(n));
                 m++;
+            }
+            if ( poles(mm, n) == cx_double(0, 0) )
+            {
+                poles(mm, n) = cx_double(10, 0);
             }
         }
     }
@@ -373,11 +393,11 @@ int makepassive( cx_cube& s_params )
     for ( int j = 0; j < Ns; j++ )
     {
         result = ispassive_slice( s_params.slice(j) );    
-        cout << "Brak pasywnosci w plastrze " << j << endl;
         int idx = 0;
         
         while ( result == false && idx < 10 )
         {
+            cout << "Brak pasywnosci w plastrze " << j << endl;
             cx_mat U, V;
             vec zigm;
             svd( U, zigm, V, s_params.slice(j) );
