@@ -219,7 +219,7 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
     }
 
     //pierwsza linika cira
-    cir_file << "Generated model\n" << endl;
+    cir_file << "Generated netlist: " << conf.out_file_name << "\n" << endl;
 
     if ( conf.ngspice_simulation )
     {
@@ -306,11 +306,12 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
 
         cir_file << "\n";
 
-        // ustawienie AC 1 na odpowiednim wrocie
+        // ustawienie AC -1 na odpowiednim wrocie
+        // ujemna wartosc po to aby uzyskane prady na zrodlach byly parametrami Y
         for ( int i = 1; i <= sqrt(Nc); i++ )
         {
             cir_file << "    if iter = " << i 
-                     << "\n        alter V" << i << " AC 1\n    end\n";
+                     << "\n        alter V" << i << " AC -1\n    end\n";
         }
 
         cir_file << "\n    run\n"
@@ -330,7 +331,7 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
         cir_file << "\n.step param run 1 " << Nc_port << " 1" << endl;
         for ( int i = 1; i <= Nc_port; i++ )
         {
-            cir_file << ".param Vg" << i << "=if(run==" << i << ",1,0)" << endl;
+            cir_file << ".param Vg" << i << "=if(run==" << i << ",-1,0)" << endl;
         }
     }
 

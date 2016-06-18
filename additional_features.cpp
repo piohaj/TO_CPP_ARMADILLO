@@ -511,3 +511,56 @@ cx_cube make_cube( cx_mat& y )
 
     return yy;
 }
+
+
+int check_model_simulation_results( const cx_mat& f, const vf_opts& conf )
+{
+    string simulation_data_file = conf.out_file_name + ".data";
+    int Ns = f.n_cols;
+    int Nc = f.n_rows;
+    int Nc_port = sqrt(Nc);
+
+    mat simulation_data;
+    mat y_sim_real = zeros<mat>(Nc_port, 2*Ns);
+    mat y_sim_imag = zeros<mat>(Nc_port, 2*Ns);
+
+    // wczytaj dane po symulacji
+    if ( simulation_data.load(simulation_data_file) == false )
+    {
+        cout << "Wczytywanie danych z symulacji ngspice nie powiodlo sie...\n";
+        return 1;
+    }
+
+    int sim_data_cols = simulation_data.n_cols;
+
+    // czesc rzeczywista danych z symulacji modelu
+    int n = 0;
+    for ( int i = 1, j = 2; i < sim_data_cols, j <= sim_data_cols; i=i+3, j=j+3 )
+    {
+        mat real_tmp = simulation_data.col(i);
+        mat imag_tmp = simulation_data.col(j);
+
+        y_sim_real.row(n) = real_tmp.st();
+        y_sim_imag.row(n) = imag_tmp.st();
+        n++;
+    }
+
+    cx_mat Y_sim_tmp = cx_mat( y_sim_real, y_sim_imag );
+
+    cx_mat Y_sim;
+    for ( int i = 0; i < Nc_port*Ns; i=i+Ns )
+    {
+        cx_mat tmp = Y_sim_tmp.cols(i, i+Ns-1);
+        Y_sim = join_vert( Y_sim, tmp );
+    }
+
+    // obliczanie rms miedzy danymi wejsciowymi a modelem
+    mat diff_real = real(f - Y_sim);
+    mat diff_imag = imag(f - Y_sim);
+
+    double rms_err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
+
+    cout << "RMS err (between input data and data obtainted from simulation on generated model) = " << rms_err << endl;
+
+    return 0;
+}
