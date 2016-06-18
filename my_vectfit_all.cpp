@@ -32,7 +32,6 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         }
 
         cx_mat A = zeros<cx_mat>(Ns, 2*N+2);
-        s->print("s=");
     
         // wypelnienie lewej strony macierzy A
         for ( int m = 0; m < N ; m++ )

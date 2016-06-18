@@ -174,12 +174,20 @@ cx_mat prepare_input_poles( const cx_vec& s, int split_strat, int Nc, int N, int
             {
                 double alf = -bet(m)*1e-2;
                 poles(mm, n) = cx_double(alf, bet(m));
-                poles(mm, n+1) = conj(poles(n));
+                poles(mm, n+1) = conj(poles(mm, n));
                 m++;
             }
-            if ( poles(mm, n) == cx_double(0, 0) )
+        }
+
+        // zabezpieczenie przed zerowymi biegunami, ktore sa niebezpieczne gdy dane wejsciowe maja probke freq=0
+        for ( int mm = 0; mm < Nc; mm++ )
+        {
+            for ( int nn = 0; nn < N; nn++ )
             {
-                poles(mm, n) = cx_double(10, 0);
+                if ( poles(mm, nn) == cx_double(0, 0) )
+                {
+                    poles(mm, nn) = cx_double(10, 0);
+                }
             }
         }
     }
