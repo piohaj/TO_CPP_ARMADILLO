@@ -124,7 +124,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
     }
 
     A.col(N) = ones<cx_mat>(1,Ns).st();
-    A.col(N+1) = s.st();
+    A.col(N+1) = s;
 
     // przygotowanie macierzy pod wiele portow
     mat AA_poles = zeros<mat>(Nc*N, N);
@@ -217,7 +217,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
     }
 
     AA_res.col(N) = ones<cx_mat>(1, Ns).st();
-    AA_res.col(N+1) = s.st();
+    AA_res.col(N+1) = s;
 
     mat AA_res_real = join_vert( real(AA_res), imag(AA_res) );
 
