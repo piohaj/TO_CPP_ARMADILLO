@@ -64,6 +64,8 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             //bieguny poczatkowe
             poles = prepare_input_poles(s, split_strat, Nc, row, Ns);
 
+            poles.print("input_poles=");
+
             int iter = 0;
             // wywolanie algorytmu
             for ( iter = 1; iter <= conf.max_iters; iter++ )
@@ -87,6 +89,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
         }
        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
        result_idx.print("result_idx");
+       cout << Nc << endl;
        wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
     else if ( split_strat == COLUMN_SPLITING )
@@ -261,9 +264,12 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
             cx_mat res_temp = iter_models[int(indexes(n))].res.row(n);
             mat d_temp = iter_models[int(indexes(n))].d.row(n);
             mat h_temp = iter_models[int(indexes(n))].h.row(n);
+            cout << n << endl;
+            poles_temp.print("poles_temp=");
+            res_temp.print("res_temp=");
 
-            wynik.poles.row(n) = poles_temp;
-            wynik.res.row(n) = res_temp;
+            wynik.poles( n, span(0,poles_temp.n_cols-1) ) = poles_temp;
+            wynik.res( n, span(0, res_temp.n_cols-1) ) = res_temp;
             wynik.d.row(n) = d_temp;
             wynik.h.row(n) = h_temp;
         }

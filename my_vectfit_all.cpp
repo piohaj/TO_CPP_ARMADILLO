@@ -32,6 +32,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         }
 
         cx_mat A = zeros<cx_mat>(Ns, 2*N+2);
+        s->print("s=");
     
         // wypelnienie lewej strony macierzy A
         for ( int m = 0; m < N ; m++ )
@@ -48,7 +49,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         }
     
         A.col(N) = ones<cx_mat>(1,Ns).st();
-        A.col(N+1) = s->st();
+        A.col(N+1) = *s;
     
         // wypelnienie prawej strony macierzy A
         for ( int i = 0; i < N; i++ )
@@ -154,7 +155,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         }
     
         AA_res.col(N) = ones<cx_mat>(1, Ns).st();
-        AA_res.col(N+1) = s->st();
+        AA_res.col(N+1) = *s;
     
         mat AA_res_real = join_vert( real(AA_res), imag(AA_res) );
     

@@ -380,15 +380,13 @@ input_data load_vf_data( string file_name )
         throw "Plik z danymi " + file_name + " nie istnieje, sprawdz konfiguracje!";
     }
 
-    int Nc = ( all_data.n_cols / 2 ) - 1; // liczba elementow macierzy Y podanej w pliku
+    data.freq = all_data.col(0);
+    data.s = 2*3.14*1.0i * all_data.col(0);
 
-    data.freq = all_data.row(0);
-    data.s = 2*3.14*1.0i * all_data.row(0);
-
-    for ( int i = 1; i < all_data.n_rows; i=i+2 )
+    for ( int i = 1; i < all_data.n_cols; i=i+2 )
     {
-        f_real =  join_vert( f_real, all_data.row(i) );
-        f_imag = join_vert( f_imag, all_data.row(i+1) );
+        f_real =  join_vert( f_real, all_data.col(i).st() );
+        f_imag = join_vert( f_imag, all_data.col(i+1).st() );
     }
 
     data.f = cx_mat( f_real, f_imag );
