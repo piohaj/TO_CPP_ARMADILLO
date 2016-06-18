@@ -64,8 +64,6 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             //bieguny poczatkowe
             poles = prepare_input_poles(s, split_strat, Nc, row, Ns);
 
-            poles.print("input_poles=");
-
             int iter = 0;
             // wywolanie algorytmu
             for ( iter = 1; iter <= conf.max_iters; iter++ )

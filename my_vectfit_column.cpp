@@ -49,7 +49,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
         }
     
         A.col(N) = ones<cx_mat>(1,Ns).st();
-        A.col(N+1) = s->st();
+        A.col(N+1) = *s;
 
         // przygotowanie macierzy pod wszystkie elementy Y dla danej kolumny
         mat AA_poles = zeros<mat>(column_elems*N, N);
@@ -162,7 +162,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
         }
     
         AA_res.col(N) = ones<cx_mat>(1, Ns).st();
-        AA_res.col(N+1) = s->st();
+        AA_res.col(N+1) = *s;
     
         mat AA_res_real = join_vert( real(AA_res), imag(AA_res) );
     
@@ -275,7 +275,6 @@ void rms_err_calculation(SER *wynik, const cx_mat *f, const cx_vec *s, int N)
     for ( int j = 0; j < Nc; j++ )
     {
         wynik->err_table.row(j/sqrt(Nc)) += sqrt( accu( pow(diff_real.row(j), 2)
-                                            + pow(diff_imag, 2) ) / Ns ) ;
+                                            + pow(diff_imag.row(j), 2) ) / Ns ) ;
     }
-    wynik->err_table.print("err_table=");
 }
