@@ -195,7 +195,7 @@ void print_network_data( Y_network_data *Y, int i )
 }
 
 
-void create_model_netlist( SER *input_SER, int Nc, ofstream &cir_file, vf_opts& conf )
+void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &cir_file, vf_opts& conf )
 {
     int Nc_port = sqrt(Nc);
 
@@ -219,7 +219,16 @@ void create_model_netlist( SER *input_SER, int Nc, ofstream &cir_file, vf_opts& 
     }
 
     //pierwsza linika cira
-    cir_file << "Generated model" << endl;
+    cir_file << "Generated model\n" << endl;
+
+    if ( conf.ngspice_simulation )
+    {
+        cir_file << "*Initial values for AC ports\n";
+        for ( int i = 1 ; i <= Nc_port; i++ )
+        {
+            cir_file << ".param Vg" << i << "=0\n";
+        }
+    }
 
     // przygotowanie subckt dla kazdego elementu macierzy Y
     for ( int j = 1; j <= Nc_port; j++ )
@@ -254,7 +263,7 @@ void create_model_netlist( SER *input_SER, int Nc, ofstream &cir_file, vf_opts& 
             if ( j == i ) // element z przekatnej Y
             {
                 int node = i+1;
-                cir_file << "V" << node << " " << node << " 0 AC {Vg" << node << "}" << endl; // port
+                cir_file << "V" << node << " " << node << " 0 DC 0 AC {Vg" << node << "}" << endl; // port
                 cir_file << "X_Y" << node << node << " " << node << " 0 " << "Y" << node << node << endl; // element z przekatnej macierzy Y 
               
                 // dodanie zrodel pradowych sterowanych pradem
@@ -278,12 +287,53 @@ void create_model_netlist( SER *input_SER, int Nc, ofstream &cir_file, vf_opts& 
         }
     }
 
-    // dane do symulacji
-    cir_file << "\n.step param run 1 " << Nc_port << " 1" << endl;
-    for ( int i = 1; i <= Nc_port; i++ )
+    // przygotowanie komendy symulacji
+    double freq_start = freq(0);
+    double freq_end = freq( freq.n_elem - 1 );
+    cir_file << "\n.ac lin " << freq.n_elem << " " << freq_start << " " << freq_end << endl;
+
+    // przygotowanie .control dla ngspice
+    if ( conf.ngspice_simulation )
     {
-        cir_file << ".param Vg" << i << "=if(run==" << i << ",1,0)" << endl;
+        cir_file << "\n.control\nset filetype=ascii\n\nlet start=1\nlet step=1\n"
+                 << "let end=" << sqrt(Nc) << "\nlet iter=start\n\nwhile iter le end\n\n";
+
+        // ustawienie wszystkich wrot AC na 0
+        for ( int i = 1; i <= sqrt(Nc); i++ )
+        {
+            cir_file << "    alter V" << i << " AC 0" << endl;
+        }
+
+        cir_file << "\n";
+
+        // ustawienie AC 1 na odpowiednim wrocie
+        for ( int i = 1; i <= sqrt(Nc); i++ )
+        {
+            cir_file << "    if iter = " << i 
+                     << "\n        alter V" << i << " AC 1\n    end\n";
+        }
+
+        cir_file << "\n    run\n"
+		 << "\n    wrdata " << conf.out_file_name;
+        for ( int i = 1; i <= sqrt(Nc); i++ )
+        {
+            cir_file << " I(V" << i << ")";
+        }
+        cir_file << "\n    set appendwrite"
+                 << "\n    let iter = iter + step"
+                 << "\nend";
+        cir_file << "\n\n.endc" << endl;
     }
+    else
+    {
+        // dane do symulacji lt spice
+        cir_file << "\n.step param run 1 " << Nc_port << " 1" << endl;
+        for ( int i = 1; i <= Nc_port; i++ )
+        {
+            cir_file << ".param Vg" << i << "=if(run==" << i << ",1,0)" << endl;
+        }
+    }
+
     cir_file << "\n.end";
 
     delete[] data;

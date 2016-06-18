@@ -33,7 +33,6 @@ int main(int argc, char* argv[])
 
     int split_strat = global_conf.split_strat;
 
-
     if ( argc == 1 )
     {
         if ( global_conf.in_file_name == "test" )
@@ -111,7 +110,7 @@ int main(int argc, char* argv[])
     ofstream myfile;
 
     myfile.open( global_conf.out_file_name.c_str() );
-    create_model_netlist( &wynik, Nc, myfile, global_conf );
+    create_model_netlist( &wynik, Nc, data.freq, myfile, global_conf );
     myfile.close();
 
     //zapis statystyk do pliku

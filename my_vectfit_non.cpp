@@ -382,6 +382,7 @@ input_data load_vf_data( string file_name )
 
     int Nc = ( all_data.n_cols / 2 ) - 1; // liczba elementow macierzy Y podanej w pliku
 
+    data.freq = all_data.row(0);
     data.s = 2*3.14*1.0i * all_data.row(0);
 
     for ( int i = 1; i < all_data.n_rows; i=i+2 )

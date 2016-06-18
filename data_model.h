@@ -34,6 +34,7 @@ struct vf_opts
     double C_min;
     int split_strat;
     int pasivity_check;
+    int ngspice_simulation;
 };
 
 /// ========= VF =========
@@ -53,6 +54,7 @@ struct input_data
 {
     cx_mat f;
     cx_vec s;
+    vec freq;
 };
 
 //============= NETWORK MODEL ==============

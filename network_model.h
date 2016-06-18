@@ -14,7 +14,7 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file, vf_op
 // create_model_netlist - funkcja do tworzenia pliku cir do symulacji w LTspice na podstawie danych uzyskanych z algorytmu vector fitting
 // input_SER - dane uzyskane z vector fitting
 // Nc - liczba elementow macierzy Y 
-void create_model_netlist( SER *input_SER, int Nc, ofstream &cir_file, vf_opts& conf );
+void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &cir_file, vf_opts& conf );
 
 // funkcja do wyciagania danych z jednowymiarowej tablicy z danymi do cira
 // wyciagniecie Y11 to get_Y( data, 1, 1, 2 ); w przypadku dwuwrotnika

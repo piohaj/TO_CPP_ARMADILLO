@@ -328,6 +328,7 @@ int read_conf( vf_opts& global_conf )
         root.lookupValue("C_min", global_conf.C_min);
         root.lookupValue("spliting_strategy", global_conf.split_strat);
         root.lookupValue("pasivity_check", global_conf.pasivity_check);
+        root.lookupValue("ngspice_simulation", global_conf.ngspice_simulation);
     }
     catch (const SettingNotFoundException &nfex)
     {
