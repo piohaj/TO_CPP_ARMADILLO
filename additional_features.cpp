@@ -601,3 +601,18 @@ int check_model_simulation_results( const cx_mat& f, const vf_opts& conf )
 
     return 0;
 }
+
+void force_stable_poles( cx_mat& poles )
+{
+    int N = poles.n_elem;
+
+    for ( int i = 0; i < N; i++ )
+    {
+        double pole_real = real(poles(i));
+
+        if ( pole_real > 0 )
+        {
+            poles(i) = poles(i) - cx_double(2*pole_real, 0);
+        }
+    }
+}

@@ -108,7 +108,9 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
         mat H = poles_diag_real - b_ones * x_trans;
         //cx_mat Hi = cx_mat(H, zeros<mat>(N,N));
     	poles = eig_gen(H);
-     
+
+        // force stable poles
+        force_stable_poles( poles );
     
     //=============================================
     // obliczanie residuów szukanej funkcji

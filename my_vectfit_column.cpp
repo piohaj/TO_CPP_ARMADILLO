@@ -118,6 +118,9 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
         //cx_mat Hi = cx_mat(H, zeros<mat>(N,N));
     	poles = eig_gen(H);
 
+        // force stable poles
+        force_stable_poles( poles );
+
        //=============================================
        // obliczanie residuów szukanej funkcji
        // ============================================

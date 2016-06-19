@@ -2,6 +2,7 @@
 #define my_vectfit_non_h
 
 #include "data_model.h"
+#include "additional_features.h"
 
 // Funckja my_vectorfit
 // Funkcja znajduje model ukladu w postaci funkcji wymiernej

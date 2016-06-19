@@ -169,6 +169,9 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
     //obliczanie wartosci wlasnych macierzy
     mat H = poles_diag_real - b_ones * x_trans;
     poles = eig_gen(H);
+
+    // force stable poles
+    force_stable_poles( poles );
     H.reset();
 
 //=============================================

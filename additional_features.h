@@ -26,4 +26,6 @@ int check_and_make_passive ( cx_mat& y );
 
 int check_model_simulation_results( const cx_mat& f, const vf_opts& conf );
 
+void force_stable_poles( cx_mat& poles ); 
+
 #endif
