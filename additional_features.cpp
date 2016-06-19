@@ -558,8 +558,8 @@ int check_model_simulation_results( const cx_mat& f, const vf_opts& conf )
     int Nc_port = sqrt(Nc);
 
     mat simulation_data;
-    mat y_sim_real = zeros<mat>(Nc_port, Ns);
-    mat y_sim_imag = zeros<mat>(Nc_port, Ns);
+    mat y_sim_real = zeros<mat>(Nc_port, Nc_port*Ns);
+    mat y_sim_imag = zeros<mat>(Nc_port, Nc_port*Ns);
 
     // wczytaj dane po symulacji
     if ( simulation_data.load(simulation_data_file) == false )
