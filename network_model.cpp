@@ -81,7 +81,7 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data )
         if ( ( i - floor(i/(sqrt(Nc)+1))*(sqrt(Nc)+1) ) == 0 ) is_diag = 1; // jest
 
         // rozwiazanie problemu z zerowym R rownoleglym
-        if ( input_SER->d(i) < 1e-16 ) 
+        if ( input_SER->d(i) == 0 ) 
         {
             network_data_sample.R = 1e16; 
         }
@@ -91,7 +91,7 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data )
         }
 
         // rownolegle C
-        if ( input_SER->d(i) < 1e-16 )
+        if ( input_SER->d(i) == 1e-16 )
         {
             network_data_sample.C = 1e-16;
         }
