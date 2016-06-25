@@ -271,16 +271,17 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
                 {
                     if ( k != node )
                     {
-                        cir_file << "F" << current_index << " " << node << " 0 " << "E" << k << " 1" << endl;
+                        cir_file << "F" << current_index << " " << node << " 0 " << "E" << k << "_" << node << " 1" << endl;
                         current_index++;
                     }
                 }
             }
             else // element spoza przekatnej
             {
+                int e_idx = node_volt / 1000;
                 cir_file << "X_Y" << i+1 << j+1 << " " << node_volt << " 0 " << "Y" << i+1 << j+1 << endl;
                 // zrodlo napieciowe sterowane napieciem
-                cir_file << "E" << j+1 << " 0 " << node_volt << " " << j+1 << " 0 1" <<endl;
+                cir_file << "E" << j+1 << "_" << e_idx << " 0 " << node_volt << " " << j+1 << " 0 1" <<endl;
 
                 node_volt++;
             }
