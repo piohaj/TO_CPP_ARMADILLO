@@ -330,52 +330,6 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
 }
 
 
-int read_conf( vf_opts& global_conf )
-{
-    Config cfg;
-
-    // Read the file. If there is an error, report it and exit.
-    try
-    {
-        cfg.readFile("file.conf");
-    }
-    catch(const FileIOException &fioex)
-    {
-        std::cerr << "I/O error while reading file." << std::endl;
-        return 1;
-    }
-    catch(const ParseException &pex)
-    {
-        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
-                  << " - " << pex.getError() << std::endl;
-       return 1;
-    }
-
-    try
-    {
-        const Setting &root = cfg.getRoot();
-        root.lookupValue("out_file_name", global_conf.out_file_name);
-        root.lookupValue("in_file_name", global_conf.in_file_name);
-        root.lookupValue("min_rms", global_conf.tol);
-        root.lookupValue("rms_diff", global_conf.rms_diff);
-        root.lookupValue("min_row", global_conf.min_row);
-        root.lookupValue("max_row", global_conf.max_row);
-        root.lookupValue("max_iters", global_conf.max_iters);
-        root.lookupValue("R_max", global_conf.R_max);
-        root.lookupValue("C_min", global_conf.C_min);
-        root.lookupValue("spliting_strategy", global_conf.split_strat);
-        root.lookupValue("pasivity_check", global_conf.pasivity_check);
-        root.lookupValue("ngspice_simulation", global_conf.ngspice_simulation);
-    }
-    catch (const SettingNotFoundException &nfex)
-    {
-        cerr << "No 'name' setting in configuration file." << endl;
-        return 1;
-    }
-
-    return 0;
-
-}
 
 bool ispassive_s( cx_cube& s_params )
 {
@@ -615,4 +569,92 @@ void force_stable_poles( cx_mat& poles )
             poles(i) = poles(i) - cx_double(2*pole_real, 0);
         }
     }
+}
+
+
+// wczytywanie konfiguracji z pliku ciala funkcji
+int read_conf( vf_opts& global_conf )
+{
+    map <string,string> conf_map = read_conf_file("file.conf");
+
+    try
+    {
+        global_conf.out_file_name = read_param("out_file_name", conf_map); 
+        global_conf.in_file_name = read_param("in_file_name", conf_map); 
+        global_conf.tol = atof( read_param("min_rms", conf_map).c_str() ); 
+        global_conf.rms_diff = atof( read_param("rms_diff", conf_map).c_str() ); 
+        global_conf.min_row = atoi( read_param("min_row", conf_map).c_str() ); 
+        global_conf.max_row = atoi( read_param("max_row", conf_map).c_str() ); 
+        global_conf.max_iters = atoi( read_param("max_iters", conf_map).c_str() ); 
+        global_conf.R_max = atof( read_param("R_max", conf_map).c_str() ); 
+        global_conf.C_min = atof( read_param("C_min", conf_map).c_str() ); 
+        global_conf.split_strat = atoi( read_param("spliting_strategy", conf_map).c_str() ); 
+        global_conf.pasivity_check = atoi( read_param("pasivity_check", conf_map).c_str() ); 
+        global_conf.ngspice_simulation = atoi( read_param("ngspice_simulation", conf_map).c_str() );
+    }
+    catch( string err )
+    {
+        cout << err;
+        return 1;
+    }
+
+    return 0;
+}
+
+vector<string> my_split(string str, const char delim)
+{
+    vector<string> v;
+    string tmp;
+    string::const_iterator i = str.begin();
+
+    for(i ; i <= str.end(); ++i) 
+    {
+        if ( *i != delim && !isspace(*i) && i != str.end())
+        {
+            tmp += *i;
+        } 
+        else if ( *i == delim || i == str.end() )
+        {
+            v.push_back(tmp);
+            tmp = "";
+        }
+    }
+    return v;
+}
+
+map <string, string>read_conf_file(string file_name)
+{
+    fstream plik(file_name.c_str(), std::ios::in);
+    string single_line;
+    map <string, string>conf_map;
+    vector<string> vec;
+    
+    if ( plik.good() == false )
+    {
+        cout << "Nie udalo sie otworzyc pliku\n";
+    }
+
+    while ( getline( plik, single_line ) )
+    {
+        if ( strncmp(single_line.c_str(), "//", 2) != 0 && single_line.find('=') != string::npos )
+        {
+            vec = my_split(single_line, '=');
+            conf_map[vec[0]] = vec[1];
+            vec.clear();
+        }
+    }
+    
+    plik.close();
+    return conf_map;
+}
+
+
+string read_param( string param, map <string,string> &conf_map)
+{
+    string temp = conf_map[param];
+    if ( temp.empty() )
+    {
+        throw "Brak parametru " + param + " w pliku konfiguracyjnym!!!\n";
+    }
+    return temp;
 }

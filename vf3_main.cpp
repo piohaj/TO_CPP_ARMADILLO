@@ -13,7 +13,6 @@
 // w przydapku niepodania wartosci wejsciowych zostanie uruchomiony przebieg testowy 
 int main(int argc, char* argv[])
 {
-    // przygotowanie danych testowych
     MKL_Set_Num_Threads(1);
     input_data data;
     cx_mat poles;
@@ -123,15 +122,7 @@ int main(int argc, char* argv[])
             check_model_simulation_results( data.f, global_conf );
         }
     }
-    //zapis statystyk do pliku
-/*
-    fstream plik;
-    plik.open("stats_cpp_parallel.txt", ios::out | ios::app);
-    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << exec_time << endl;
-    plik.flush();
 
-    plik.close();
-*/
     return 0;
 }
 

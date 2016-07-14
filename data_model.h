@@ -8,9 +8,11 @@
 #include<tbb/tbb.h>
 #include<mkl_service.h>
 #include <vector>
-#include <libconfig.h++>
+#include <map>
+#include <cstdlib>
+#include <fstream>
+#include <cstring>
 
-using namespace libconfig;
 using namespace std;
 using namespace arma;
 using namespace tbb;
