@@ -44,7 +44,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
             else if ( imag_check(m) == 1 )
             {
                 A.col(m) = cx_double(1,0) / ( *s - poles(m)) + cx_double(1,0) / ( *s - conj(poles(m)) );
-                A.col(m+1) = 1.0i / ( *s - poles(m) ) - 1.0i / ( *s - conj(poles(m)) );
+                A.col(m+1) = cx_double(0,1) / ( *s - poles(m) ) - cx_double(0,1) / ( *s - conj(poles(m)) );
             }
         }
     
@@ -160,7 +160,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
             else if ( imag_check(m) == 1 )
             {
                 AA_res.col(m) = 1 / ( *s - poles(m)) + 1 / ( *s - conj(poles(m)));
-                AA_res.col(m+1) = 1.0i / ( *s - poles(m)) - 1.0i / ( *s - conj(poles(m)));
+                AA_res.col(m+1) = cx_double(0,1) / ( *s - poles(m)) - cx_double(0,1) / ( *s - conj(poles(m)));
             }
         }
     
@@ -206,7 +206,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
                 }
                 else if ( imag_check(i) == 1 )
                 {
-                    wynik->res(rr*column_elems+m_port, m) = x(i, m_port) + 1.0i * x(i+1, m_port);
+                    wynik->res(rr*column_elems+m_port, m) = x(i, m_port) + cx_double(0,1) * x(i+1, m_port);
                     wynik->res(rr*column_elems+m_port, m+1) = conj(wynik->res(rr*column_elems+m_port, m));
                 }
                 m++;

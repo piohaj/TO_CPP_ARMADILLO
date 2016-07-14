@@ -43,7 +43,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
             else if ( imag_check(m) == 1 )
             {
                 A.col(m) = cx_double(1,0) / ( *s - poles(m)) + cx_double(1,0) / ( *s - conj(poles(m)) );
-                A.col(m+1) = 1.0i / ( *s - poles(m) ) - 1.0i / ( *s - conj(poles(m)) );
+                A.col(m+1) = cx_double(0,1) / ( *s - poles(m) ) - cx_double(0,1) / ( *s - conj(poles(m)) );
             }
         }
     
@@ -151,7 +151,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
             else if ( imag_check(m) == 1 )
             {
                 AA_res.col(m) = 1 / ( *s - poles(m)) + 1 / ( *s - conj(poles(m)));
-                AA_res.col(m+1) = 1.0i / ( *s - poles(m)) - 1.0i / ( *s - conj(poles(m)));
+                AA_res.col(m+1) = cx_double(0,1) / ( *s - poles(m)) - cx_double(0,1) / ( *s - conj(poles(m)));
             }
         }
     
@@ -173,7 +173,7 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
             }
             else if ( imag_check(i) == 1 )
             {
-                wynik->res(rr, m) = x(i) + 1.0i * x(i+1);
+                wynik->res(rr, m) = x(i) + cx_double(0,1) * x(i+1);
                 wynik->res(rr, m+1) = conj(wynik->res(rr, m));
             }
             m++;

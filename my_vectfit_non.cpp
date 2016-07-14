@@ -119,7 +119,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
         else if ( imag_check(m) == 1 )
         {
             A.col(m) = cx_double(1,0) / (s - poles(m)) + cx_double(1,0) / (s - conj(poles(m)) );
-            A.col(m+1) = 1.0i / (s-poles(m)) - 1.0i / (s - conj(poles(m)) );
+            A.col(m+1) = cx_double(0,1) / (s-poles(m)) - cx_double(0,1) / (s - conj(poles(m)) );
         }
     }
 
@@ -215,7 +215,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
         else if ( imag_check(m) == 1 )
         {
             AA_res.col(m) = 1 / (s - poles(m)) + 1 / (s - conj(poles(m)));
-            AA_res.col(m+1) = 1.0i / (s - poles(m)) - 1.0i / (s - conj(poles(m)));
+            AA_res.col(m+1) = cx_double(0,1) / (s - poles(m)) - cx_double(0,1) / (s - conj(poles(m)));
         }
     }
 
@@ -249,7 +249,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
             }
             else if ( imag_check(i) == 1 )
             {
-                wynik.res(m_port, m) = x(i, m_port) + 1.0i * x(i+1, m_port);
+                wynik.res(m_port, m) = x(i, m_port) + cx_double(0,1) * x(i+1, m_port);
                 wynik.res(m_port, m+1) = conj(wynik.res(m_port, m));
             }
             m++;
@@ -384,7 +384,7 @@ input_data load_vf_data( string file_name )
     }
 
     data.freq = all_data.col(0);
-    data.s = 2*3.14*1.0i * all_data.col(0);
+    data.s = 2*3.14*cx_double(0,1) * all_data.col(0);
 
     for ( int i = 1; i < all_data.n_cols; i=i+2 )
     {
