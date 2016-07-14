@@ -11,7 +11,6 @@ cx_mat prepare_input_poles( const cx_vec& s, int split_strat, int Nc, int N, int
 mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double rms_diff );
 SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int max_row );
 
-int read_conf( vf_opts& global_conf );
 
 cx_cube make_cube( cx_mat& y );
 cx_cube y2s(cx_mat y, int z0 = 50);
@@ -28,4 +27,9 @@ int check_model_simulation_results( const cx_mat& f, const vf_opts& conf );
 
 void force_stable_poles( cx_mat& poles ); 
 
+// wczytywanie konfiguracji
+vector<string> my_split(string str, const char delim);
+map <string, string>read_conf_file(string file_name);
+string read_param( string param, map <string,string> &conf_map);
+int read_conf( vf_opts& global_conf, string file_name );
 #endif

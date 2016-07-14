@@ -18,68 +18,43 @@ int main(int argc, char* argv[])
     cx_mat poles;
     SER wynik;
     vf_opts global_conf;
+    string conf_file_name;
+    int split_strat = 1;
     int N = 0,
         Ns = 0,
         Nc = 0;
 
-    // read config
-    int err = read_conf( global_conf );
-    // something went wrong, exit
-    if ( err )
+    // jeden argument wywolania - plik z konfiguracja
+    if ( argc == 2 )
     {
-        return err;
-    }
+        conf_file_name = string( argv[1] );
 
-    int split_strat = global_conf.split_strat;
+        // read config
+        int err = read_conf( global_conf, conf_file_name );
+        // something went wrong, exit
+        if ( err )
+        {
+            return err;
+        }
+        split_strat = global_conf.split_strat;
 
-    if ( argc == 1 )
-    {
-        if ( global_conf.in_file_name == "test" )
+        try
         {
-            cout << "===Test for sample data===\n";
-            data = prepare_sample_data();
-            N = 3;
-            Ns = 10;
-            Nc = 4;
+            data = load_vf_data( global_conf.in_file_name );
+            Nc = data.f.n_rows;
         }
-        else
+        catch (string err)
         {
-            try
-            {
-                data = load_vf_data( global_conf.in_file_name );
-                Nc = data.f.n_rows;
-            }
-            catch (string err)
-            {
-                cout << err << endl;
-                return 1;
-            }
-        }
-    }
-    else if ( argc == 4 )
-    {
-        cout << "=== Dane z pliku ===\n";
-        N = atoi( argv[1] );
-        Nc = atoi( argv[2] );
-        Ns = atoi( argv[3] );
-
-        try 
-        {
-            data = load_data_from_file(N, Nc, Ns);
-        }
-        catch(string err)
-        {
-           cout << err << endl;
-           return 1;
+            cout << err << endl;
+            return 2;
         }
     }
     else
     {
-        cout << "Nieprawidlowa liczba argumentow wejsciowych\n";
+        cout << "Nieprawidlowa liczba argumentow wejsciowych\nJedynym argumentem jest sciezka do pliku z konfiguracja.\n";
         return 1;
     }
 
-    cout << "Nc = " << Nc << endl;
     double exec_time=0;
     int iter;
     wall_clock timer;

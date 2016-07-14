@@ -573,9 +573,9 @@ void force_stable_poles( cx_mat& poles )
 
 
 // wczytywanie konfiguracji z pliku ciala funkcji
-int read_conf( vf_opts& global_conf )
+int read_conf( vf_opts& global_conf, string file_name )
 {
-    map <string,string> conf_map = read_conf_file("file.conf");
+    map <string,string> conf_map = read_conf_file(file_name);
 
     try
     {
