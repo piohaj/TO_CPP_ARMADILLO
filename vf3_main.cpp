@@ -40,13 +40,14 @@ int main(int argc, char* argv[])
 
         try
         {
-            data = load_vf_data( global_conf.in_file_name );
+//            data = load_vf_data( global_conf.in_file_name );
+            data = read_raw_file( global_conf.in_file_name );
             Nc = data.f.n_rows;
         }
-        catch (string err)
+        catch (const int& err)
         {
             cout << err << endl;
-            return 2;
+            return err;
         }
     }
     else

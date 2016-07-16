@@ -774,16 +774,37 @@ input_data parse_raw_data( const cx_mat& temp_data, raw_params params )
 {
     input_data data;
     int temp_data_size = temp_data.n_rows;
-    data.freq = zeros<vec>(params.Ns);
+    int Ns = params.Ns / ( params.Nc_ports - 1 );
+    cx_mat f_temp;
+    data.freq = zeros<vec>(Ns);
+    data.f = zeros<cx_mat>(pow(params.Nc_ports - 1, 2), Ns);
 
     int j = 0;
-    for ( int i = 0; i < temp_data_size; i = i+params.Nc_ports )
+    for ( int i = 0; i < temp_data_size/(params.Nc_ports - 1); i = i+params.Nc_ports )
     {
         cx_double freq_temp = temp_data(i);
         data.freq(j) = real(freq_temp);
         j++;
     }
-    data.freq.print("freq=");
-     
+    data.s = 2*3.14*cx_double(0,1) * data.freq;
+
+    for ( int i = 0; i < temp_data_size; i = i+params.Nc_ports )
+    {
+         cx_mat temp = temp_data.rows(i+1, i+params.Nc_ports-1);
+         f_temp = join_horiz(f_temp, temp);
+    }
+    f_temp = f_temp.st();
+
+    j = 0;
+    for ( int x = params.Nc_ports-2; x >= 0; x-- )
+    {
+        for ( int z = 0; z < params.Ns; z=z+Ns )
+        {
+            cx_mat temp = f_temp(span(z, z+Ns-1), x).st();
+            data.f.row(j) = temp;
+            j++;
+        }
+    } 
+
     return data;
 }
