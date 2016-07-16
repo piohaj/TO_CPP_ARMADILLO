@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <cstring>
+#include <cstdio>
 
 using namespace std;
 using namespace arma;
@@ -59,8 +60,14 @@ struct input_data
     vec freq;
 };
 
-//============= NETWORK MODEL ==============
+struct raw_params
+{
+    int Nc_ports;
+    int Ns;
+    int last_line;
+};
 
+//============= NETWORK MODEL ==============
 // struktura z wartosciami R i L dla bieguna rzeczywistego
 struct real_pole_net
 {

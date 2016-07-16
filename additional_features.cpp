@@ -658,3 +658,132 @@ string read_param( string param, map <string,string> &conf_map)
     }
     return temp;
 }
+
+
+raw_params read_input_data_params( string file_name )
+{
+    fstream plik( file_name.c_str(), std::ios::in );
+    string single_line;
+    vector<string> vec;
+    raw_params params;
+    params.last_line = 0;
+    params.Nc_ports = 0;
+    params.Ns = 0;
+    bool correct_raw_file = false;
+
+    if ( plik.good() == false )
+    {
+        throw 1;
+    }
+
+    while ( getline(plik, single_line ) )
+    {
+        params.last_line++;
+        if ( single_line.find("Plotname:") != string::npos )
+        {
+            if ( single_line.compare("Plotname: AC Analysis") != 0 )
+            {
+                throw 2; 
+            }
+            correct_raw_file = true;
+        }
+        else if ( single_line.find("No. Variables:") != string::npos )
+        {
+            vec = my_split (single_line, ':');
+            params.Nc_ports = atoi( vec[1].c_str() );
+        }
+        else if ( single_line.find("No. Points:") != string::npos )
+        {
+            vec = my_split (single_line, ':');
+            params.Ns = atoi( vec[1].c_str() );
+        }
+        else if ( single_line.find("Binary:") != string::npos )
+        {
+            break;
+        }
+    }
+    
+    // input file is not spice raw file
+    if ( correct_raw_file == false )
+    {
+        throw 2;
+    }
+ 
+    plik.close();
+
+    return params;
+}
+
+string create_temp_bin_file( int last_no_bin_data_line, string file_name )
+{
+    string temp_file_name = file_name + "_temp";
+    string single_line;
+    int line_number = 0;
+    
+    fstream plik( file_name.c_str(), std::ios::in );
+    fstream temp_file( temp_file_name.c_str(), std::ios::out );
+
+    if ( plik.good() == false || temp_file.good() == false )
+    {
+        throw 1;
+    }
+
+    while ( getline(plik, single_line) )
+    {
+        line_number++;
+        if ( line_number > last_no_bin_data_line )
+        {
+            single_line = single_line + "\n";
+            temp_file.write ( &single_line[0], single_line.length() );
+        }
+    }
+
+    plik.close();
+    temp_file.close();
+    
+    return temp_file_name;
+}
+
+input_data read_raw_file( string file_name )
+{
+    string temp_file;
+    cx_mat temp_data;
+    raw_params input_raw_params;
+
+    try
+    {
+        // reading params from raw file
+        input_raw_params = read_input_data_params( file_name );
+        // create temp file to be loaded by armadillo
+        temp_file = create_temp_bin_file( input_raw_params.last_line, file_name ); 
+        temp_data.load(temp_file);
+        if ( std::remove( temp_file.c_str() ) != 0 )
+        {
+            throw 3;
+        }
+    }
+    catch( const int& err )
+    {
+        throw err;
+    }
+
+    return parse_raw_data( temp_data, input_raw_params );
+}
+
+input_data parse_raw_data( const cx_mat& temp_data, raw_params params )
+{
+    input_data data;
+    int temp_data_size = temp_data.n_rows;
+    data.freq = zeros<vec>(params.Ns);
+
+    int j = 0;
+    for ( int i = 0; i < temp_data_size; i = i+params.Nc_ports )
+    {
+        cx_double freq_temp = temp_data(i);
+        data.freq(j) = real(freq_temp);
+        j++;
+    }
+    data.freq.print("freq=");
+     
+    return data;
+}
