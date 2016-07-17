@@ -506,51 +506,26 @@ cx_cube make_cube( cx_mat& y )
 
 int check_model_simulation_results( const cx_mat& f, const vf_opts& conf )
 {
-    string simulation_data_file = conf.out_file_name + ".data";
+    string simulation_data_file = conf.out_file_name;
+    simulation_data_file.replace(simulation_data_file.end()-3,simulation_data_file.end(), "raw");
     int Ns = f.n_cols;
-    int Nc = f.n_rows;
-    int Nc_port = sqrt(Nc);
+    input_data spice_simulation_data;
 
-    mat simulation_data;
-    mat y_sim_real = zeros<mat>(Nc_port, Nc_port*Ns);
-    mat y_sim_imag = zeros<mat>(Nc_port, Nc_port*Ns);
-
-    // wczytaj dane po symulacji
-    if ( simulation_data.load(simulation_data_file) == false )
+    try
     {
-        cout << "Wczytywanie danych z symulacji ngspice nie powiodlo sie...\n";
-        return 1;
+        spice_simulation_data = read_raw_file( simulation_data_file );
     }
-
-    int sim_data_cols = simulation_data.n_cols;
-
-    // czesc rzeczywista danych z symulacji modelu
-    int n = 0;
-    for ( int i = 1, j = 2; i < sim_data_cols, j <= sim_data_cols; i=i+3, j=j+3 )
+    catch (const int& err)
     {
-        mat real_tmp = simulation_data.col(i);
-        mat imag_tmp = simulation_data.col(j);
-
-        y_sim_real.row(n) = real_tmp.st();
-        y_sim_imag.row(n) = imag_tmp.st();
-        n++;
-    }
-
-    cx_mat Y_sim_tmp = cx_mat( y_sim_real, y_sim_imag );
-
-    cx_mat Y_sim;
-    for ( int i = 0; i < Nc_port*Ns; i=i+Ns )
-    {
-        cx_mat tmp = Y_sim_tmp.cols(i, i+Ns-1);
-        Y_sim = join_vert( Y_sim, tmp );
+        cout << err << endl;
+        return err;
     }
 
     // obliczanie rms miedzy danymi wejsciowymi a modelem
-    mat diff_real = real(f - Y_sim);
-    mat diff_imag = imag(f - Y_sim);
+    mat diff_real = real(f - spice_simulation_data.f);
+    mat diff_imag = imag(f - spice_simulation_data.f);
 
     double rms_err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
-
     cout << "RMS err (between input data and data obtainted from simulation on generated model) = " << rms_err << endl;
 
     return 0;
@@ -590,7 +565,8 @@ int read_conf( vf_opts& global_conf, string file_name )
         global_conf.C_min = atof( read_param("C_min", conf_map).c_str() ); 
         global_conf.split_strat = atoi( read_param("spliting_strategy", conf_map).c_str() ); 
         global_conf.pasivity_check = atoi( read_param("pasivity_check", conf_map).c_str() ); 
-        global_conf.ngspice_simulation = atoi( read_param("ngspice_simulation", conf_map).c_str() );
+        global_conf.spice_simulation = atoi( read_param("spice_simulation", conf_map).c_str() );
+        global_conf.spice_program_loc = read_param("spice_program_loc", conf_map);
     }
     catch( string err )
     {
@@ -807,4 +783,36 @@ input_data parse_raw_data( const cx_mat& temp_data, raw_params params )
     } 
 
     return data;
+}
+
+
+bool check_spice_log( string file_name )
+{
+     file_name.replace(file_name.end()-3, file_name.end(), "log");
+     string single_line;
+     int line_count = 0;
+
+     fstream file( file_name.c_str(), ios::in );
+     if ( file.good() == false )
+     {
+         return false;
+     }
+
+     while ( getline(file, single_line) )
+     {
+         cout << single_line << endl;
+         if ( single_line.find("Error") != string::npos )
+         {
+             return false;
+         }
+         line_count++;
+     }
+     file.close();
+
+     if ( line_count <= 1 )
+     {
+         return false;
+     }
+     
+     return true;
 }

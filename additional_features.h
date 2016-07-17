@@ -38,4 +38,6 @@ raw_params read_input_data_params( string file_name );
 string create_temp_bin_file( int last_no_bin_data_line, string file_name );
 input_data read_raw_file( string file_name );
 input_data parse_raw_data( const cx_mat& temp_data, raw_params params );
+
+bool check_spice_log( string file_name );
 #endif

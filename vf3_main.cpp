@@ -88,12 +88,14 @@ int main(int argc, char* argv[])
     create_model_netlist( &wynik, Nc, data.freq, myfile, global_conf );
     myfile.close();
 
-    if ( global_conf.ngspice_simulation )
+    if ( global_conf.spice_simulation )
     {
-        string system_cmd = "ngspice -b " + global_conf.out_file_name;
+        string system_cmd = global_conf.spice_program_loc + " -b " + global_conf.out_file_name;
         cout << "\n\n##### Symulacja wygenerowanego modelu w ng_spice: #####\n"
              << "##### " << system_cmd << " #####\n";
-        if ( system( system_cmd.c_str() ) )
+        system( system_cmd.c_str() );
+
+        if ( check_spice_log( global_conf.out_file_name ) )
         {
             check_model_simulation_results( data.f, global_conf );
         }

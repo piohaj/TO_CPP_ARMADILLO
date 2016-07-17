@@ -37,7 +37,8 @@ struct vf_opts
     double C_min;
     int split_strat;
     int pasivity_check;
-    int ngspice_simulation;
+    int spice_simulation;
+    string spice_program_loc;
 };
 
 /// ========= VF =========

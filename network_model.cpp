@@ -221,15 +221,6 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
     //pierwsza linika cira
     cir_file << "Generated netlist: " << conf.out_file_name << "\n" << endl;
 
-    if ( conf.ngspice_simulation )
-    {
-        cir_file << "*Initial values for AC ports\n";
-        for ( int i = 1 ; i <= Nc_port; i++ )
-        {
-            cir_file << ".param Vg" << i << "=0\n";
-        }
-    }
-
     // przygotowanie subckt dla kazdego elementu macierzy Y
     for ( int j = 1; j <= Nc_port; j++ )
     {
@@ -293,50 +284,20 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
     double freq_end = freq( freq.n_elem - 1 );
     cir_file << "\n.ac lin " << freq.n_elem << " " << freq_start << " " << freq_end << endl;
 
-    // przygotowanie .control dla ngspice
-    if ( conf.ngspice_simulation )
+    // dane do symulacji lt spice
+    cir_file << "\n.step param run 1 " << Nc_port << " 1" << endl;
+    for ( int i = 1; i <= Nc_port; i++ )
     {
-        cir_file << "\n.control\nset filetype=ascii\n\nlet start=1\nlet step=1\n"
-                 << "let end=" << sqrt(Nc) << "\nlet iter=start\n\nwhile iter le end\n\n";
-
-        // ustawienie wszystkich wrot AC na 0
-        for ( int i = 1; i <= sqrt(Nc); i++ )
-        {
-            cir_file << "    alter V" << i << " AC 0" << endl;
-        }
-
-        cir_file << "\n";
-
-        // ustawienie AC -1 na odpowiednim wrocie
-        // ujemna wartosc po to aby uzyskane prady na zrodlach byly parametrami Y
-        for ( int i = 1; i <= sqrt(Nc); i++ )
-        {
-            cir_file << "    if iter = " << i 
-                     << "\n        alter V" << i << " AC -1\n    end\n";
-        }
-
-        cir_file << "\n    run\n"
-		 << "\n    wrdata " << conf.out_file_name;
-        for ( int i = 1; i <= sqrt(Nc); i++ )
-        {
-            cir_file << " I(V" << i << ")";
-        }
-        cir_file << "\n    set appendwrite"
-                 << "\n    let iter = iter + step"
-                 << "\nend";
-        cir_file << "\n\n.endc" << endl;
-    }
-    else
-    {
-        // dane do symulacji lt spice
-        cir_file << "\n.step param run 1 " << Nc_port << " 1" << endl;
-        for ( int i = 1; i <= Nc_port; i++ )
-        {
-            cir_file << ".param Vg" << i << "=if(run==" << i << ",-1,0)" << endl;
-        }
+        cir_file << ".param Vg" << i << "=if(run==" << i << ",-1,0)" << endl;
     }
 
-    cir_file << "\n.end";
+    cir_file << "\n.save ";
+    for ( int i = 1; i <= Nc_port; i++ )
+    {
+        cir_file << "I(V" << i << ") ";
+    }
+
+    cir_file << "\n\n.end";
 
     delete[] data;
 }
