@@ -568,7 +568,7 @@ int read_conf( vf_opts& global_conf, string file_name )
         global_conf.spice_simulation = atoi( read_param("spice_simulation", conf_map).c_str() );
         global_conf.spice_program_loc = read_param("spice_program_loc", conf_map);
     }
-    catch( string err )
+    catch( const string& err )
     {
         cout << err;
         return 1;

@@ -10,7 +10,7 @@
 // $3 - Ns liczba probek pomiarowych
 // np.
 // vf3 4 2 100 - bedzie probowalo czytac pliki: f_real_N4_Nc2_Ns100.dat itd.
-// w przydapku niepodania wartosci wejsciowych zostanie uruchomiony przebieg testowy 
+// w przydapku niepodania wartosci wejsciowych zostanie uruchomiony przebieg testowy
 int main(int argc, char* argv[])
 {
     MKL_Set_Num_Threads(1);
@@ -34,19 +34,33 @@ int main(int argc, char* argv[])
         // something went wrong, exit
         if ( err )
         {
+            cout << err << endl;
             return err;
         }
         split_strat = global_conf.split_strat;
 
         try
         {
-//            data = load_vf_data( global_conf.in_file_name );
             data = read_raw_file( global_conf.in_file_name );
             Nc = data.f.n_rows;
         }
         catch (const int& err)
         {
-            cout << err << endl;
+            switch (err)
+            {
+                case 1:
+                    cout << "Nie mozna otworzyc pliku .raw" << endl;
+                break;
+
+                case 2:
+                    cout << "Nieprawidlowa zawartosc pliku .raw\n"
+                         << "Prawidlowa zawartosc: analiza AC, prady z kazdego ze zrodel" << endl;
+                break;
+
+                case 3:
+                    cout << "Blad podczas operacji na plikach, przy wczytywaniu wejsciowego .raw" << endl;
+                break;
+            }
             return err;
         }
     }
@@ -64,7 +78,7 @@ int main(int argc, char* argv[])
     for ( int k = 0; k < VF_REPEAT ; k++ )
     {
         timer.tic();
-        wynik = vf_high_level( data.f, data.s, global_conf ); 
+        wynik = vf_high_level( data.f, data.s, global_conf );
         double executionTime = timer.toc();
         cout<< "Exec one: "<< executionTime << endl;
         exec_time = exec_time + executionTime;
@@ -72,7 +86,7 @@ int main(int argc, char* argv[])
 
     exec_time = exec_time / VF_REPEAT;
 
-    printf("Sredni czas wykonania algorytmu po %d wywolaniach: %.6fs \n", VF_REPEAT, exec_time); 
+    printf("Sredni czas wykonania algorytmu po %d wywolaniach: %.6fs \n", VF_REPEAT, exec_time);
 
     cout << "\n\n\n";
     wynik.poles.print("poles=");
