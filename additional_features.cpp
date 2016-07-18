@@ -646,6 +646,8 @@ raw_params read_input_data_params( string file_name )
     params.Nc_ports = 0;
     params.Ns = 0;
     bool correct_raw_file = false;
+    bool check_variables = false;
+    int check_var_num = 0;
 
     if ( plik.good() == false )
     {
@@ -673,14 +675,22 @@ raw_params read_input_data_params( string file_name )
             vec = my_split (single_line, ':');
             params.Ns = atoi( vec[1].c_str() );
         }
+        else if ( single_line.find("Variables") != string::npos )
+        {
+            check_variables = true;
+        }
         else if ( single_line.find("Binary:") != string::npos )
         {
             break;
         }
+        else if ( check_variables && single_line.find("device_current") != string::npos )
+        {
+            check_var_num++;
+        }
     }
     
     // input file is not spice raw file
-    if ( correct_raw_file == false )
+    if ( correct_raw_file == false || check_var_num != params.Nc_ports-1 )
     {
         throw 2;
     }
