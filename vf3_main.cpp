@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
     if ( global_conf.spice_simulation )
     {
         string system_cmd = global_conf.spice_program_loc + " -b " + global_conf.out_file_name;
-        cout << "\n\n##### Symulacja wygenerowanego modelu w ng_spice: #####\n"
+        cout << "\n\n##### Symulacja wygenerowanego modelu w LTspice: #####\n"
              << "##### " << system_cmd << " #####\n";
         system( system_cmd.c_str() );
 

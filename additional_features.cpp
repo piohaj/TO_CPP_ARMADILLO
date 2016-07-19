@@ -78,6 +78,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             }
     	    cout << "Row: " << row << endl;
     	    cout << "Err: " << wynik_iter[high_iter].err << endl;
+            wynik_iter[high_iter].err_table.print("err_table=");
             wynik_iter[high_iter].poles.print("poles=");
             wynik_iter[high_iter].res.print("residues=");
             wynik_iter[high_iter].h.print("h=");
@@ -85,6 +86,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
 
             high_iter++;
         }
+       
        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
        result_idx.print("result_idx");
        cout << Nc << endl;
@@ -232,7 +234,7 @@ mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double rms
     if ( split_strat == NON_SPLITING )
     {
         result = zeros<mat>(1,1);
-        double err = 10e6;
+        double err = 1;
         for ( int i = 0; i < size; i++ )
         {
             if ( input[i].err < err )
@@ -247,12 +249,12 @@ mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double rms
         result = zeros<mat>(Nc, 1);
         for ( int i = 0; i < Nc; i++ )
         {
-            double err = 10e6;
+            double err = 1000;
             for ( int j = 0; j < size; j++ )
             {
                 double err_temp = input[j].err_table[i];
 
-                if ( abs( err - err_temp ) > rms_diff )
+                if ( ( err - err_temp ) > rms_diff )
                 {
                     err = input[j].err_table[i];
                     result(i) = j;
@@ -525,8 +527,12 @@ int check_model_simulation_results( const cx_mat& f, const vf_opts& conf )
     mat diff_real = real(f - spice_simulation_data.f);
     mat diff_imag = imag(f - spice_simulation_data.f);
 
-    double rms_err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
+    //double rms_err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
+    double rms_err = sqrt( accu( pow( abs( f - spice_simulation_data.f ), 2 ) ) /
+                     accu ( pow ( abs(f), 2 ) ) );
+    double rms_err_db = 20 * log10( rms_err );
     cout << "RMS err (between input data and data obtainted from simulation on generated model) = " << rms_err << endl;
+    cout << "RMS err (between input data and data obtainted from simulation on generated model) = " << rms_err_db << " db" << endl;
 
     return 0;
 }

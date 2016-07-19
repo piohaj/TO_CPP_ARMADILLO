@@ -126,9 +126,9 @@ real_pole_net parse_real_pole( cx_double res, cx_double poles, int is_diag )
 {
     real_pole_net net;
 
-    cout << "\nBiegun rzeczywisty" << endl;
-    cout << "Pole " << poles << endl;
-    cout << "Res " << res << endl;
+    //cout << "\nBiegun rzeczywisty" << endl;
+    //cout << "Pole " << poles << endl;
+    //cout << "Res " << res << endl;
 
     net.R = -real(poles)/real(res) * is_diag;
     net.L = 1/real(res) * is_diag;
@@ -136,8 +136,8 @@ real_pole_net parse_real_pole( cx_double res, cx_double poles, int is_diag )
     net.res = real(res);
     net.pole = real(poles);
 
-    cout << "R " << net.R << endl;
-    cout << "L " << net.L << endl;
+    //cout << "R " << net.R << endl;
+    //cout << "L " << net.L << endl;
 
     return net;
 }
@@ -150,9 +150,9 @@ imag_pole_net parse_imag_pole( cx_double res, cx_double poles, int is_diag )
     double res_imag = imag(res) * is_diag;
     double poles_real = real(poles);
     double poles_imag = imag(poles);
-    cout << "\nBiegun zespolony" << endl;
-    cout << "Pole " << poles << endl;
-    cout << "Res " << res << endl;
+    //cout << "\nBiegun zespolony" << endl;
+    //cout << "Pole " << poles << endl;
+    //cout << "Res " << res << endl;
 
     net.L = 1/(2 * res_real);
     net.R = 2*net.L*(net.L*(res_real*poles_real + res_imag*poles_imag) - poles_real); 
@@ -162,10 +162,10 @@ imag_pole_net parse_imag_pole( cx_double res, cx_double poles, int is_diag )
     net.res = cx_double(res_real, res_imag);
     net.pole = cx_double(poles_real, poles_imag);
 
-    cout << "\nR " << net.R << endl;
-    cout << "L " << net.L << endl;
-    cout << "C " << net.C << endl;
-    cout << "G " << net.G << endl;
+    //cout << "\nR " << net.R << endl;
+    //cout << "L " << net.L << endl;
+    //cout << "C " << net.C << endl;
+    //cout << "G " << net.G << endl;
     return net;
 }
 
@@ -213,10 +213,10 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
     parse_SER( input_SER, data );
 
     // wyswietlenie wartosci elementow
-    for ( int i = 0; i < Nc ; i++ )
-    {
-        print_network_data( data, i );
-    }
+    //for ( int i = 0; i < Nc ; i++ )
+    //{
+    //    print_network_data( data, i );
+    //}
 
     //pierwsza linika cira
     cir_file << "Generated netlist: " << conf.out_file_name << "\n" << endl;
@@ -314,7 +314,7 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file, vf_op
      cir_file << "*** Subcircuit for Y" << index << endl;
      cir_file << ".subckt Y" << index << " 1 2" <<endl;
 
-     if ( data.R > conf.R_max )
+     if ( abs(data.R) > conf.R_max )
      {
          cout << "Rownolegle R dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl; 
      }
@@ -323,7 +323,7 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file, vf_op
          cir_file << "R0 1 2 " << data.R << endl;
      }
   
-     if ( data.C < conf.C_min )
+     if ( abs(data.C) < conf.C_min )
      {
          cout << "Rownolegle C dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl; 
      }

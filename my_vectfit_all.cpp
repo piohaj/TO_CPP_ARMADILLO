@@ -225,13 +225,20 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     mat diff_real = real(*f - f_check);
     mat diff_imag = imag(*f - f_check);
 
-    wynik.err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
+//    wynik.err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
+
+    double rms_err_db = sqrt( accu( pow( abs( *f - f_check ), 2 ) ) /
+                     accu ( pow ( abs(*f), 2 ) ) );
+    wynik.err = 20 * log10( rms_err_db );
 
     // wypelnienie macierzy z RMS dla kazdego z elementow Y
     for ( int j = 0; j < Nc; j++ )
     {
-        wynik.err_table.row(j) = sqrt( accu ( pow(diff_real.row(j), 2)
-                                 + pow(diff_imag.row(j), 2) ) / Ns ) ;
+     //   wynik.err_table.row(j) = sqrt( accu ( pow(diff_real.row(j), 2)
+     //                            + pow(diff_imag.row(j), 2) ) / Ns ) ;
+        double rms_err_row_db = sqrt( accu( pow( abs( f->row(j) - f_check.row(j) ), 2) ) /
+                     accu ( pow ( abs(f->row(j)), 2) ) );
+        wynik.err_table.row(j) = 20 * log10( rms_err_row_db );
     }
 
     return wynik;
