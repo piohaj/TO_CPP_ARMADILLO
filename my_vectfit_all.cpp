@@ -222,8 +222,8 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
         } 
     }
      
-    mat diff_real = real(*f - f_check);
-    mat diff_imag = imag(*f - f_check);
+    //mat diff_real = real(*f - f_check);
+    //mat diff_imag = imag(*f - f_check);
 
 //    wynik.err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
 

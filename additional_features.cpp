@@ -114,6 +114,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             }
     	    cout << "Row: " << row << endl;
     	    cout << "Err: " << wynik_iter[high_iter].err << endl;
+            wynik_iter[high_iter].err_table.print("err_table=");
             wynik_iter[high_iter].poles.print("poles=");
             wynik_iter[high_iter].res.print("residues=");
             wynik_iter[high_iter].h.print("h=");
@@ -267,10 +268,12 @@ mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double rms
         result = zeros<mat>( sqrt(Nc), 1 );
         for ( int i = 0; i < sqrt(Nc); i++ )
         {
-            double err = 10e6;
+            double err = 1000;
             for ( int j = 0; j < size; j++ )
             {
-                if ( input[j].err_table[i] < err )
+                double err_temp = input[j].err_table[i];
+
+                if ( (err - err_temp) > rms_diff )
                 {
                     err = input[j].err_table[i];
                     result(i) = j;
@@ -293,6 +296,7 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
         wynik.res = zeros<cx_mat>(Nc, max_row);
         wynik.d = zeros<mat>(Nc, 1);
         wynik.h = zeros<mat>(Nc, 1);
+        double err_temp = 0.0;
     
         for ( int n = 0; n < Nc ; n++ )
         {
@@ -305,7 +309,9 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
             wynik.res( n, span(0, res_temp.n_cols-1) ) = res_temp;
             wynik.d.row(n) = d_temp;
             wynik.h.row(n) = h_temp;
+            err_temp += iter_models[int(indexes(n))].err_table(n); 
         }
+        wynik.err = err_temp/Nc;
     }
     else if ( split_strat == COLUMN_SPLITING )
     {
@@ -313,6 +319,7 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
         wynik.res = zeros<cx_mat>(Nc, max_row);
         wynik.d = zeros<mat>(Nc, 1);
         wynik.h = zeros<mat>(Nc, 1);
+        double err_temp = 0.0;
     
         for ( int n = 0; n < Nc ; n++ )
         {
@@ -325,7 +332,9 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
             wynik.res( n, span(0, res_temp.n_cols-1) ) = res_temp;
             wynik.d.row(n) = d_temp;
             wynik.h.row(n) = h_temp;
+            err_temp += iter_models[int(indexes(n/sqrt(Nc)))].err_table(n/sqrt(Nc)); 
         }
+        wynik.err = err_temp / Nc;
     }
 
     return wynik;
