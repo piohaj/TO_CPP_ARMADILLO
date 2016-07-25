@@ -841,3 +841,84 @@ bool check_spice_log( string file_name )
      
      return true;
 }
+
+
+int get_ports_num_touchstone( string file_name )
+{
+    int Nc_ports = 0;
+
+    string::const_iterator i = file_name.begin();
+    string tmp;
+    bool is_dot = false;
+
+    for(i ; i <= file_name.end(); ++i)
+    {
+        if ( isdigit(*i) && is_dot )
+        {
+            tmp += *i;
+        }
+
+        if ( *i == '.' ) is_dot = true;
+    }
+
+    Nc_ports = atoi(tmp.c_str());
+
+    if ( Nc_ports == 0 )
+    {
+        throw 1; // nieprawidlowa nazwa pliku
+    }
+
+    return Nc_ports;
+}
+
+
+bool check_header_touchstone( string file_name )
+{
+     bool touchstone_file = false;
+     string single_line;
+     fstream file( file_name.c_str(), ios::in );
+     if ( file.good() == false )
+     {
+         return false;
+     }
+
+     while ( getline(file, single_line) )
+     {
+         if ( single_line == "# Hz S DB R 50")
+         {
+             touchstone_file = true;
+             break;
+         }
+     }
+     return touchstone_file;
+}
+
+
+void read_touchstone( string file_name )
+{
+    int Nc_ports = get_ports_num_touchstone( file_name );
+    int Nc = pow( Nc_ports, 2 );
+
+    std::ifstream ifile( file_name.c_str(), std::ios::in);
+    int line_it = 0;
+    std::string single_line;
+    double n = 0;
+    arma::mat slice;
+
+    for ( int i = 0; getline(ifile,single_line); i++ )
+    {
+       std::stringstream stream(single_line);
+       arma::mat temp = zeros<mat>(1, Nc*2+1);
+
+       if ( single_line[0] != '!' && single_line[0] != '#' )
+       {
+           for ( line_it = 0; stream >> n; line_it++ )
+           {
+               temp(line_it) = n;
+           }
+           slice = join_vert( slice, temp );
+       }
+    }
+
+    slice.print("out=");
+}
