@@ -90,4 +90,17 @@ struct Y_network_data
    vector <imag_pole_net> imag_pole_nets;
 };
 
+
+// ===================== KONFIGURACJA TOUCHSTONE =========
+
+struct touchstone_conf
+{
+    bool is_touchstone;
+    string freq_unit;
+    string data_type;
+    string data_type2;
+    double R0;
+};
+
+
 #endif

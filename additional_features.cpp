@@ -872,30 +872,57 @@ int get_ports_num_touchstone( string file_name )
 }
 
 
-bool check_header_touchstone( string file_name )
+touchstone_conf check_header_touchstone( string file_name )
 {
-     bool touchstone_file = false;
+     touchstone_conf conf;
+     conf.is_touchstone = false;
      string single_line;
+     vector<string> conf_line;
      fstream file( file_name.c_str(), ios::in );
      if ( file.good() == false )
      {
-         return false;
+         return conf;
      }
 
      while ( getline(file, single_line) )
      {
-         if ( single_line == "# Hz S DB R 50")
+         if ( single_line.find("#") != string::npos )
          {
-             touchstone_file = true;
+             conf_line = my_split(single_line, ' ');
+             conf.is_touchstone = true;
              break;
          }
      }
-     return touchstone_file;
+
+     conf.freq_unit = conf_line[1];
+     conf.data_type = conf_line[2];
+     conf.data_type2 = conf_line[3];
+     conf.R0 = atof( conf_line[5].c_str() );
+
+     return conf;
 }
 
 
-void read_touchstone( string file_name )
+void init_touchstone_conf()
 {
+}
+
+
+void read_touchstone( string file_name, input_data & data )
+{
+    map<string, double> touchstone_freq_unit;
+    touchstone_freq_unit["GHz"] = 10e9;
+    touchstone_freq_unit.insert(std::pair<string, double>("MHz",10e6));
+    touchstone_freq_unit.insert(std::pair<string, double>("KHz",10e3));
+    touchstone_freq_unit.insert(std::pair<string, double>("Hz",1));
+
+    touchstone_conf conf = check_header_touchstone( file_name );
+
+    if ( conf.is_touchstone == false )
+    {
+        throw 1;
+    }
+
     int Nc_ports = get_ports_num_touchstone( file_name );
     int Nc = pow( Nc_ports, 2 );
 
@@ -905,6 +932,7 @@ void read_touchstone( string file_name )
     double n = 0;
     arma::mat slice;
 
+    // ===== dla s2p
     for ( int i = 0; getline(ifile,single_line); i++ )
     {
        std::stringstream stream(single_line);
@@ -920,5 +948,47 @@ void read_touchstone( string file_name )
        }
     }
 
-    slice.print("out=");
+    data.freq = slice.col(0) * touchstone_freq_unit[conf.freq_unit];
+    data.s = data.freq * 3.14 * 2 * cx_double(0,1);
+
+    cx_mat ri_touchstone;
+
+    for ( int i = 1; i <= Nc*2; i=i+2 )
+    {
+        mat data_col1 = slice.col(i);
+        mat data_col2 = slice.col(i+1);
+        cx_mat temp;
+ 
+        if ( conf.data_type2 == "DB" ) { cout<<"Dane w postaci db\n"; db2magnitude( data_col1 ); }
+        join_horiz(data_col1, data_col2).print("mag=");
+        if ( conf.data_type2 == "DB" || conf.data_type2 == "MA")
+        {
+            cout<< "Dane w postaci wykladniczej\n";
+            temp = angle2canonic( data_col1, data_col2 );
+        }
+        else
+        {
+            temp = cx_mat(data_col1, data_col2);
+        }
+        ri_touchstone = join_horiz( ri_touchstone, temp);
+    } 
+    ri_touchstone.print("ri=");
+}
+
+cx_mat angle2canonic( const mat& mag, const mat& angle )
+{
+    mat real =  mag % cos( angle * 3.14/180 );
+    mat imag =  mag % sin( angle * 3.14/180 );
+
+    return cx_mat(real, imag);
+}
+
+
+void db2magnitude( mat& db )
+{
+    for ( int i = 0; i < db.n_elem; i++ )
+    {
+        double x = db(i);
+        db(i) = pow(10, x/20);
+    }
 }

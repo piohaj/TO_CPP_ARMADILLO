@@ -39,6 +39,19 @@ int main(int argc, char* argv[])
         }
         split_strat = global_conf.split_strat;
 
+        //int bla = get_ports_num_touchstone ( global_conf.in_file_name );
+        try
+        {
+            read_touchstone( global_conf.in_file_name, data );
+        }
+        catch (const int & err)
+        {
+            cout << "to nie jest plik touchstone" << endl;
+            return err;
+        }
+        //cout << bla << endl;
+        return 0;
+
         try
         {
             data = read_raw_file( global_conf.in_file_name );
