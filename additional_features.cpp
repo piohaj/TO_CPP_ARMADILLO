@@ -960,7 +960,6 @@ void read_touchstone( string file_name, input_data & data )
         cx_mat temp;
  
         if ( conf.data_type2 == "DB" ) { cout<<"Dane w postaci db\n"; db2magnitude( data_col1 ); }
-        join_horiz(data_col1, data_col2).print("mag=");
         if ( conf.data_type2 == "DB" || conf.data_type2 == "MA")
         {
             cout<< "Dane w postaci wykladniczej\n";
@@ -970,9 +969,13 @@ void read_touchstone( string file_name, input_data & data )
         {
             temp = cx_mat(data_col1, data_col2);
         }
-        ri_touchstone = join_horiz( ri_touchstone, temp);
+
+        ri_touchstone = join_vert( ri_touchstone, temp.st() );
     } 
     ri_touchstone.print("ri=");
+    cx_cube ri_cube = make_cube( ri_touchstone );
+    data.f = s2y( ri_cube, conf.R0 );
+    data.f.print("f=");
 }
 
 cx_mat angle2canonic( const mat& mag, const mat& angle )
