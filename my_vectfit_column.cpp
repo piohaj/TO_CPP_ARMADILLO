@@ -32,7 +32,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
             }
         }
 
-        cx_mat A = zeros<cx_mat>(Ns, 2*N+2);
+        cx_mat A = zeros<cx_mat>(Ns, 2*N+RC_offset);
     
         // wypelnienie lewej strony macierzy A
         for ( int m = 0; m < N ; m++ )
@@ -48,8 +48,11 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
             }
         }
     
-        A.col(N) = ones<cx_mat>(1,Ns).st();
-        A.col(N+1) = *s;
+        if ( RC_offset )
+        {
+            A.col(N) = ones<cx_mat>(1,Ns).st();
+            A.col(N+1) = *s;
+        }
 
         // przygotowanie macierzy pod wszystkie elementy Y dla danej kolumny
         mat AA_poles = zeros<mat>(column_elems*N, N);
@@ -62,7 +65,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
             // wypelnienie prawej strony macierzy A
             for ( int i = 0; i < N; i++ )
             {
-                A.col(i+N+2) = -strans(f->operator()(m, span(0, Ns-1))) % A( span(0, Ns-1), i);
+                A.col(i+N+RC_offset) = -strans(f->operator()(m, span(0, Ns-1))) % A( span(0, Ns-1), i);
             }
         
             mat A_real = join_vert( real(A), imag(A) );
@@ -76,8 +79,8 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
         
             mat bb = Q.st() * f_lsp_real;
         
-            bb_poles.rows(n*N, (n+1)*N-1) = bb.rows(N+2, 2*N+1);
-            AA_poles( span(n*N, (n+1)*N-1 ), span( 0, N-1 ) ) = R( span(N+2, 2*N+1), span(N+2, 2*N+1) );
+            bb_poles.rows(n*N, (n+1)*N-1) = bb.rows(N+RC_offset, 2*N+RC_offset-1);
+            AA_poles( span(n*N, (n+1)*N-1 ), span( 0, N-1 ) ) = R( span(N+RC_offset, 2*N+RC_offset-1), span(N+RC_offset, 2*N+RC_offset-1) );
 
             n++;
         } 
@@ -148,7 +151,7 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
             }
         }
     
-        cx_mat AA_res = zeros<cx_mat>(Ns, N+2);
+        cx_mat AA_res = zeros<cx_mat>(Ns, N+RC_offset);
     
         // wypelnienie lewej strony macierzy AA_res
         for ( int m = 0; m < N; m++ )
@@ -164,8 +167,11 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
             }
         }
     
-        AA_res.col(N) = ones<cx_mat>(1, Ns).st();
-        AA_res.col(N+1) = *s;
+        if ( RC_offset )
+        {
+            AA_res.col(N) = ones<cx_mat>(1, Ns).st();
+            AA_res.col(N+1) = *s;
+        }
     
         mat AA_res_real = join_vert( real(AA_res), imag(AA_res) );
     
@@ -182,14 +188,17 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
 
         x = solve(AA_res_real, f_lsp_res);
 
-        for ( int m = 0; m < column_elems; m++ )
+        if ( RC_offset )
         {
-            wynik->d(rr*column_elems+m,0) = x(N, m);
-        }
-
-        for ( int m = 0; m < column_elems; m++ )
-        {
-            wynik->h(rr*column_elems+m,0) = x(N+1, m);
+            for ( int m = 0; m < column_elems; m++ )
+            {
+                wynik->d(rr*column_elems+m,0) = x(N, m);
+            }
+    
+            for ( int m = 0; m < column_elems; m++ )
+            {
+                wynik->h(rr*column_elems+m,0) = x(N+1, m);
+            }
         }
         wynik->poles.row(rr) = poles.st();
 
@@ -216,13 +225,15 @@ void vf_column::operator() ( const blocked_range<int>& r ) const
 } 
 
 
-SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
+SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts & conf )
 {
     SER wynik;
     int Nc = f->n_rows;
     int N = poles->n_cols;
     int Ns = s->n_elem;
     int column_num = sqrt(Nc);
+    int RC_offset = 0;
+    if ( conf.calc_parallel_RC ) RC_offset = 2;
 
     if ( pow(column_num, 2) != Nc )
     {
@@ -241,7 +252,7 @@ SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     // wielowatkowe uruchomienie algorytmu VF
     task_scheduler_init init();
     parallel_for( blocked_range<int>(0, column_num),
-              vf_column(f, s, poles, &wynik) );
+              vf_column(f, s, poles, &wynik, RC_offset) );
 
     // obliczanie bledu metody najmniejszych kwadratow do obliczonego modelu
     rms_err_calculation(&wynik, f, s, N);

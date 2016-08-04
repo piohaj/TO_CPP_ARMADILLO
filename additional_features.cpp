@@ -104,7 +104,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             // wywolanie algorytmu
             for ( iter = 1; iter <= conf.max_iters; iter++ )
             {
-                wynik_iter[high_iter] = my_vf_column_splitting(&f, &s, &poles); 
+                wynik_iter[high_iter] = my_vf_column_splitting(&f, &s, &poles, conf); 
     	        poles = wynik_iter[high_iter].poles;
     		
     	        if ( wynik_iter[high_iter].err < conf.tol )
