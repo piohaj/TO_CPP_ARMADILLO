@@ -11,7 +11,7 @@
 // f - macierz zawierajaca wartosci pomiarow dla kazdego elementu macierzy Y
 // s - wektor zawierajacy probki wartosci czestotliwosci dla wartosci pomiaru z f
 // poles - wektor z biegunami poczatkowymi
-SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles);
+SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles, vf_opts& conf );
 
 
 cx_mat logspace(double a, double b, int n);
@@ -31,16 +31,18 @@ class QR_calculation
     int Ns;
     mat *AA_poles;
     mat *bb_poles;
+    int RC_offset;
     
 public:
     QR_calculation( const cx_mat *A_in, const cx_mat *f_in, int N_in, int Ns_in,
-                    mat *AA_poles_out, mat *bb_poles_out)
+                    mat *AA_poles_out, mat *bb_poles_out, int RC_offset_in)
                   : A(A_in),
                     f(f_in),
                     N(N_in),
                     Ns(Ns_in),
                     AA_poles(AA_poles_out),
-                    bb_poles(bb_poles_out)
+                    bb_poles(bb_poles_out),
+                    RC_offset(RC_offset_in)
                   {}
 
     // zadanie dla jednego watku - w TBB definiowany poprzez przeciazenie ()

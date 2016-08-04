@@ -43,7 +43,7 @@ void QR_calculation::operator() ( const blocked_range<int>& r ) const
         {
             part = -strans(f->operator()(m, span(0, Ns-1))) 
                    % A->operator()( span(0, Ns-1), i);
-            AA_port.col(i+N+2) = part;
+            AA_port.col(i+N+RC_offset) = part;
         }
 
         // obliczanie x metoda najmniejszych kwadratow Ax=b
@@ -58,9 +58,9 @@ void QR_calculation::operator() ( const blocked_range<int>& r ) const
 
         mat bb = Q.st() * f_lsp_real;
 
-        bb_poles->rows(m*N, (m+1)*N-1) = bb.rows(N+2, 2*N+1); 
+        bb_poles->rows(m*N, (m+1)*N-1) = bb.rows(N+RC_offset, 2*N+RC_offset-1); 
         AA_poles->operator()( span(m*N, (m+1)*N-1), span( 0, N-1 ) ) 
-                               = R( span(N+2, 2*N+1), span(N+2, 2*N+1) );
+                               = R( span(N+RC_offset, 2*N+RC_offset-1), span(N+RC_offset, 2*N+RC_offset-1) );
     }
 }
 
@@ -70,12 +70,15 @@ void QR_calculation::operator() ( const blocked_range<int>& r ) const
 // do rozwiazania rownania metoda najmniejszych kwadratow uzyto dekompozycji QR
 // algorymt zaklada istnienie stalej h
 // algorytm przystosowany do obliczenia modelu wieloportowego
-SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
+SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles, vf_opts& conf )
 {
     int N = poles.n_elem, //rzad rozwiazania
         Ns = s.n_elem, // liczba probek pomiarowych
         Nc = f.n_rows; // liczba portow do symulacji
     SER wynik; // struktura z wynikiem dzialania algorytmu
+
+    int RC_offset = 0;
+    if ( conf.calc_parallel_RC ) RC_offset = 2;
 
     if ( N > Ns )
     {
@@ -107,7 +110,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
         }
     }
 
-    cx_mat A = zeros<cx_mat>(Ns, 2*N+2);
+    cx_mat A = zeros<cx_mat>(Ns, 2*N+RC_offset);
 
     // wypelnienie lewej strony macierzy A
     for ( int m = 0; m < N ; m++ )
@@ -123,8 +126,11 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
         }
     }
 
-    A.col(N) = ones<cx_mat>(1,Ns).st();
-    A.col(N+1) = s;
+    if ( conf.calc_parallel_RC )
+    {
+        A.col(N) = ones<cx_mat>(1,Ns).st();
+        A.col(N+1) = s;
+    }
 
     // przygotowanie macierzy pod wiele portow
     mat AA_poles = zeros<mat>(Nc*N, N);
@@ -133,7 +139,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
     // wielowatkowe (TTB) oblicznie wspolczynnikow AA_poles - QR rownolegle
     task_scheduler_init init();
     parallel_for(blocked_range<int>(0, Nc),
-           QR_calculation( &A, &f, N, Ns, &AA_poles, &bb_poles) );
+           QR_calculation( &A, &f, N, Ns, &AA_poles, &bb_poles, RC_offset) );
 
     // obliczenie x dla wszystkich portow badanego ukladu
     mat x = solve(AA_poles, bb_poles);
@@ -203,7 +209,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
 
 
     //cout << "imag_check " << imag_check << endl;
-    cx_mat AA_res = zeros<cx_mat>(Ns, N+2);
+    cx_mat AA_res = zeros<cx_mat>(Ns, N+RC_offset);
 
     // wypelnienie lewej strony macierzy AA_res
     for ( int m = 0; m < N; m++ )
@@ -219,8 +225,11 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
         }
     }
 
-    AA_res.col(N) = ones<cx_mat>(1, Ns).st();
-    AA_res.col(N+1) = s;
+    if ( conf.calc_parallel_RC )
+    {
+        AA_res.col(N) = ones<cx_mat>(1, Ns).st();
+        AA_res.col(N+1) = s;
+    }
 
     mat AA_res_real = join_vert( real(AA_res), imag(AA_res) );
 
@@ -258,17 +267,20 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles)
 
     // rzeczywiste wspolczynniki d
     wynik.d = zeros<mat>(Nc, 1);
-    for ( int m = 0; m < Nc; m++ )
-    {
-        wynik.d(m, 0) = x(N, m);
-    }
-
     // rzeczywiste wspolczynniki h, rownolegla pojemnosc
     wynik.h = zeros<mat>(Nc, 1);
-    for ( int m = 0; m < Nc; m++ )
+    if ( conf.calc_parallel_RC )
     {
-        wynik.h(m, 0) = x(N+1, m);
+        for ( int m = 0; m < Nc; m++ )
+        {
+            wynik.d(m, 0) = x(N, m);
+        }
+        for ( int m = 0; m < Nc; m++ )
+        {  
+            wynik.h(m, 0) = x(N+1, m);
+        }
     }
+
 //    cout << "Wynik.h: " << wynik.h << endl;
     // wstawienie biegunow do struktury wynikow
     wynik.poles = poles.st();

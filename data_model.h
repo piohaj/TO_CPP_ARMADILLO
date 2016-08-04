@@ -33,6 +33,7 @@ struct vf_opts
     int min_row;
     int max_row;
     int max_iters;
+    int calc_parallel_RC;
     double R_max;
     double C_min;
     int split_strat;

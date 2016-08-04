@@ -41,7 +41,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             // wywolanie algorytmu
             for ( iter = 1; iter <= conf.max_iters; iter++ )
             {
-                wynik_iter[high_iter] = my_vf_non_splitting(f, s, poles); 
+                wynik_iter[high_iter] = my_vf_non_splitting(f, s, poles, conf); 
     	        poles = wynik_iter[high_iter].poles;
     		
     	        if ( wynik_iter[high_iter].err < conf.tol )
@@ -582,6 +582,7 @@ int read_conf( vf_opts& global_conf, string file_name )
         global_conf.pasivity_check = atoi( read_param("pasivity_check", conf_map).c_str() ); 
         global_conf.spice_simulation = atoi( read_param("spice_simulation", conf_map).c_str() );
         global_conf.spice_program_loc = read_param("spice_program_loc", conf_map);
+        global_conf.calc_parallel_RC= atoi( read_param("calc_parallel_RC", conf_map).c_str() );
     }
     catch( const string& err )
     {

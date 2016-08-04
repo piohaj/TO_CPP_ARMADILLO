@@ -314,7 +314,7 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file, vf_op
      cir_file << "*** Subcircuit for Y" << index << endl;
      cir_file << ".subckt Y" << index << " 1 2" <<endl;
 
-     if ( abs(data.R) > conf.R_max )
+     if ( abs(data.R) > conf.R_max || abs(data.R) == 0 )
      {
          cout << "Rownolegle R dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl; 
      }
@@ -323,7 +323,7 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file, vf_op
          cir_file << "R0 1 2 " << data.R << endl;
      }
   
-     if ( abs(data.C) < conf.C_min )
+     if ( abs(data.C) < conf.C_min || abs(data.C) == 0 )
      {
          cout << "Rownolegle C dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl; 
      }
