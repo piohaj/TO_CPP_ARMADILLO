@@ -39,22 +39,16 @@ int main(int argc, char* argv[])
         }
         split_strat = global_conf.split_strat;
 
-        //int bla = get_ports_num_touchstone ( global_conf.in_file_name );
         try
         {
-            read_touchstone( global_conf.in_file_name, data );
-        }
-        catch (const int & err)
-        {
-            cout << "to nie jest plik touchstone" << endl;
-            return err;
-        }
-        //cout << bla << endl;
-        return 0;
-
-        try
-        {
-            data = read_raw_file( global_conf.in_file_name );
+            if ( recognize_file( global_conf.in_file_name ) )
+            {
+                data = read_raw_file( global_conf.in_file_name );
+            }
+            else
+            {
+                read_touchstone( global_conf.in_file_name, data );
+            }
             Nc = data.f.n_rows;
         }
         catch (const int& err)
@@ -72,6 +66,10 @@ int main(int argc, char* argv[])
 
                 case 3:
                     cout << "Blad podczas operacji na plikach, przy wczytywaniu wejsciowego .raw" << endl;
+                break;
+
+                case 10:
+                    cout << "To nie jest plik touchstone" << endl;
                 break;
             }
             return err;

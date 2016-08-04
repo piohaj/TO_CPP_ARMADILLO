@@ -921,7 +921,7 @@ void read_touchstone( string file_name, input_data & data )
 
     if ( conf.is_touchstone == false )
     {
-        throw 1;
+        throw 10;
     }
 
     int Nc_ports = get_ports_num_touchstone( file_name );
@@ -994,5 +994,21 @@ void db2magnitude( mat& db )
     {
         double x = db(i);
         db(i) = pow(10, x/20);
+    }
+}
+
+int recognize_file ( string file_name )
+{
+    vector<string> vec;
+    vec = my_split(file_name, '.');
+    string file_type = vec[1];
+
+    if ( file_type == "raw" )
+    {
+        return RAW_FILE;
+    }
+    else
+    {
+        return TOUCHSTONE_FILE;
     }
 }

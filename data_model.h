@@ -23,6 +23,9 @@ using namespace tbb;
 #define COLUMN_SPLITING 3
 #define NO_ELEM 5.0
 
+#define TOUCHSTONE_FILE 0
+#define RAW_FILE 1
+
 
 struct vf_opts
 {

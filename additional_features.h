@@ -33,6 +33,9 @@ map <string, string>read_conf_file(string file_name);
 string read_param( string param, map <string,string> &conf_map);
 int read_conf( vf_opts& global_conf, string file_name );
 
+// wczytywanie plikow
+int recognize_file ( string file_name );
+
 // wczytywanie plikow raw
 raw_params read_input_data_params( string file_name );
 string create_temp_bin_file( int last_no_bin_data_line, string file_name );
