@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
     wynik.res.print("residues=");
     wynik.h.print("h=");
     wynik.d.print("d=");
-    cout << "RMS-err(wybrany)= " << wynik.err <<endl;
+    cout << "RMS-err= " << wynik.err <<endl;
 
     // utworzenie modelu cir i zapis do pliku
     ofstream myfile;

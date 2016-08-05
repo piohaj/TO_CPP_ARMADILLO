@@ -40,8 +40,6 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data )
         }
     }
 
-    imag_check.print("imag_check=");
-
     // sprawdzenie strategi podzialu macierzy Y
     // SPLLITTING_STRT
     // 1 - no-splitting

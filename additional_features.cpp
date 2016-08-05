@@ -49,8 +49,6 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	            break;
     	        }
             }
-    	    cout << "Row: " << row << endl;
-    	    cout << "Err: " << wynik_iter[high_iter].err << endl;
             high_iter++;
         }
         result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
@@ -76,20 +74,10 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	            break;
     	        }
             }
-    	    cout << "Row: " << row << endl;
-    	    cout << "Err: " << wynik_iter[high_iter].err << endl;
-            wynik_iter[high_iter].err_table.print("err_table=");
-            wynik_iter[high_iter].poles.print("poles=");
-            wynik_iter[high_iter].res.print("residues=");
-            wynik_iter[high_iter].h.print("h=");
-            wynik_iter[high_iter].d.print("d=");
-
             high_iter++;
         }
        
        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
-       result_idx.print("result_idx");
-       cout << Nc << endl;
        wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
     else if ( split_strat == COLUMN_SPLITING )
@@ -112,18 +100,9 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	            break;
     	        }
             }
-    	    cout << "Row: " << row << endl;
-    	    cout << "Err: " << wynik_iter[high_iter].err << endl;
-            wynik_iter[high_iter].err_table.print("err_table=");
-            wynik_iter[high_iter].poles.print("poles=");
-            wynik_iter[high_iter].res.print("residues=");
-            wynik_iter[high_iter].h.print("h=");
-            wynik_iter[high_iter].d.print("d=");
-
             high_iter++;
         }
         result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
-        result_idx.print("result_idx");
         wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
     else
@@ -826,7 +805,6 @@ bool check_spice_log( string file_name )
 
      while ( getline(file, single_line) )
      {
-         cout << single_line << endl;
          if ( single_line.find("Error") != string::npos )
          {
              return false;
@@ -973,10 +951,8 @@ void read_touchstone( string file_name, input_data & data )
 
         ri_touchstone = join_vert( ri_touchstone, temp.st() );
     } 
-    ri_touchstone.print("ri=");
     cx_cube ri_cube = make_cube( ri_touchstone );
     data.f = s2y( ri_cube, conf.R0 );
-    data.f.print("f=");
 }
 
 cx_mat angle2canonic( const mat& mag, const mat& angle )
