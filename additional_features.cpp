@@ -918,22 +918,35 @@ touchstone_conf check_header_touchstone( string file_name )
          }
      }
 
-     conf.freq_unit = conf_line[1];
-     conf.data_type = conf_line[2];
-     conf.data_type2 = conf_line[3];
+     conf.freq_unit = str_toupper( conf_line[1] );
+     conf.data_type = str_toupper( conf_line[2] );
+     conf.data_type2 = str_toupper( conf_line[3] );
      conf.R0 = atof( conf_line[5].c_str() );
 
      return conf;
+}
+
+string str_toupper( string & str )
+{
+    string out;
+    string::const_iterator i = str.begin();
+
+    for(i ; i <= str.end()-1; ++i)
+    {
+        out += toupper(*i);
+    }
+   
+    return out;
 }
 
 
 void read_touchstone( string file_name, input_data & data )
 {
     map<string, double> touchstone_freq_unit;
-    touchstone_freq_unit["GHz"] = 10e9;
-    touchstone_freq_unit.insert(std::pair<string, double>("MHz",10e6));
-    touchstone_freq_unit.insert(std::pair<string, double>("KHz",10e3));
-    touchstone_freq_unit.insert(std::pair<string, double>("Hz",1));
+    touchstone_freq_unit["GHZ"] = 10e9;
+    touchstone_freq_unit.insert(std::pair<string, double>("MHZ",10e6));
+    touchstone_freq_unit.insert(std::pair<string, double>("KHZ",10e3));
+    touchstone_freq_unit.insert(std::pair<string, double>("HZ",1));
 
     touchstone_conf conf = check_header_touchstone( file_name );
 
@@ -966,6 +979,8 @@ void read_touchstone( string file_name, input_data & data )
            slice = join_vert( slice, temp );
        }
     }
+
+    cout << touchstone_freq_unit[conf.freq_unit] << endl;
 
     data.freq = slice.col(0) * touchstone_freq_unit[conf.freq_unit];
     data.s = data.freq * PI * 2 * cx_double(0,1);

@@ -43,6 +43,7 @@ input_data read_raw_file( string file_name );
 input_data parse_raw_data( const cx_mat& temp_data, raw_params params );
 
 // wczytywanie touchstone
+string str_toupper( string & str );
 int get_ports_num_touchstone( string file_name );
 int count_spaces_in_header( string header );
 touchstone_conf check_header_touchstone( string file_name );
