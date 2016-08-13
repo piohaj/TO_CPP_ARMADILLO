@@ -872,6 +872,22 @@ int get_ports_num_touchstone( string file_name )
     return Nc_ports;
 }
 
+int count_spaces_in_header( string header )
+{
+    int spaces_count = 0;
+    string::const_iterator i = header.begin();
+    
+    for(i ; i <= header.end(); ++i)
+    {
+        if ( isspace(*i) )
+        {   
+            spaces_count++;
+        } 
+    }
+
+    return spaces_count;
+}
+
 
 touchstone_conf check_header_touchstone( string file_name )
 {
@@ -889,9 +905,16 @@ touchstone_conf check_header_touchstone( string file_name )
      {
          if ( single_line.find("#") != string::npos )
          {
-             conf_line = my_split(single_line, ' ');
-             conf.is_touchstone = true;
-             break;
+             if ( count_spaces_in_header( single_line ) == 6 )
+             {
+                 conf_line = my_split(single_line, ' ');
+                 conf.is_touchstone = true;
+                 break;
+             }
+             else
+             {
+                 return conf;
+             }
          }
      }
 
@@ -901,11 +924,6 @@ touchstone_conf check_header_touchstone( string file_name )
      conf.R0 = atof( conf_line[5].c_str() );
 
      return conf;
-}
-
-
-void init_touchstone_conf()
-{
 }
 
 
@@ -973,10 +991,8 @@ void read_touchstone( string file_name, input_data & data )
 
         ri_touchstone = join_vert( ri_touchstone, temp.st() );
     } 
-    ri_touchstone.print("ri=");
     cx_cube ri_cube = make_cube( ri_touchstone );
     data.f = s2y( ri_cube, conf.R0 );
-    data.f.print("f=");
 }
 
 cx_mat angle2canonic( const mat& mag, const mat& angle )

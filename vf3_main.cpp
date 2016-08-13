@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
                 break;
 
                 case 10:
-                    cout << "To nie jest plik touchstone" << endl;
+                    cout << "To nie jest plik touchstone, albo nieprawidlowy format pliku" << endl;
                 break;
             }
             return err;

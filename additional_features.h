@@ -44,9 +44,9 @@ input_data parse_raw_data( const cx_mat& temp_data, raw_params params );
 
 // wczytywanie touchstone
 int get_ports_num_touchstone( string file_name );
+int count_spaces_in_header( string header );
 touchstone_conf check_header_touchstone( string file_name );
 void read_touchstone( string file_name, input_data & data );
-void init_touchstone_conf();
 cx_mat angle2canonic( const mat& mag, const mat& angle);
 void db2magnitude( mat& db );
 
