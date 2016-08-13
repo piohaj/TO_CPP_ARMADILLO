@@ -25,6 +25,7 @@ using namespace tbb;
 
 #define TOUCHSTONE_FILE 0
 #define RAW_FILE 1
+#define PI 3.1416
 
 
 struct vf_opts

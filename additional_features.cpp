@@ -788,7 +788,7 @@ input_data parse_raw_data( const cx_mat& temp_data, raw_params params )
         data.freq(j) = real(freq_temp);
         j++;
     }
-    data.s = 2*3.14*cx_double(0,1) * data.freq;
+    data.s = 2*PI*cx_double(0,1) * data.freq;
 
     for ( int i = 0; i < temp_data_size; i = i+params.Nc_ports )
     {
@@ -950,7 +950,7 @@ void read_touchstone( string file_name, input_data & data )
     }
 
     data.freq = slice.col(0) * touchstone_freq_unit[conf.freq_unit];
-    data.s = data.freq * 3.14 * 2 * cx_double(0,1);
+    data.s = data.freq * PI * 2 * cx_double(0,1);
 
     cx_mat ri_touchstone;
 
@@ -981,8 +981,8 @@ void read_touchstone( string file_name, input_data & data )
 
 cx_mat angle2canonic( const mat& mag, const mat& angle )
 {
-    mat real =  mag % cos( angle * 3.14/180 );
-    mat imag =  mag % sin( angle * 3.14/180 );
+    mat real =  mag % cos( angle * PI/180 );
+    mat imag =  mag % sin( angle * PI/180 );
 
     return cx_mat(real, imag);
 }

@@ -318,7 +318,7 @@ input_data prepare_sample_data()
     int Ns = 10;
     int N = 3;
     data.f = zeros<cx_mat>(4, Ns);
-    data.s = 2 * 3.14 * 1.0I * linspace<cx_mat>(1, 550, Ns);
+    data.s = 2 * PI * cx_double(0,1) * linspace<cx_mat>(1, 550, Ns);
 
     for ( int k = 0; k < Ns ; k++ )
     {
@@ -400,7 +400,7 @@ input_data load_vf_data( string file_name )
     }
 
     data.freq = all_data.col(0);
-    data.s = 2*3.14*cx_double(0,1) * all_data.col(0);
+    data.s = 2*PI*cx_double(0,1) * all_data.col(0);
 
     for ( int i = 1; i < all_data.n_cols; i=i+2 )
     {
