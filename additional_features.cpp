@@ -894,6 +894,7 @@ touchstone_conf check_header_touchstone( string file_name )
      touchstone_conf conf;
      conf.is_touchstone = false;
      string single_line;
+     conf.Ns = 0;
      vector<string> conf_line;
      fstream file( file_name.c_str(), ios::in );
      if ( file.good() == false )
@@ -909,12 +910,15 @@ touchstone_conf check_header_touchstone( string file_name )
              {
                  conf_line = my_split(single_line, ' ');
                  conf.is_touchstone = true;
-                 break;
              }
              else
              {
                  return conf;
              }
+         }
+         else if ( single_line.find("!") == string::npos )
+         {
+             conf.Ns++;
          }
      }
 
@@ -957,6 +961,7 @@ void read_touchstone( string file_name, input_data & data )
 
     int Nc_ports = get_ports_num_touchstone( file_name );
     int Nc = pow( Nc_ports, 2 );
+    int Ns = conf.Ns;
 
     std::ifstream ifile( file_name.c_str(), std::ios::in);
     int line_it = 0;
@@ -964,50 +969,127 @@ void read_touchstone( string file_name, input_data & data )
     double n = 0;
     arma::mat slice;
 
-    // ===== dla s2p
-    for ( int i = 0; getline(ifile,single_line); i++ )
+    // ===== dla dwuwrotnikow
+    if ( Nc_ports == 2 )
     {
-       std::stringstream stream(single_line);
-       arma::mat temp = zeros<mat>(1, Nc*2+1);
-
-       if ( single_line[0] != '!' && single_line[0] != '#' )
-       {
-           for ( line_it = 0; stream >> n; line_it++ )
-           {
-               temp(line_it) = n;
-           }
-           slice = join_vert( slice, temp );
-       }
-    }
-
-    cout << touchstone_freq_unit[conf.freq_unit] << endl;
-
-    data.freq = slice.col(0) * touchstone_freq_unit[conf.freq_unit];
-    data.s = data.freq * PI * 2 * cx_double(0,1);
-
-    cx_mat ri_touchstone;
-
-    for ( int i = 1; i <= Nc*2; i=i+2 )
-    {
-        mat data_col1 = slice.col(i);
-        mat data_col2 = slice.col(i+1);
-        cx_mat temp;
- 
-        if ( conf.data_type2 == "DB" ) { cout<<"Dane w postaci db\n"; db2magnitude( data_col1 ); }
-        if ( conf.data_type2 == "DB" || conf.data_type2 == "MA")
+        for ( int i = 0; getline(ifile,single_line); i++ )
         {
-            cout<< "Dane w postaci wykladniczej\n";
-            temp = angle2canonic( data_col1, data_col2 );
+           std::stringstream stream(single_line);
+           arma::mat temp = zeros<mat>(1, Nc*2+1);
+    
+           if ( single_line[0] != '!' && single_line[0] != '#' )
+           {
+               for ( line_it = 0; stream >> n; line_it++ )
+               {
+                   temp(line_it) = n;
+               }
+               slice = join_vert( slice, temp );
+           }
+        }
+        ifile.close();
+    
+        data.freq = slice.col(0) * touchstone_freq_unit[conf.freq_unit];
+    
+        cx_mat ri_touchstone;
+    
+        for ( int i = 1; i <= Nc*2; i=i+2 )
+        {
+            mat data_col1 = slice.col(i);
+            mat data_col2 = slice.col(i+1);
+            cx_mat temp;
+     
+            if ( conf.data_type2 == "DB" ) { cout<<"Dane w postaci db\n"; db2magnitude( data_col1 ); }
+            if ( conf.data_type2 == "DB" || conf.data_type2 == "MA")
+            {
+                cout<< "Dane w postaci wykladniczej\n";
+                temp = angle2canonic( data_col1, data_col2 );
+            }
+            else
+            {
+                temp = cx_mat(data_col1, data_col2);
+            }
+    
+            ri_touchstone = join_vert( ri_touchstone, temp.st() );
+        }
+     
+        if ( conf.data_type == "S" )
+        {
+            cx_cube ri_cube = make_cube( ri_touchstone );
+            data.f = s2y( ri_cube, conf.R0 );
         }
         else
         {
-            temp = cx_mat(data_col1, data_col2);
+            data.f = ri_touchstone;
         }
+    }
+    else // dla wielowrotnikow
+    {
+        data.freq = zeros<vec>(Ns/Nc_ports);
+        int slice_iter = 0;
+        int freq_iter = 0;
+        cx_cube f_data_cube;
 
-        ri_touchstone = join_vert( ri_touchstone, temp.st() );
-    } 
-    cx_cube ri_cube = make_cube( ri_touchstone );
-    data.f = s2y( ri_cube, conf.R0 );
+        for ( int i = 0; getline(ifile,single_line); i++ )
+        {
+            std::stringstream stream(single_line);
+            arma::mat temp = zeros<mat>(1, Nc_ports*2+1);
+    
+            if ( single_line[0] != '!' && single_line[0] != '#' )
+                {
+                    for ( line_it = 0; stream >> n; line_it++ )
+                    {
+                        temp(line_it) = n;
+                    }
+                
+                temp.print("temp=");
+    
+                if ( slice_iter == 0 ) // jesli linia z czestotliwoscia
+                {
+                    data.freq(freq_iter++) = temp(0) * touchstone_freq_unit[conf.freq_unit];
+                    slice = join_vert( slice, temp.cols(1, temp.n_cols - 1) );
+                }
+                else
+                {
+                    slice = join_vert(slice, temp.cols(0, temp.n_cols - 2) );
+                }
+                slice_iter++;
+    
+                if ( slice_iter == Nc_ports )
+                {
+                    slice_iter = 0;
+                    cx_mat ri_touchstone;
+                    for ( int i = 0; i < Nc_ports*2; i=i+2 )
+                    {
+                        mat data_col1 = slice.col(i);
+                        mat data_col2 = slice.col(i+1);
+                        cx_mat temp;
+            
+                        if ( conf.data_type2 == "DB" ) { cout<<"Dane w postaci db\n"; db2magnitude( data_col1 ); }
+                        if ( conf.data_type2 == "DB" || conf.data_type2 == "MA")
+                        {   
+                            cout<< "Dane w postaci wykladniczej\n";
+                            temp = angle2canonic( data_col1, data_col2 );
+                        }
+                        else
+                        {   
+                            temp = cx_mat(data_col1, data_col2);
+                        }
+                        
+                        ri_touchstone = join_horiz( ri_touchstone, temp );
+                   }
+                   f_data_cube = join_slices(f_data_cube, ri_touchstone);
+                   slice.reset();
+                }                
+            }
+        }
+        ifile.close();
+
+        if ( conf.data_type == "S" )
+        {
+            data.f = s2y( f_data_cube, conf.R0 );
+        }
+    }
+    data.s = data.freq * PI * 2 * cx_double(0,1);
 }
 
 cx_mat angle2canonic( const mat& mag, const mat& angle )

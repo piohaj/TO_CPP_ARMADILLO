@@ -105,6 +105,7 @@ struct touchstone_conf
     string data_type;
     string data_type2;
     double R0;
+    int Ns;
 };
 
 
