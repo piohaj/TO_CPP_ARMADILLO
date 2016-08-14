@@ -53,4 +53,7 @@ void db2magnitude( mat& db );
 
 // funkcje spice
 bool check_spice_log( string file_name );
+
+// zapis wynikow do plikow
+void save_results_mats( SER & results, string file_name );
 #endif

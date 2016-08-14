@@ -106,6 +106,8 @@ int main(int argc, char* argv[])
     wynik.d.print("d=");
     cout << "RMS-err(wybrany)= " << wynik.err <<endl;
 
+    // zapis otrzymanych wynikow do pliku - do wczytania w matlabie
+    save_results_mats( wynik, global_conf.out_file_name );
     // utworzenie modelu cir i zapis do pliku
     ofstream myfile;
 

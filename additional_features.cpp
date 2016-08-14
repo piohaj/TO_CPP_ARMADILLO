@@ -1113,3 +1113,53 @@ int recognize_file ( string file_name )
         return TOUCHSTONE_FILE;
     }
 }
+
+void save_results_mats( SER & results, string file_name )
+{
+    vector<string> vec = my_split(file_name, '.');
+    string file_prefix = vec[0];
+    string poles_file_name = file_prefix + "_poles.mat";
+    string res_file_name = file_prefix + "_res.mat";
+    string d_file_name = file_prefix + "_d.mat";
+    string h_file_name = file_prefix + "_h.mat";
+
+    int Nc_poles = results.poles.n_rows;
+    int Nc = results.res.n_rows;
+    int N = results.res.n_cols;
+
+    mat poles_real = real(results.poles);
+    mat poles_imag = imag(results.poles);
+//    mat poles_mat = zeros<mat>(Nc_poles, 2*N);
+    mat poles_mat = join_horiz( poles_real, poles_imag);
+
+    mat res_real = real(results.res);
+    mat res_imag = imag(results.res);
+//    mat res_mat = zeros<mat>(Nc, 2*N);
+    mat res_mat = join_horiz( res_real, res_imag );
+
+    cout << "Saving poles to " << poles_file_name << endl;
+/*    int j = 0;
+    for ( int i = 0; i < 2*N; i=i+2 )
+    {
+        poles_mat.col(i) = poles_real.col(j);
+        poles_mat.col(i+1) = poles_imag.col(j);
+        j++;
+    } */
+    poles_mat.save(poles_file_name, raw_ascii);
+
+    cout << "Saving res to " << res_file_name << endl;
+/*    j = 0;
+    for ( int i = 0; i < 2*N; i=i+2 )
+    {
+        res_mat.col(i) = res_real.col(j);
+        res_mat.col(i+1) = res_imag.col(j);
+        j++;
+    }*/
+    res_mat.save(res_file_name, raw_ascii);
+
+    cout << "Saving d to " << d_file_name << endl;
+    results.d.save(d_file_name, raw_ascii);
+
+    cout << "Saving h to " << h_file_name << endl;
+    results.h.save(h_file_name, raw_ascii);
+}
