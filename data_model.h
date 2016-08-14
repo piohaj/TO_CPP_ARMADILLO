@@ -13,6 +13,7 @@
 #include <fstream>
 #include <cstring>
 #include <cstdio>
+#include <sys/stat.h>
 
 using namespace std;
 using namespace arma;
@@ -106,6 +107,14 @@ struct touchstone_conf
     string data_type2;
     double R0;
     int Ns;
+};
+
+// ================= Dane do gnuplot ====================
+struct gnuplot_data
+{
+    cx_mat input_data;
+    cx_mat simulation_data;
+    vec freq;
 };
 
 

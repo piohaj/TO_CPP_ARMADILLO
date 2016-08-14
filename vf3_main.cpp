@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
     int N = 0,
         Ns = 0,
         Nc = 0;
+    gnuplot_data gp_data;
 
     // jeden argument wywolania - plik z konfiguracja
     if ( argc == 2 )
@@ -124,7 +125,18 @@ int main(int argc, char* argv[])
 
         if ( check_spice_log( global_conf.out_file_name ) )
         {
-            check_model_simulation_results( data.f, global_conf );
+            check_model_simulation_results( data.f, global_conf, gp_data );
+            // rysowanie wykresow
+            gp_data.freq = data.freq;
+            try
+            {
+                prepare_gnuplot_script( gp_data, global_conf.out_file_name );
+            }
+            catch( int & err )
+            {
+                cout<< "Nie mozna utowrzyc katalogu gnuplot\n";
+                return err;
+            }
         }
     }
 

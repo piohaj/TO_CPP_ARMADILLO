@@ -505,7 +505,7 @@ cx_cube make_cube( cx_mat& y )
 }
 
 
-int check_model_simulation_results( const cx_mat& f, const vf_opts& conf )
+int check_model_simulation_results( const cx_mat& f, const vf_opts& conf, gnuplot_data & gp_data )
 {
     string simulation_data_file = conf.out_file_name;
     simulation_data_file.replace(simulation_data_file.end()-3,simulation_data_file.end(), "raw");
@@ -521,6 +521,9 @@ int check_model_simulation_results( const cx_mat& f, const vf_opts& conf )
         cout << err << endl;
         return err;
     }
+
+    gp_data.input_data = f;
+    gp_data.simulation_data = spice_simulation_data.f;
 
     // obliczanie rms miedzy danymi wejsciowymi a modelem
     mat diff_real = real(f - spice_simulation_data.f);
@@ -1162,4 +1165,88 @@ void save_results_mats( SER & results, string file_name )
 
     cout << "Saving h to " << h_file_name << endl;
     results.h.save(h_file_name, raw_ascii);
+}
+
+void prepare_gnuplot_script( gnuplot_data & data, string name )
+{
+    vector<string> vec = my_split(name, '.');
+    string dir_name = vec[0] + "_gnuplot";
+
+    int dir_err = mkdir(dir_name.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+  
+    if ( dir_err && errno != EEXIST )
+    {
+        throw dir_err;
+    }
+
+    string gp_script_name = dir_name + "/" + vec[0] + "_script.gp";
+
+    ofstream gpfile;
+    gpfile.open( gp_script_name.c_str() );
+
+    int Nc = data.simulation_data.n_rows;
+    int Ns = data.simulation_data.n_cols;
+    mat file_mat = zeros<mat>(Ns, 3);
+    file_mat.col(0) = data.freq;
+    string file_name = dir_name + "/";
+
+    gpfile << "set xlabel \"freq\"" << endl;
+    int gp_it = 0;
+    for ( int i = 0; i < Nc ; i++ )
+    {
+       ostringstream ss_abs, ss_abs_file;
+       cx_mat simulation_temp = data.simulation_data.row(i).st();
+       cx_mat input_temp = data.input_data.row(i).st();
+
+       ss_abs_file << "Y" << i << "_abs";
+       ss_abs << file_name << ss_abs_file.str();
+       file_mat.col(1) = abs(input_temp);
+       file_mat.col(2) = abs(simulation_temp);
+        
+       file_mat.save(ss_abs.str(), raw_ascii);
+       gpfile << "set title \"abs\"\n";
+       gpfile << "set term x11 " << gp_it++ << endl;
+       gpfile << "plot \'" << ss_abs_file.str() << "\' u 1:2 title \'Input data\', \'"
+              << ss_abs_file.str()
+              << "\' u 1:3 title \'Simulation data\'\n" << endl;
+
+       ostringstream ss_angle, ss_angle_file;
+       ss_angle_file << "Y" << i << "_angle";
+       ss_angle << file_name << ss_angle_file.str();
+       file_mat.col(1) = gp_angle(input_temp);
+       file_mat.col(2) = gp_angle(simulation_temp);
+
+       file_mat.save(ss_angle.str(), raw_ascii);
+       gpfile << "set term x11 " << gp_it++ << endl;
+       gpfile << "set title \"angle\"\n";
+       gpfile << "plot \'" << ss_angle_file.str() << "\' u 1:2 title \'Input data\', \'"
+              << ss_angle_file.str()
+              << "\' u 1:3 title \'Simulation data\'\n" << endl;
+    }
+    gpfile << "pause -1\n";
+
+    gpfile.close();
+
+}
+
+mat gp_angle( cx_mat & data )
+{
+    mat data_real = real(data);
+    mat data_imag = imag(data);
+    int Ns = data.n_rows;
+    mat result = zeros<mat>(Ns, 1);
+
+    for ( int i = 0; i < Ns; i++ )
+    {
+        if ( data_real(i) > 0 )
+        {
+            result(i) = atan(data_imag(i)/data_real(i));
+        }
+        else
+        {
+            result(i) = atan(data_imag(i)/data_real(i)) + PI;
+        }
+    }
+
+    return result;
 }

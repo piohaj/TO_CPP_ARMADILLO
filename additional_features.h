@@ -23,9 +23,10 @@ int makepassive( cx_cube& s_params );
 
 int check_and_make_passive ( cx_mat& y );
 
-int check_model_simulation_results( const cx_mat& f, const vf_opts& conf );
+int check_model_simulation_results( const cx_mat& f, const vf_opts& conf, gnuplot_data & data );
 
 void force_stable_poles( cx_mat& poles ); 
+mat gp_angle( cx_mat & data );
 
 // wczytywanie konfiguracji
 vector<string> my_split(string str, const char delim);
@@ -56,4 +57,7 @@ bool check_spice_log( string file_name );
 
 // zapis wynikow do plikow
 void save_results_mats( SER & results, string file_name );
+
+// wykresy gnuplot
+void prepare_gnuplot_script( gnuplot_data & data, string name );
 #endif
