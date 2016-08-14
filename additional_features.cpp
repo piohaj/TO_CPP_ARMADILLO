@@ -79,16 +79,11 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	    cout << "Row: " << row << endl;
     	    cout << "Err: " << wynik_iter[high_iter].err << endl;
             wynik_iter[high_iter].err_table.print("err_table=");
-            wynik_iter[high_iter].poles.print("poles=");
-            wynik_iter[high_iter].res.print("residues=");
-            wynik_iter[high_iter].h.print("h=");
-            wynik_iter[high_iter].d.print("d=");
 
             high_iter++;
         }
        
        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
-       result_idx.print("result_idx");
        cout << Nc << endl;
        wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
@@ -115,15 +110,10 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	    cout << "Row: " << row << endl;
     	    cout << "Err: " << wynik_iter[high_iter].err << endl;
             wynik_iter[high_iter].err_table.print("err_table=");
-            wynik_iter[high_iter].poles.print("poles=");
-            wynik_iter[high_iter].res.print("residues=");
-            wynik_iter[high_iter].h.print("h=");
-            wynik_iter[high_iter].d.print("d=");
 
             high_iter++;
         }
         result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
-        result_idx.print("result_idx");
         wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
     else
@@ -906,7 +896,7 @@ touchstone_conf check_header_touchstone( string file_name )
      {
          if ( single_line.find("#") != string::npos )
          {
-             if ( count_spaces_in_header( single_line ) == 6 )
+             if ( count_spaces_in_header( single_line ) == 5 )
              {
                  conf_line = my_split(single_line, ' ');
                  conf.is_touchstone = true;
@@ -1041,8 +1031,6 @@ void read_touchstone( string file_name, input_data & data )
                         temp(line_it) = n;
                     }
                 
-                temp.print("temp=");
-    
                 if ( slice_iter == 0 ) // jesli linia z czestotliwoscia
                 {
                     data.freq(freq_iter++) = temp(0) * touchstone_freq_unit[conf.freq_unit];

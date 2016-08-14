@@ -21,7 +21,7 @@ using namespace tbb;
 #define NON_SPLITING 1
 #define ALL_SPLITING 2
 #define COLUMN_SPLITING 3
-#define NO_ELEM 5.0
+#define NO_ELEM datum::inf
 
 #define TOUCHSTONE_FILE 0
 #define RAW_FILE 1
