@@ -1251,14 +1251,7 @@ mat gp_angle( cx_mat & data )
 
     for ( int i = 0; i < Ns; i++ )
     {
-        if ( data_real(i) > 0 )
-        {
-            result(i) = atan(data_imag(i)/data_real(i));
-        }
-        else
-        {
-            result(i) = atan(data_imag(i)/data_real(i)) + PI;
-        }
+        result(i) = std::atan2(data_imag(i), data_real(i));
     }
 
     return result;
