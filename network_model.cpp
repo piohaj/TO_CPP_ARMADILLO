@@ -278,12 +278,17 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
     }
 
     // przygotowanie komendy symulacji
-    double freq_start = freq(0);
-    double freq_end = freq( freq.n_elem - 1 );
-    cir_file << "\n.ac lin " << freq.n_elem << " " << freq_start << " " << freq_end << endl;
+    //double freq_start = freq(0);
+    //double freq_end = freq( freq.n_elem - 1 );
+    //cir_file << "\n.ac lin " << freq.n_elem << " " << freq_start << " " << freq_end << endl;
+    cir_file << "\n.ac list ";
+    for ( int k = 0 ; k < freq.n_elem; k++ )
+    {
+        cir_file << freq(k) << " ";
+    }
 
     // dane do symulacji lt spice
-    cir_file << "\n.step param run 1 " << Nc_port << " 1" << endl;
+    cir_file << "\n\n.step param run 1 " << Nc_port << " 1" << endl;
     for ( int i = 1; i <= Nc_port; i++ )
     {
         cir_file << ".param Vg" << i << "=if(run==" << i << ",-1,0)" << endl;
