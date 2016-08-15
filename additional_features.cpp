@@ -899,7 +899,7 @@ touchstone_conf check_header_touchstone( string file_name )
      {
          if ( single_line.find("#") != string::npos )
          {
-             if ( count_spaces_in_header( single_line ) == 5 )
+             if ( count_spaces_in_header( single_line ) < 7 )
              {
                  conf_line = my_split(single_line, ' ');
                  conf.is_touchstone = true;
@@ -1169,6 +1169,8 @@ void save_results_mats( SER & results, string file_name )
 
 void prepare_gnuplot_script( gnuplot_data & data, string name )
 {
+    cout<<"\n========== Wykresy porownawcze ========= " << endl;
+    cout << "Przygotowanie danych do wykresow oraz skryptu gnuplot" << endl;
     vector<string> vec = my_split(name, '.');
     string dir_name = vec[0] + "_gnuplot";
 
@@ -1178,13 +1180,16 @@ void prepare_gnuplot_script( gnuplot_data & data, string name )
     {
         throw dir_err;
     }
+    cout << "Folder roboczy wykresow (gnuplot): " << dir_name << endl;
 
     string gp_script_name = dir_name + "/" + vec[0] + "_script.gp";
+    cout << "Nazwa skryptu do uruchomienia w gnuplot " << gp_script_name << endl;
 
     ofstream gpfile;
     gpfile.open( gp_script_name.c_str() );
 
     int Nc = data.simulation_data.n_rows;
+    int Nc_ports = sqrt(Nc);
     int Ns = data.simulation_data.n_cols;
     mat file_mat = zeros<mat>(Ns, 3);
     file_mat.col(0) = data.freq;
@@ -1192,36 +1197,44 @@ void prepare_gnuplot_script( gnuplot_data & data, string name )
 
     gpfile << "set xlabel \"freq\"" << endl;
     int gp_it = 0;
-    for ( int i = 0; i < Nc ; i++ )
+    int data_it = 0;
+    for ( int i = 0; i < Nc_ports ; i++ )
     {
-       ostringstream ss_abs, ss_abs_file;
-       cx_mat simulation_temp = data.simulation_data.row(i).st();
-       cx_mat input_temp = data.input_data.row(i).st();
+       for ( int j = 0; j < Nc_ports; j++ )
+       {
+           ostringstream ss_abs, ss_abs_file, ss_index;
+           cx_mat simulation_temp = data.simulation_data.row(data_it).st();
+           cx_mat input_temp = data.input_data.row(data_it).st();
+           data_it++;
+    
+           // przygowanie odpowiedniego indeksu Y, tj. 11, 21, itd.
+           ss_index << j+1 << i+1;
 
-       ss_abs_file << "Y" << i << "_abs";
-       ss_abs << file_name << ss_abs_file.str();
-       file_mat.col(1) = abs(input_temp);
-       file_mat.col(2) = abs(simulation_temp);
-        
-       file_mat.save(ss_abs.str(), raw_ascii);
-       gpfile << "set title \"abs\"\n";
-       gpfile << "set term x11 " << gp_it++ << endl;
-       gpfile << "plot \'" << ss_abs_file.str() << "\' u 1:2 title \'Input data\', \'"
-              << ss_abs_file.str()
-              << "\' u 1:3 title \'Simulation data\'\n" << endl;
-
-       ostringstream ss_angle, ss_angle_file;
-       ss_angle_file << "Y" << i << "_angle";
-       ss_angle << file_name << ss_angle_file.str();
-       file_mat.col(1) = gp_angle(input_temp);
-       file_mat.col(2) = gp_angle(simulation_temp);
-
-       file_mat.save(ss_angle.str(), raw_ascii);
-       gpfile << "set term x11 " << gp_it++ << endl;
-       gpfile << "set title \"angle\"\n";
-       gpfile << "plot \'" << ss_angle_file.str() << "\' u 1:2 title \'Input data\', \'"
-              << ss_angle_file.str()
-              << "\' u 1:3 title \'Simulation data\'\n" << endl;
+           ss_abs_file << "Y" << ss_index.str() << "_abs";
+           ss_abs << file_name << ss_abs_file.str();
+           file_mat.col(1) = abs(input_temp);
+           file_mat.col(2) = abs(simulation_temp);
+            
+           file_mat.save(ss_abs.str(), raw_ascii);
+           gpfile << "set title \"abs(Y" << ss_index.str() <<")\"\n";
+           gpfile << "set term x11 " << gp_it++ << endl;
+           gpfile << "plot \'" << ss_abs_file.str() << "\' u 1:2 title \'Input data\', \'"
+                  << ss_abs_file.str()
+                  << "\' u 1:3 title \'Simulation data\'\n" << endl;
+    
+           ostringstream ss_angle, ss_angle_file;
+           ss_angle_file << "Y" << ss_index.str() << "_angle";
+           ss_angle << file_name << ss_angle_file.str();
+           file_mat.col(1) = gp_angle(input_temp);
+           file_mat.col(2) = gp_angle(simulation_temp);
+    
+           file_mat.save(ss_angle.str(), raw_ascii);
+           gpfile << "set term x11 " << gp_it++ << endl;
+           gpfile << "set title \"angle(Y" << ss_index.str() <<")\"\n";
+           gpfile << "plot \'" << ss_angle_file.str() << "\' u 1:2 title \'Input data\', \'"
+                  << ss_angle_file.str()
+                  << "\' u 1:3 title \'Simulation data\'\n" << endl;
+       }
     }
     gpfile << "pause -1\n";
 
