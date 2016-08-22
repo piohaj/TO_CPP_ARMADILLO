@@ -279,7 +279,7 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
     wynik.poles = poles;
 
      // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
-     wall_clock rms_tim;
+/*     wall_clock rms_tim;
      rms_tim.tic();
      cx_mat f_check = zeros<cx_mat>(Nc, Ns);
      cx_mat poles_check = zeros<cx_mat>(Ns,N);
@@ -300,7 +300,9 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
      double rms_time = rms_tim.toc();
 
      cout << "RMS time " << rms_time << endl;
+*/
 
+    wynik.err = 0;
     return wynik;
 }
 
