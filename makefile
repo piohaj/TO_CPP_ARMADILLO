@@ -3,5 +3,5 @@ LIBS=-L/usr/local/lib -L/opt/intel/lib/intel64 -L/opt/intel/mkl/lib/intel64 -L/o
 LDFLAGS=-larmadillo  -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5
 
 vf3: my_vectfit.cpp vf3_main.cpp
-	icpc -g -O3 -debug $(INCLUDES) $(LIBS) vf3_main.cpp my_vectfit.cpp -ovf3 $(LDFLAGS)
+	icpc -O3 $(INCLUDES) $(LIBS) vf3_main.cpp my_vectfit.cpp -ovf3 $(LDFLAGS)
 

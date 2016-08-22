@@ -98,6 +98,8 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
 
     cx_mat right_side_column;
 
+    wall_clock qr_tim;
+    qr_tim.tic();
     for ( int m = 0; m < Nc; m++ )
     {
 //        cx_mat AA_port = A;
@@ -130,6 +132,7 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
         //R.reset();
         //bb.reset();
     }
+    wynik.qr_time = qr_tim.toc();
 
     // obliczenie x dla wszystkich portow badanego ukladu
     mat x = solve(AA_poles, bb_poles);
@@ -276,22 +279,27 @@ SER my_vectorfit3(const cx_mat& f, const cx_mat& s, cx_vec poles, cx_mat weight)
     wynik.poles = poles;
 
      // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
+     wall_clock rms_tim;
+     rms_tim.tic();
      cx_mat f_check = zeros<cx_mat>(Nc, Ns);
-     for ( int m = 0; m < Nc; m++ )
+     cx_mat poles_check = zeros<cx_mat>(Ns,N);
+
+     for ( int m = 0; m < N ; m++ )
      {
-         for ( int i = 0; i < Ns; i++ )
-         {
-             for ( int j = 0; j < N; j++ )
-             {
-                 f_check(m, i) = f_check(m, i) + wynik.res(m, j) / ( s(i) - wynik.poles(j));
-             }
-             f_check(m, i) = f_check(m, i) + wynik.h(m, 0);
-         } 
+         poles_check.col(m) = cx_double(1,0) / (s - wynik.poles(m) );
      }
-     
+
+     for ( int n = 0 ; n < Nc; n++ )
+     {
+         f_check.row(n) = (poles_check*wynik.res.row(n).st()).st() + wynik.h(n,0);
+     }
+         
      cx_mat diff = f - f_check;
 
      wynik.err = sqrt( accu ( accu( pow(abs(diff), 2) ) ) );
+     double rms_time = rms_tim.toc();
+
+     cout << "RMS time " << rms_time << endl;
 
     return wynik;
 }

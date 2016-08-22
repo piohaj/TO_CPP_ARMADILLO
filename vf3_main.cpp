@@ -1,5 +1,6 @@
 #include "my_vectfit.h"
-#define VF_REPEAT 5
+#include<mkl_service.h>
+#define VF_REPEAT 1
 
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
@@ -12,6 +13,7 @@
 int main(int argc, char* argv[])
 {
 
+    MKL_Set_Num_Threads(1);
     // przygotowanie danych testowych
     input_data data;
     cx_vec poles;
@@ -54,6 +56,7 @@ int main(int argc, char* argv[])
     wall_clock timer;
     int iter;
     double exec_time = 0;
+    double qr_time_last = 0;
 
     // wlaczenie algorytmu
     cout << "Vector fitting " << VF_REPEAT << " times" << endl;
@@ -72,9 +75,10 @@ int main(int argc, char* argv[])
         }
     
     
+        double qr_time = 0;
         timer.tic();
         int iter = 1;
-        for ( iter = 1; iter < 11; iter++ )
+        for ( iter = 1; iter < 2; iter++ )
         {
     //        poles.print("Input poles: ");
             wynik = my_vectorfit3(data.f, data.s, poles, weight); 
@@ -82,18 +86,23 @@ int main(int argc, char* argv[])
             
             cout << "Iter: " << iter << endl;
             cout << "Err: " << wynik.err << endl;
+            cout << "QR time: " << wynik.qr_time << endl;
+            qr_time += wynik.qr_time;
             if ( wynik.err < 1e-5 )
             {
                 break;
             }
         }
+        qr_time_last += qr_time;
         double executionTime = timer.toc();
         exec_time = exec_time + executionTime;
         cout << "Sample exec time: " << executionTime << endl;
     }
 
+    qr_time_last = qr_time_last / VF_REPEAT;
     exec_time = exec_time / VF_REPEAT;
     printf("Sredni czas wykonania algorytmu po %d wywolaniach: %.6fs \n", VF_REPEAT, exec_time); 
+    printf("Sredni czas wykonania QR po %d wywolaniach: %.6fs \n", VF_REPEAT, qr_time_last); 
 
 //    wynik.poles.print("poles=");
 //    wynik.res.print("residues=");
@@ -104,7 +113,7 @@ int main(int argc, char* argv[])
     //zapis statystyk do pliku
     fstream plik;
     plik.open("stats_cpp_no_split_one_thread.txt", ios::out | ios::app);
-    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << exec_time << endl;
+    plik << N << ";" << Nc << ";" << Ns << ";" << wynik.err << ";" << qr_time_last << ";" << exec_time << endl;
     plik.flush();
 
     plik.close();

@@ -29,6 +29,7 @@ struct SER
     cx_mat poles;
     mat h;
     double err;
+    double qr_time;
 };
 
 struct input_data

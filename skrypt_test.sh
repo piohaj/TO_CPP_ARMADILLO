@@ -6,7 +6,7 @@ samples_Ns=( 1001 1228 197 570 690 71 1001 71 1000 27 572 1010 1010 10010 1450 2
 
 :>stats_cpp_no_split_one_thread.txt
 
-echo "N;Nc;Ns;iters;RMS_err;time_consumed" > stats_cpp_no_split_one_thread.txt
+echo "N;Nc;Ns;RMS_err;qr_time;time_consumed" > stats_cpp_no_split_one_thread.txt
 
 for i in {0..23}
 do
