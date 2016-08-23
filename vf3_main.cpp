@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
         }
         timer.tic();
         iter = 1;
-        for ( iter = 1; iter < 2; iter++ )
+        for ( iter = 1; iter < 4; iter++ )
         {
             wynik = my_vectorfit(data.f, data.s, poles); 
 	    poles = wynik.poles;
@@ -79,10 +79,10 @@ int main(int argc, char* argv[])
 	    cout << "Iter: " << iter << endl;
 	    cout << "Err: " << wynik.err << endl;
             qr_time += wynik.qr_time;
-	    if ( wynik.err < 1e-5 )
-            {
-	        break;
-	    }
+	 //   if ( wynik.err < 1e-5 )
+         //   {
+	 //       break;
+	 //   }
         }
         double executionTime = timer.toc();
         cout<< "Exec one: "<< executionTime << endl;

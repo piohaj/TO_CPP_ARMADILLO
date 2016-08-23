@@ -134,7 +134,7 @@ SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles)
     task_scheduler_init init();
     wall_clock qr_tim;
     qr_tim.tic();
-    parallel_for(blocked_range<int>(0, Nc, 100),
+    parallel_for(blocked_range<int>(0, Nc),
            QR_calculation( &A, &f, N, Ns, &AA_poles, &bb_poles) );
 
     wynik.qr_time = qr_tim.toc();
