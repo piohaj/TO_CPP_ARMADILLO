@@ -233,7 +233,7 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
               vf_all(f, s, poles, &wynik) );
 
     // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
-    cx_mat f_check = zeros<cx_mat>(Nc, Ns);
+/*    cx_mat f_check = zeros<cx_mat>(Nc, Ns);
     for ( int m = 0; m < Nc; m++ )
     {
         for ( int i = 0; i < Ns; i++ )
@@ -250,7 +250,8 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     cx_mat diff = *f - f_check;
 
     wynik.err = sqrt( accu ( accu( pow(abs(diff), 2) ) ) );
-
+*/
+    wynik.err = 0;
     return wynik;
 }
 

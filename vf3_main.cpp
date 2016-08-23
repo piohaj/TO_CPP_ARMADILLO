@@ -1,5 +1,5 @@
 #include "my_vectfit.h"
-#define VF_REPEAT 5
+#define VF_REPEAT 3
 
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
     
         timer.tic();
         iter = 1;
-        for ( iter = 1; iter < 11; iter++ )
+        for ( iter = 1; iter < 4; iter++ )
         {
     //        poles.print("Input poles: ");
             wynik = my_vf_all_splitting( &data.f, &data.s, &poles); 
@@ -85,10 +85,10 @@ int main(int argc, char* argv[])
             
             cout << "Iter: " << iter << endl;
             cout << "Err: " << wynik.err << endl;
-            if ( wynik.err < 1e-5 )
-            {
-                break;
-            }
+        //    if ( wynik.err < 1e-5 )
+        //    {
+        //        break;
+        //    }
         }
         double executionTime = timer.toc();
         exec_time = exec_time + executionTime;
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 
     //zapis statystyk do pliku
     fstream plik;
-    plik.open("stats_cpp_all_split.txt", ios::out | ios::app);
+    plik.open("stats_cpp_all_split_parallel.txt", ios::out | ios::app);
     plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << exec_time << endl;
     plik.flush();
 
