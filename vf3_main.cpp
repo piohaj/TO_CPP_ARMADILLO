@@ -1,6 +1,6 @@
 #include "my_vectfit.h"
 #include<mkl_service.h>
-#define VF_REPEAT 1
+#define VF_REPEAT 10
 
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
         double qr_time = 0;
         timer.tic();
         int iter = 1;
-        for ( iter = 1; iter < 11; iter++ )
+        for ( iter = 1; iter < 4; iter++ )
         {
     //        poles.print("Input poles: ");
             wynik = my_vectorfit3(data.f, data.s, poles, weight); 
@@ -88,10 +88,10 @@ int main(int argc, char* argv[])
             cout << "Err: " << wynik.err << endl;
             cout << "QR time: " << wynik.qr_time << endl;
             qr_time += wynik.qr_time;
-            if ( wynik.err <= -40 )
-            {
-                break;
-            }
+//            if ( wynik.err <= -40 )
+  //          {
+    //            break;
+      //      }
         }
         qr_time_last += qr_time;
         double executionTime = timer.toc();
