@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
         double qr_time = 0;
         timer.tic();
         int iter = 1;
-        for ( iter = 1; iter < 2; iter++ )
+        for ( iter = 1; iter < 11; iter++ )
         {
     //        poles.print("Input poles: ");
             wynik = my_vectorfit3(data.f, data.s, poles, weight); 
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
             cout << "Err: " << wynik.err << endl;
             cout << "QR time: " << wynik.qr_time << endl;
             qr_time += wynik.qr_time;
-            if ( wynik.err < 1e-5 )
+            if ( wynik.err <= -40 )
             {
                 break;
             }
