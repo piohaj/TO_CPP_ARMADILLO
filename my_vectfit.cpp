@@ -132,8 +132,12 @@ SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles)
 
     // wielowatkowe (TTB) oblicznie wspolczynnikow AA_poles - QR rownolegle
     task_scheduler_init init();
-    parallel_for(blocked_range<int>(0, Nc),
+    wall_clock qr_tim;
+    qr_tim.tic();
+    parallel_for(blocked_range<int>(0, Nc, 100),
            QR_calculation( &A, &f, N, Ns, &AA_poles, &bb_poles) );
+
+    wynik.qr_time = qr_tim.toc();
 
     // obliczenie x dla wszystkich portow badanego ukladu
     mat x = solve(AA_poles, bb_poles);
@@ -267,7 +271,7 @@ SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles)
     wynik.poles = poles;
 
      // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
-     cx_mat f_check = zeros<cx_mat>(Nc, Ns);
+/*     cx_mat f_check = zeros<cx_mat>(Nc, Ns);
      for ( int m = 0; m < Nc; m++ )
      {
          for ( int i = 0; i < Ns; i++ )
@@ -283,7 +287,8 @@ SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles)
      cx_mat diff = f - f_check;
 
      wynik.err = sqrt( accu ( accu( pow(abs(diff), 2) ) ) );
-
+*/
+     wynik.err=0;
      return wynik;
 }
 

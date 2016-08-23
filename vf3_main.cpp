@@ -1,5 +1,5 @@
 #include "my_vectfit.h"
-#define VF_REPEAT 5
+#define VF_REPEAT 10
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
 // $1 - N rzad przyblizenia
@@ -52,6 +52,7 @@ int main(int argc, char* argv[])
 
 
     double exec_time=0;
+    double qr_time = 0;
     int iter;
     wall_clock timer;
     // wlaczenie algorytmu
@@ -70,13 +71,14 @@ int main(int argc, char* argv[])
         }
         timer.tic();
         iter = 1;
-        for ( iter = 1; iter < 11; iter++ )
+        for ( iter = 1; iter < 2; iter++ )
         {
             wynik = my_vectorfit(data.f, data.s, poles); 
 	    poles = wynik.poles;
 		
 	    cout << "Iter: " << iter << endl;
 	    cout << "Err: " << wynik.err << endl;
+            qr_time += wynik.qr_time;
 	    if ( wynik.err < 1e-5 )
             {
 	        break;
@@ -88,8 +90,10 @@ int main(int argc, char* argv[])
     }
 
     exec_time = exec_time / VF_REPEAT;
+    qr_time = qr_time / VF_REPEAT;
 
     printf("Sredni czas wykonania algorytmu po %d wywolaniach: %.6fs \n", VF_REPEAT, exec_time); 
+    printf("Sredni czas wykonania QR po %d wywolaniach: %.6fs \n", VF_REPEAT, qr_time); 
 
 //    wynik.poles.print("poles=");
 //    wynik.res.print("residues=");
@@ -99,8 +103,8 @@ int main(int argc, char* argv[])
 
     //zapis statystyk do pliku
     fstream plik;
-    plik.open("stats_cpp_parallel.txt", ios::out | ios::app);
-    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << exec_time << endl;
+    plik.open("stats_cpp_nosplit_parallel.txt", ios::out | ios::app);
+    plik << N << ";" << Nc << ";" << Ns << ";" << wynik.err << ";" << qr_time << ";" << exec_time << endl;
     plik.flush();
 
     plik.close();
