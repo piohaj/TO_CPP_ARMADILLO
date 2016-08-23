@@ -1,5 +1,6 @@
 #include "my_vectfit.h"
-#define VF_REPEAT 5
+#define VF_REPEAT 3
+#include<mkl_service.h>
 
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
@@ -13,7 +14,7 @@ int main(int argc, char* argv[])
 {
 
     // przygotowanie danych testowych
-//    MKL_Set_Num_Threads(1);
+    MKL_Set_Num_Threads(1);
     input_data data;
     cx_mat poles;
     SER wynik;
@@ -77,18 +78,18 @@ int main(int argc, char* argv[])
     
         timer.tic();
         int iter = 1;
-        for ( iter = 1; iter < 11; iter++ )
+        for ( iter = 1; iter < 4; iter++ )
         {
     //        poles.print("Input poles: ");
             wynik = my_vf_all_splitting( &data.f, &data.s, &poles); 
             poles = wynik.poles;
             
-    //        cout << "Iter: " << iter << endl;
-    //        cout << "Err: " << wynik.err << endl;
-            if ( wynik.err < 1e-5 )
-            {
-                break;
-            }
+            cout << "Iter: " << iter << endl;
+            cout << "Err: " << wynik.err << endl;
+//            if ( wynik.err <= -40 )
+//            {
+//                break;
+//            }
         }
         double executionTime = timer.toc();
         exec_time = exec_time + executionTime;
@@ -101,8 +102,6 @@ int main(int argc, char* argv[])
 //    wynik.poles.print("poles=");
 //    wynik.res.print("residues=");
 //    wynik.h.print("h=");
-    cout << "RMS-err= " << wynik.err << endl;
-    cout << "Iter: " << iter << endl;
 
     //zapis statystyk do pliku
     fstream plik;
