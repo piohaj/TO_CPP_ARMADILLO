@@ -1,5 +1,5 @@
 #include "my_vectfit.h"
-#define VF_REPEAT 5
+#define VF_REPEAT 3
 
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
     
         timer.tic();
         iter = 1;
-        for ( iter = 1; iter < 11; iter++ )
+        for ( iter = 1; iter < 4; iter++ )
         {
       //      poles.print("Input poles: ");
             wynik = my_vf_column_splitting( &data.f, &data.s, &poles); 
@@ -87,10 +87,10 @@ int main(int argc, char* argv[])
             
             cout << "Iter: " << iter << endl;
             cout << "Err: " << wynik.err << endl;
-            if ( wynik.err < 1e-5 )
-            {
-                break;
-            }
+//            if ( wynik.err < 1e-5 )
+//            {
+//                break;
+//            }
         }
         double executionTime = timer.toc();
         cout << "Sample execution time: " << executionTime << endl;
