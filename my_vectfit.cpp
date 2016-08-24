@@ -262,7 +262,7 @@ SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles)
     }
 
     // obliczanie bledu metody najmniejszych kwadratow do obliczonego modelu
-    rms_err_calculation(&wynik, f, s, N);
+    //rms_err_calculation(&wynik, f, s, N);
 
     return wynik;
 }
