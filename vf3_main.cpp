@@ -127,15 +127,18 @@ int main(int argc, char* argv[])
         {
             check_model_simulation_results( data.f, global_conf, gp_data );
             // rysowanie wykresow
-            gp_data.freq = data.freq;
-            try
+            if ( global_conf.gnuplot_generation )
             {
-                prepare_gnuplot_script( gp_data, global_conf.out_file_name );
-            }
-            catch( int & err )
-            {
-                cout<< "Nie mozna utowrzyc katalogu gnuplot\n";
-                return err;
+                gp_data.freq = data.freq;
+                try
+                {
+                    prepare_gnuplot_script( gp_data, global_conf.out_file_name );
+                }
+                catch( int & err )
+                {
+                    cout<< "Nie mozna utowrzyc katalogu gnuplot\n";
+                    return err;
+                }
             }
         }
     }

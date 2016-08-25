@@ -575,7 +575,8 @@ int read_conf( vf_opts& global_conf, string file_name )
         global_conf.pasivity_check = atoi( read_param("pasivity_check", conf_map).c_str() ); 
         global_conf.spice_simulation = atoi( read_param("spice_simulation", conf_map).c_str() );
         global_conf.spice_program_loc = read_param("spice_program_loc", conf_map);
-        global_conf.calc_parallel_RC= atoi( read_param("calc_parallel_RC", conf_map).c_str() );
+        global_conf.calc_parallel_RC = atoi( read_param("calc_parallel_RC", conf_map).c_str() );
+        global_conf.gnuplot_generation = atoi( read_param("gnuplot_generation", conf_map).c_str() );
     }
     catch( const string& err )
     {

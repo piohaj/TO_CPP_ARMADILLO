@@ -45,6 +45,7 @@ struct vf_opts
     int pasivity_check;
     int spice_simulation;
     string spice_program_loc;
+    int gnuplot_generation;
 };
 
 /// ========= VF =========
