@@ -218,6 +218,7 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
 
     //pierwsza linika cira
     cir_file << "Generated netlist: " << conf.out_file_name << "\n" << endl;
+    cir_file << ".opt GSHUNT=1e-12\n";
 
     // przygotowanie subckt dla kazdego elementu macierzy Y
     for ( int j = 1; j <= Nc_port; j++ )
