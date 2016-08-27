@@ -1,6 +1,6 @@
 #include "my_vectfit.h"
 #include<mkl_service.h>
-#define VF_REPEAT 10
+#define VF_REPEAT 3
 
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
@@ -54,12 +54,12 @@ int main(int argc, char* argv[])
     }
 
     wall_clock timer;
-    int iter;
     double exec_time = 0;
     double qr_time_last = 0;
 
     // wlaczenie algorytmu
     cout << "Vector fitting " << VF_REPEAT << " times" << endl;
+    int iter = 1;
     for ( int k = 0; k < VF_REPEAT; k++ )
     {
         // complex starting poles
@@ -77,7 +77,6 @@ int main(int argc, char* argv[])
     
         double qr_time = 0;
         timer.tic();
-        int iter = 1;
         for ( iter = 1; iter < 4; iter++ )
         {
     //        poles.print("Input poles: ");
@@ -88,10 +87,10 @@ int main(int argc, char* argv[])
             cout << "Err: " << wynik.err << endl;
             cout << "QR time: " << wynik.qr_time << endl;
             qr_time += wynik.qr_time;
-//            if ( wynik.err <= -40 )
-  //          {
-    //            break;
-      //      }
+            if ( wynik.err <= -40 )
+            {
+                break;
+            }
         }
         qr_time_last += qr_time;
         double executionTime = timer.toc();
@@ -108,12 +107,12 @@ int main(int argc, char* argv[])
 //    wynik.res.print("residues=");
 //    wynik.h.print("h=");
 //    wynik.err.print("RMS-err=");
-    cout << "Iter: " << iter << endl;
+    cout << "Iters performed: " << iter << endl;
 
     //zapis statystyk do pliku
     fstream plik;
     plik.open("stats_cpp_no_split_one_thread.txt", ios::out | ios::app);
-    plik << N << ";" << Nc << ";" << Ns << ";" << wynik.err << ";" << qr_time_last << ";" << exec_time << endl;
+    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << qr_time_last << ";" << exec_time << endl;
     plik.flush();
 
     plik.close();
