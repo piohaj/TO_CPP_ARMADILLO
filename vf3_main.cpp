@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
         }
     
         timer.tic();
-        int iter = 1;
+        iter = 1;
         for ( iter = 1; iter < 4; iter++ )
         {
       //      poles.print("Input poles: ");
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
             
             cout << "Iter: " << iter << endl;
             cout << "Err: " << wynik.err << endl;
-//            if ( wynik.err < 1e-5 )
+//            if ( wynik.err < -40 )
 //            {
 //                break;
 //            }
