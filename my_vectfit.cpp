@@ -288,6 +288,27 @@ SER my_vectorfit(const cx_mat& f, const cx_vec& s, cx_vec poles)
 
      wynik.err = sqrt( accu ( accu( pow(abs(diff), 2) ) ) );
 */
+
+     // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
+/*     wall_clock rms_tim;
+     rms_tim.tic();
+     cx_mat f_check = zeros<cx_mat>(Nc, Ns);
+     cx_mat poles_check = zeros<cx_mat>(Ns,N);
+     for ( int m = 0; m < N ; m++ )
+     {
+         poles_check.col(m) = cx_double(1,0) / (s - wynik.poles(m) );
+     }
+     for ( int n = 0 ; n < Nc; n++ )
+     {
+         f_check.row(n) = (poles_check*wynik.res.row(n).st()).st() + wynik.h(n,0);
+     }
+         
+     cx_mat diff = f - f_check;
+     double rms_err_db = sqrt( accu( pow( abs( diff ), 2 ) ) /
+                     accu ( pow ( abs(f), 2 ) ) );
+     wynik.err = 20 * log10( rms_err_db );
+     double rms_time = rms_tim.toc();
+*/   
      wynik.err=0;
      return wynik;
 }
@@ -326,11 +347,12 @@ input_data load_data_from_file( int N, int Nc, int Ns )
     ostringstream oss;
     oss << "N" << N << "_Nc" << Nc << "_Ns" << Ns << ".dat";
     string file_sufix = oss.str();
+    cout << "File loaded: " << file_sufix << endl;
 
-    string f_real_file = "./benczmarki/f_real_" + file_sufix;
-    string f_imag_file = "./benczmarki/f_imag_" + file_sufix;
-    string s_real_file = "./benczmarki/s_real_" + file_sufix;
-    string s_imag_file = "./benczmarki/s_imag_" + file_sufix;
+    string f_real_file = "./benczmarki2/f_real_" + file_sufix;
+    string f_imag_file = "./benczmarki2/f_imag_" + file_sufix;
+    string s_real_file = "./benczmarki2/s_real_" + file_sufix;
+    string s_imag_file = "./benczmarki2/s_imag_" + file_sufix;
    
     if ( f_real.load(f_real_file) == false )
     {

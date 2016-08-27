@@ -1,5 +1,5 @@
 #include "my_vectfit.h"
-#define VF_REPEAT 10
+#define VF_REPEAT 3
 
 // program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
 // $1 - N rzad przyblizenia
@@ -79,10 +79,10 @@ int main(int argc, char* argv[])
 	    cout << "Iter: " << iter << endl;
 	    cout << "Err: " << wynik.err << endl;
             qr_time += wynik.qr_time;
-	 //   if ( wynik.err < 1e-5 )
-         //   {
-	 //       break;
-	 //   }
+//	    if ( wynik.err < -40 )
+//            {
+//	        break;
+//	    }
         }
         double executionTime = timer.toc();
         cout<< "Exec one: "<< executionTime << endl;
@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
     //zapis statystyk do pliku
     fstream plik;
     plik.open("stats_cpp_nosplit_parallel.txt", ios::out | ios::app);
-    plik << N << ";" << Nc << ";" << Ns << ";" << wynik.err << ";" << qr_time << ";" << exec_time << endl;
+    plik << N << ";" << Nc << ";" << Ns << ";" << iter << ";" << wynik.err << ";" << qr_time << ";" << exec_time << endl;
     plik.flush();
 
     plik.close();
