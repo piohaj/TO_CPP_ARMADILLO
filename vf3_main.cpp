@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
         }
     
         timer.tic();
-        int iter = 1;
+        iter = 1;
         for ( iter = 1; iter < 4; iter++ )
         {
     //        poles.print("Input poles: ");

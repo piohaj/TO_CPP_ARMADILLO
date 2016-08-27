@@ -292,10 +292,10 @@ input_data load_data_from_file( int N, int Nc, int Ns )
     oss << "N" << N << "_Nc" << Nc << "_Ns" << Ns << ".dat";
     string file_sufix = oss.str();
 
-    string f_real_file = "./benczmarki/f_real_" + file_sufix;
-    string f_imag_file = "./benczmarki/f_imag_" + file_sufix;
-    string s_real_file = "./benczmarki/s_real_" + file_sufix;
-    string s_imag_file = "./benczmarki/s_imag_" + file_sufix;
+    string f_real_file = "./benczmarki2/f_real_" + file_sufix;
+    string f_imag_file = "./benczmarki2/f_imag_" + file_sufix;
+    string s_real_file = "./benczmarki2/s_real_" + file_sufix;
+    string s_imag_file = "./benczmarki2/s_imag_" + file_sufix;
    
     if ( f_real.load(f_real_file) == false )
     {
