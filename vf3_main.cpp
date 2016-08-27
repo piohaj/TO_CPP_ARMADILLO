@@ -85,10 +85,10 @@ int main(int argc, char* argv[])
             
             cout << "Iter: " << iter << endl;
             cout << "Err: " << wynik.err << endl;
-        //    if ( wynik.err < 1e-5 )
-        //    {
-        //        break;
-        //    }
+//            if ( wynik.err < -40 )
+//            {
+//                break;
+//            }
         }
         double executionTime = timer.toc();
         exec_time = exec_time + executionTime;
