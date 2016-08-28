@@ -287,22 +287,15 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles, vf_opts&
 
      // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
      cx_mat f_check = zeros<cx_mat>(Nc, Ns);
-     for ( int m = 0; m < Nc; m++ )
+     cx_mat poles_check = zeros<cx_mat>(Ns,N);
+     for ( int m = 0; m < N ; m++ )
      {
-         for ( int i = 0; i < Ns; i++ )
-         {
-             for ( int j = 0; j < N; j++ )
-             {
-                 f_check(m, i) = f_check(m, i) + wynik.res(m, j) / ( s(i) - wynik.poles(j));
-             }
-             f_check(m, i) = f_check(m, i) + s(i)*wynik.h(m, 0) + wynik.d(m, 0);
-         } 
+         poles_check.col(m) = cx_double(1,0) / (s - wynik.poles(m) );
      }
-     
-     //mat diff_real = real(f - f_check);
-     //mat diff_imag = imag(f - f_check);
-
-     //wynik.err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
+     for ( int n = 0 ; n < Nc; n++ )
+     {
+         f_check.row(n) = (poles_check*wynik.res.row(n).st()).st() + wynik.h(n,0);
+     }
 
      double rms_err_db = sqrt( accu( pow( abs( f - f_check ), 2 ) ) /
                      accu ( pow ( abs(f), 2 ) ) );
