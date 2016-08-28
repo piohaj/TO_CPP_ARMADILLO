@@ -225,10 +225,11 @@ mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double rms
     if ( split_strat == NON_SPLITING )
     {
         result = zeros<mat>(1,1);
-        double err = 1;
+        double err = 0;
         for ( int i = 0; i < size; i++ )
         {
-            if ( input[i].err < err )
+            double err_temp = input[i].err;
+            if ( ( err - err_temp ) >= rms_diff )
             {
                 err = input[i].err;
                 result(0) = i;
@@ -240,12 +241,12 @@ mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double rms
         result = zeros<mat>(Nc, 1);
         for ( int i = 0; i < Nc; i++ )
         {
-            double err = 1000;
+            double err = 0;
             for ( int j = 0; j < size; j++ )
             {
                 double err_temp = input[j].err_table[i];
 
-                if ( ( err - err_temp ) > rms_diff )
+                if ( ( err - err_temp ) >= rms_diff )
                 {
                     err = input[j].err_table[i];
                     result(i) = j;
@@ -258,12 +259,12 @@ mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double rms
         result = zeros<mat>( sqrt(Nc), 1 );
         for ( int i = 0; i < sqrt(Nc); i++ )
         {
-            double err = 1000;
+            double err = 0;
             for ( int j = 0; j < size; j++ )
             {
                 double err_temp = input[j].err_table[i];
 
-                if ( (err - err_temp) > rms_diff )
+                if ( (err - err_temp) >= rms_diff )
                 {
                     err = input[j].err_table[i];
                     result(i) = j;
