@@ -127,12 +127,14 @@ real_pole_net parse_real_pole( cx_double res, cx_double poles, int is_diag )
     //cout << "\nBiegun rzeczywisty" << endl;
     //cout << "Pole " << poles << endl;
     //cout << "Res " << res << endl;
+    double pole_real = real(poles) + 1e-16;
+    double res_real = real(res) + 1e-16;
 
-    net.R = -real(poles)/real(res) * is_diag;
-    net.L = 1/real(res) * is_diag;
+    net.R = -pole_real/res_real * is_diag;
+    net.L = 1/res_real * is_diag;
 
-    net.res = real(res);
-    net.pole = real(poles);
+    net.res = res_real;
+    net.pole = pole_real;
 
     //cout << "R " << net.R << endl;
     //cout << "L " << net.L << endl;
@@ -144,7 +146,7 @@ real_pole_net parse_real_pole( cx_double res, cx_double poles, int is_diag )
 imag_pole_net parse_imag_pole( cx_double res, cx_double poles, int is_diag )
 {
     imag_pole_net net;
-    double res_real = real(res) * is_diag;
+    double res_real = real(res) * is_diag + 1e-16;
     double res_imag = imag(res) * is_diag;
     double poles_real = real(poles);
     double poles_imag = imag(poles);
