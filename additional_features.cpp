@@ -1198,6 +1198,8 @@ void prepare_gnuplot_script( gnuplot_data & data, string name )
     string file_name = dir_name + "/";
 
     gpfile << "set xlabel \"freq\"" << endl;
+    gpfile << "set linestyle 1 lt 2 lw 2 pt 12 ps 2" << endl;
+    gpfile << "set linestyle 2 lt 1 lw 2 pt 2 ps 1\n" << endl;
     int gp_it = 0;
     int data_it = 0;
     for ( int i = 0; i < Nc_ports ; i++ )
@@ -1220,9 +1222,9 @@ void prepare_gnuplot_script( gnuplot_data & data, string name )
            file_mat.save(ss_abs.str(), raw_ascii);
            gpfile << "set title \"abs(Y" << ss_index.str() <<")\"\n";
            gpfile << "set term x11 " << gp_it++ << endl;
-           gpfile << "plot \'" << ss_abs_file.str() << "\' u 1:2 title \'Input data\', \'"
+           gpfile << "plot \'" << ss_abs_file.str() << "\' u 1:2 title \'Input data\' with linespoints ls 1, \'"
                   << ss_abs_file.str()
-                  << "\' u 1:3 title \'Simulation data\'\n" << endl;
+                  << "\' u 1:3 title \'Simulation data\' with linespoints ls 2\n" << endl;
     
            ostringstream ss_angle, ss_angle_file;
            ss_angle_file << "Y" << ss_index.str() << "_angle";
@@ -1233,9 +1235,9 @@ void prepare_gnuplot_script( gnuplot_data & data, string name )
            file_mat.save(ss_angle.str(), raw_ascii);
            gpfile << "set term x11 " << gp_it++ << endl;
            gpfile << "set title \"angle(Y" << ss_index.str() <<")\"\n";
-           gpfile << "plot \'" << ss_angle_file.str() << "\' u 1:2 title \'Input data\', \'"
+           gpfile << "plot \'" << ss_angle_file.str() << "\' u 1:2 title \'Input data\' with linespoints ls 1, \'"
                   << ss_angle_file.str()
-                  << "\' u 1:3 title \'Simulation data\'\n" << endl;
+                  << "\' u 1:3 title \'Simulation data\' with linespoints ls 2\n" << endl;
        }
     }
     gpfile << "pause -1\n";
