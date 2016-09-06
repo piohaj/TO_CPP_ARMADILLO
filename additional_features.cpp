@@ -1193,7 +1193,7 @@ void prepare_gnuplot_script( gnuplot_data & data, string name )
     int Nc = data.simulation_data.n_rows;
     int Nc_ports = sqrt(Nc);
     int Ns = data.simulation_data.n_cols;
-    mat file_mat = zeros<mat>(Ns, 3);
+    mat file_mat = zeros<mat>(Ns, 4);
     file_mat.col(0) = data.freq;
     string file_name = dir_name + "/";
 
@@ -1218,13 +1218,17 @@ void prepare_gnuplot_script( gnuplot_data & data, string name )
            ss_abs << file_name << ss_abs_file.str();
            file_mat.col(1) = abs(input_temp);
            file_mat.col(2) = abs(simulation_temp);
+           file_mat.col(3) = abs(input_temp - simulation_temp);
             
            file_mat.save(ss_abs.str(), raw_ascii);
            gpfile << "set title \"abs(Y" << ss_index.str() <<")\"\n";
+           gpfile << "set logscale y\n";
            gpfile << "set term x11 " << gp_it++ << endl;
            gpfile << "plot \'" << ss_abs_file.str() << "\' u 1:2 title \'Input data\' with linespoints ls 1, \'"
                   << ss_abs_file.str()
-                  << "\' u 1:3 title \'Simulation data\' with linespoints ls 2\n" << endl;
+                  << "\' u 1:3 title \'Simulation data\' with linespoints ls 2, \'"
+                  << ss_abs_file.str()
+                  << "\' u 1:4 title \'Blad bezwzgledny\' with linespoints\n" << endl;
     
            ostringstream ss_angle, ss_angle_file;
            ss_angle_file << "Y" << ss_index.str() << "_angle";
@@ -1233,8 +1237,9 @@ void prepare_gnuplot_script( gnuplot_data & data, string name )
            file_mat.col(2) = gp_angle(simulation_temp);
     
            file_mat.save(ss_angle.str(), raw_ascii);
-           gpfile << "set term x11 " << gp_it++ << endl;
            gpfile << "set title \"angle(Y" << ss_index.str() <<")\"\n";
+           gpfile << "unset logscale y\n";
+           gpfile << "set term x11 " << gp_it++ << endl;
            gpfile << "plot \'" << ss_angle_file.str() << "\' u 1:2 title \'Input data\' with linespoints ls 1, \'"
                   << ss_angle_file.str()
                   << "\' u 1:3 title \'Simulation data\' with linespoints ls 2\n" << endl;
