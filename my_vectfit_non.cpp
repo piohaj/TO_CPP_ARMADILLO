@@ -136,10 +136,13 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles, vf_opts&
     mat AA_poles = zeros<mat>(Nc*N, N);
     mat bb_poles = zeros<mat>(Nc*N, 1);
 
+    MKL_Set_Num_Threads(1); // ustawienie 1 watku w MKL na czas TBB
     // wielowatkowe (TTB) oblicznie wspolczynnikow AA_poles - QR rownolegle
     task_scheduler_init init();
     parallel_for(blocked_range<int>(0, Nc),
            QR_calculation( &A, &f, N, Ns, &AA_poles, &bb_poles, RC_offset) );
+
+    MKL_Set_Num_Threads(0); // MKL max threads
 
     // obliczenie x dla wszystkich portow badanego ukladu
     mat x = solve(AA_poles, bb_poles);

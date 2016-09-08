@@ -212,10 +212,13 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts
     wynik.err = 0.0;
     wynik.err_table = zeros<mat>(Nc, 1);
 
+    MKL_Set_Num_Threads(1); // ustawienie 1 watku MKL na czas TBB
     // wielowatkowe uruchomienie algorytmu VF
     task_scheduler_init init();
     parallel_for( blocked_range<int>(0, Nc),
               vf_all(f, s, poles, &wynik, RC_offset) );
+
+    MKL_Set_Num_Threads(0); // MKL max threads
 
     // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
     cx_mat f_check = zeros<cx_mat>(Nc, Ns);

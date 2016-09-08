@@ -4,16 +4,12 @@
 #include "my_vectfit_non.h"
 #define VF_REPEAT 1
 
-// program na wejsciu przyjmuje 3 dane (w celu wczytania odpowiedniego benczmarka):
-// $1 - N rzad przyblizenia
-// $2 - Nc liczba portow badanego ukladu
-// $3 - Ns liczba probek pomiarowych
-// np.
-// vf3 4 2 100 - bedzie probowalo czytac pliki: f_real_N4_Nc2_Ns100.dat itd.
-// w przydapku niepodania wartosci wejsciowych zostanie uruchomiony przebieg testowy
+// program jako jedyny argument przyjmuje plik z konfiguracja
+// brak tego pliku spowoduje bledne zakonczenie dzialania aplikacji
 int main(int argc, char* argv[])
 {
-    MKL_Set_Num_Threads(1);
+    MKL_Set_Num_Threads(0); // ustawienie najwiekszej mozliwej liczby watkow dla MKL
+
     input_data data;
     cx_mat poles;
     SER wynik;

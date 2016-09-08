@@ -15,7 +15,7 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data )
     {
         for ( int i = 0; i < N; i++ )
         {
-            if ( imag(poles(j, i)) != 0 && abs(poles(j,i)) != 0.0 ) 
+            if ( imag(poles(j, i)) != 0 && abs(poles(j,i)) != 0.0 )
             {
                 if ( i == 0 )
                 {
@@ -50,11 +50,11 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data )
     {
         SPLITING_STRT = ALL_SPLITING;
     }
-    else if ( N_poles == sqrt(Nc) ) // column splliting    
+    else if ( N_poles == sqrt(Nc) ) // column splliting
     {
         SPLITING_STRT = COLUMN_SPLITING;
     }
-    
+
     // zmienna do prawidlowego wyboru biegunow dla danego elementu macierzy Y
     int nn = 0;
 
@@ -62,7 +62,7 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data )
     {
         if ( SPLITING_STRT == NON_SPLITING ) { nn = 0; }
         else if ( SPLITING_STRT == ALL_SPLITING ) { nn = i; }
-        else if ( SPLITING_STRT == COLUMN_SPLITING ) { nn = i/sqrt(Nc); } 
+        else if ( SPLITING_STRT == COLUMN_SPLITING ) { nn = i/sqrt(Nc); }
 
         Y_network_data network_data_sample; // struktura z danymi sieci dla pojedynczego elementu macierz Y
         // wyczyszczenie struktury pomocniczej
@@ -79,9 +79,9 @@ void parse_SER(SER *input_SER, Y_network_data *output_network_data )
         if ( ( i - floor(i/(sqrt(Nc)+1))*(sqrt(Nc)+1) ) == 0 ) is_diag = 1; // jest
 
         // rozwiazanie problemu z zerowym R rownoleglym
-        if ( input_SER->d(i) == 0 ) 
+        if ( input_SER->d(i) == 0 )
         {
-            network_data_sample.R = 1e16; 
+            network_data_sample.R = 1e16;
         }
         else
         {
@@ -155,8 +155,8 @@ imag_pole_net parse_imag_pole( cx_double res, cx_double poles, int is_diag )
     //cout << "Res " << res << endl;
 
     net.L = 1/(2 * res_real);
-    net.R = 2*net.L*(net.L*(res_real*poles_real + res_imag*poles_imag) - poles_real); 
-    net.C = 1 / ( net.L*( pow(poles_real,2) + pow(poles_imag,2) + 2*net.R*(res_real*poles_real + res_imag*poles_imag)) ); 
+    net.R = 2*net.L*(net.L*(res_real*poles_real + res_imag*poles_imag) - poles_real);
+    net.C = 1 / ( net.L*( pow(poles_real,2) + pow(poles_imag,2) + 2*net.R*(res_real*poles_real + res_imag*poles_imag)) );
     net.G = -2*( res_real*poles_real + res_imag*poles_imag) * net.C * net.L;
 
     net.res = cx_double(res_real, res_imag);
@@ -180,17 +180,17 @@ void print_network_data( Y_network_data *Y, int i )
      cout << "Real pole branches: " << endl;
      for ( int j = 0 ; j < Y[i].real_pole_nets.size() ; j++ )
      {
-         cout << "R: " << Y[i].real_pole_nets[j].R << " om" <<endl; 
-         cout << "L: " << Y[i].real_pole_nets[j].L << " henr" <<endl; 
+         cout << "R: " << Y[i].real_pole_nets[j].R << " om" <<endl;
+         cout << "L: " << Y[i].real_pole_nets[j].L << " henr" <<endl;
      }
-     
+
      cout << "Imag pole branches:" <<endl;
      for ( int j = 0 ; j < Y[i].imag_pole_nets.size() ; j++ )
      {
-         cout << "R: " << Y[i].imag_pole_nets[j].R << " om" <<endl; 
-         cout << "L: " << Y[i].imag_pole_nets[j].L << " henr" <<endl; 
-         cout << "C: " << Y[i].imag_pole_nets[j].C << " F" <<endl; 
-         cout << "G: " << Y[i].imag_pole_nets[j].G << " Si" <<endl; 
+         cout << "R: " << Y[i].imag_pole_nets[j].R << " om" <<endl;
+         cout << "L: " << Y[i].imag_pole_nets[j].L << " henr" <<endl;
+         cout << "C: " << Y[i].imag_pole_nets[j].C << " F" <<endl;
+         cout << "G: " << Y[i].imag_pole_nets[j].G << " Si" <<endl;
      }
 }
 
@@ -235,12 +235,12 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
             string y_inx = ss.str();
             create_subckt( Y_temp, y_inx, cir_file, conf );
         }
-    }       
-    
+    }
+
     cir_file << endl;
     cir_file << "*** Complete cir ***" <<endl;
 
-    int current_index = 1; // indeks zrodel pradowych sterowanych pradem 
+    int current_index = 1; // indeks zrodel pradowych sterowanych pradem
     int voltage_index = 1; // indeks zrodel napieciowych sterowanych napieciem
 
     int node_volt = 0; // nr wezla od zrodla napieciowego sterowanego napieciem
@@ -256,8 +256,8 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
             {
                 int node = i+1;
                 cir_file << "V" << node << " " << node << " 0 DC 0 AC {Vg" << node << "}" << endl; // port
-                cir_file << "X_Y" << node << node << " " << node << " 0 " << "Y" << node << node << endl; // element z przekatnej macierzy Y 
-              
+                cir_file << "X_Y" << node << node << " " << node << " 0 " << "Y" << node << node << endl; // element z przekatnej macierzy Y
+
                 // dodanie zrodel pradowych sterowanych pradem
                 for ( int k = 1; k <= Nc_port; k++ )
                 {
@@ -322,16 +322,16 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file, vf_op
 
      if ( abs(data.R) > conf.R_max || abs(data.R) == 0 )
      {
-         cout << "Rownolegle R dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl; 
+         cout << "Rownolegle R dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl;
      }
      else
      {
          cir_file << "R0 1 2 " << data.R << endl;
      }
-  
+
      if ( abs(data.C) < conf.C_min || abs(data.C) == 0 )
      {
-         cout << "Rownolegle C dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl; 
+         cout << "Rownolegle C dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl;
      }
      else
      {
@@ -341,10 +341,10 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file, vf_op
      // real poles
      for ( int i = 0; i < data.real_pole_nets.size(); i++ )
      {
-         cir_file << "*** Real pole: (res=" << data.real_pole_nets[i].res 
+         cir_file << "*** Real pole: (res=" << data.real_pole_nets[i].res
                   << " pole=" << data.real_pole_nets[i].pole << ") ***" << endl;
-         cir_file << "R" << R_index << " 1 " << node << " " << data.real_pole_nets[i].R << endl; 
-         cir_file << "L" << L_index << " " << node << " 2 " << data.real_pole_nets[i].L << endl; 
+         cir_file << "R" << R_index << " 1 " << node << " " << data.real_pole_nets[i].R << endl;
+         cir_file << "L" << L_index << " " << node << " 2 " << data.real_pole_nets[i].L << endl;
          R_index++;
          L_index++;
          node++;
@@ -353,12 +353,13 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file, vf_op
      // imag poles
      for ( int i = 0; i < data.imag_pole_nets.size(); i++ )
      {
-         cir_file << "*** Imag pole: para (res=" << data.imag_pole_nets[i].res 
+         cir_file << "*** Imag pole: para (res=" << data.imag_pole_nets[i].res
                   << " pole=" << data.imag_pole_nets[i].pole << ") ***" << endl;
-         cir_file << "R" << R_index++ << " 1 " << node << " " << data.imag_pole_nets[i].R << endl; 
-         cir_file << "L" << L_index << " " << node << " " << ++node << " " << data.imag_pole_nets[i].L << endl; 
-         cir_file << "C" << C_index << " " << node << " 2 " << data.imag_pole_nets[i].C << endl; 
-         cir_file << "R" << R_index << " " << node << " 2 " << 1 / data.imag_pole_nets[i].G << endl; // G modelu przedstawione jako R 
+         cir_file << "R" << R_index++ << " 1 " << node << " " << data.imag_pole_nets[i].R << endl;
+         cir_file << "L" << L_index << " " << node << " " << node+1 << " " << data.imag_pole_nets[i].L << endl;
+         node++;
+         cir_file << "C" << C_index << " " << node << " 2 " << data.imag_pole_nets[i].C << endl;
+         cir_file << "R" << R_index << " " << node << " 2 " << 1 / data.imag_pole_nets[i].G << endl; // G modelu przedstawione jako R
 
          R_index++;
          L_index++;

@@ -249,10 +249,13 @@ SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles, vf_o
     wynik.err = 0.0;
     wynik.err_table = zeros<mat>(column_num, 1);
 
+    MKL_Set_Num_Threads(1); // ustawienie 1 watku w MKL na czas TBB
     // wielowatkowe uruchomienie algorytmu VF
     task_scheduler_init init();
     parallel_for( blocked_range<int>(0, column_num),
               vf_column(f, s, poles, &wynik, RC_offset) );
+
+    MKL_Set_Num_Threads(0); // MKL max threads
 
     // obliczanie bledu metody najmniejszych kwadratow do obliczonego modelu
     rms_err_calculation(&wynik, f, s, N);
