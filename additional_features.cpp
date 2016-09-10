@@ -13,7 +13,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     
     if ( conf.max_row < conf.min_row )
     {
-        cout << "Podano nieprawidlowy przedzial rzedow przyblizenia" << endl;
+        cout << "++ Podano nieprawidlowy przedzial rzedow przyblizenia" << endl;
         delete[] wynik_iter;
         return wynik;
     }
@@ -23,12 +23,16 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     {
         if ( check_and_make_passive( f ) != 0 )
         { 
-            cout << "Problem podczas wymuszania pasywnosci" << endl;
+            cout << "++ Problem podczas wymuszania pasywnosci" << endl;
             delete[] wynik_iter;
             return wynik;
         }
     }
 
+    cout << "\n";
+    cout << "++ Aplikacja szuka optymalnego przyblizenia wsrod rzedow z przedzialu:\n"
+         << "++ <" << conf.min_row << ";" << conf.max_row << ">\n" << endl;
+    
     if ( split_strat == NON_SPLITING )
     {
         int high_iter = 0;
@@ -49,11 +53,13 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	            break;
     	        }
             }
-    	    cout << "Row: " << row << endl;
-    	    cout << "Err: " << wynik_iter[high_iter].err << endl;
+            cout << "++ Rzad przyblizenia: " << row << ", RRMS: "
+                 << wynik_iter[high_iter].err << " dB" << endl;
             high_iter++;
         }
         result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
+        cout << "\n++ Optymalne rozwiazanie (zgodnie z konfiguracja):\n"
+             << "++ Rzad: " << conf.min_row + int(result_idx(0)) << "\n" << endl;
         wynik = wynik_iter[int(result_idx(0))];
     }
     else if ( split_strat == ALL_SPLITING )
@@ -76,15 +82,17 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	            break;
     	        }
             }
-    	    cout << "Row: " << row << endl;
-    	    cout << "Err: " << wynik_iter[high_iter].err << endl;
-            wynik_iter[high_iter].err_table.print("err_table=");
+            cout << "++ Rzad przyblizenia: " << row << ", RRMS: "
+                 << wynik_iter[high_iter].err << " dB" << endl;
+            wynik_iter[high_iter].err_table.print("++ Bledy RRMS dla kolejnych elementow Y (dB)=");
 
             high_iter++;
         }
        
        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
-       cout << Nc << endl;
+       cout << "\n++ Optymalne rozwiazanie (zgodnie z konfiguracja):\n";
+       (result_idx + conf.min_row).print("++ Rzedy (dla kolejnych elementow Y (kolumnowo):");
+
        wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
     else if ( split_strat == COLUMN_SPLITING )
@@ -107,13 +115,17 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	            break;
     	        }
             }
-    	    cout << "Row: " << row << endl;
-    	    cout << "Err: " << wynik_iter[high_iter].err << endl;
-            wynik_iter[high_iter].err_table.print("err_table=");
+            cout << "++ Rzad przyblizenia: " << row << ", RRMS: "
+                 << wynik_iter[high_iter].err << " dB" << endl;
+            wynik_iter[high_iter].err_table.print("++ Bledy RRMS dla kolejnych kolumn Y=");
 
             high_iter++;
         }
         result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
+
+        cout << "\n++ Optymalne rozwiazanie (zgodnie z konfiguracja):\n";
+        (result_idx + conf.min_row).print("++ Rzedy (dla kolejnych kolumn Y (pionowo):");
+
         wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
     else
@@ -1134,38 +1146,22 @@ void save_results_mats( SER & results, string file_name )
 
     mat poles_real = real(results.poles);
     mat poles_imag = imag(results.poles);
-//    mat poles_mat = zeros<mat>(Nc_poles, 2*N);
     mat poles_mat = join_horiz( poles_real, poles_imag);
 
     mat res_real = real(results.res);
     mat res_imag = imag(results.res);
-//    mat res_mat = zeros<mat>(Nc, 2*N);
     mat res_mat = join_horiz( res_real, res_imag );
 
-    cout << "Saving poles to " << poles_file_name << endl;
-/*    int j = 0;
-    for ( int i = 0; i < 2*N; i=i+2 )
-    {
-        poles_mat.col(i) = poles_real.col(j);
-        poles_mat.col(i+1) = poles_imag.col(j);
-        j++;
-    } */
+    cout << poles_file_name << endl;
     poles_mat.save(poles_file_name, raw_ascii);
 
-    cout << "Saving res to " << res_file_name << endl;
-/*    j = 0;
-    for ( int i = 0; i < 2*N; i=i+2 )
-    {
-        res_mat.col(i) = res_real.col(j);
-        res_mat.col(i+1) = res_imag.col(j);
-        j++;
-    }*/
+    cout << res_file_name << endl;
     res_mat.save(res_file_name, raw_ascii);
 
-    cout << "Saving d to " << d_file_name << endl;
+    cout << d_file_name << endl;
     results.d.save(d_file_name, raw_ascii);
 
-    cout << "Saving h to " << h_file_name << endl;
+    cout << h_file_name << endl;
     results.h.save(h_file_name, raw_ascii);
 }
 

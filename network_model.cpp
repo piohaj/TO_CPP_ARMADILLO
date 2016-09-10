@@ -201,7 +201,7 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
 
     if ( pow(Nc_port, 2) != Nc )
     {
-        cout << "Podana macierz nie jest kwadratowa - model nie bedzie syntezowany" <<endl;
+        cout << "== Podana macierz nie jest kwadratowa - model nie bedzie syntezowany" <<endl;
         return;
     }
 
@@ -306,6 +306,8 @@ void create_model_netlist( SER *input_SER, int Nc, const vec& freq, ofstream &ci
     cir_file << "\n\n.end";
 
     delete[] data;
+    cout << "== Poprawnie wygenerowano model ukladowy.\n"
+         << "== Zapisano do pliku " << conf.out_file_name << endl;
 }
 
 

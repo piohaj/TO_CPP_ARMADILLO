@@ -14,6 +14,7 @@
 #include <cstring>
 #include <cstdio>
 #include <sys/stat.h>
+#include <ctime>
 
 using namespace std;
 using namespace arma;

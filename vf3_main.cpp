@@ -2,7 +2,6 @@
 #include "network_model.h"
 #include "additional_features.h"
 #include "my_vectfit_non.h"
-#define VF_REPEAT 1
 
 // program jako jedyny argument przyjmuje plik z konfiguracja
 // brak tego pliku spowoduje bledne zakonczenie dzialania aplikacji
@@ -20,6 +19,10 @@ int main(int argc, char* argv[])
         Ns = 0,
         Nc = 0;
     gnuplot_data gp_data;
+    time_t startup_time;
+
+    time( &startup_time );
+    cout << "## Czas rozpoczecia działania aplikacji: " << ctime( &startup_time ) << endl;
 
     // jeden argument wywolania - plik z konfiguracja
     if ( argc == 2 )
@@ -82,29 +85,32 @@ int main(int argc, char* argv[])
     int iter;
     wall_clock timer;
     // wlaczenie algorytmu
-    cout << "Vector fitting " << VF_REPEAT << " times" << endl;
-    for ( int k = 0; k < VF_REPEAT ; k++ )
+    cout << "## Przyblizanie funkcji ukladowych algorytmem VF\n";
+    timer.tic();
+    wynik = vf_high_level( data.f, data.s, global_conf );
+    double executionTime = timer.toc();
+    cout<< "## Czas przyblizania funkcji ukladowych: "<< executionTime <<  "s" << endl;
+    exec_time = exec_time + executionTime;
+
+    cout << "\n\n";
+    cout << "## Otrzymane przyblizenie (VF):\n";
+    wynik.poles.print("## Bieguny=");
+    wynik.res.print("## Residua=");
+
+    if ( global_conf.calc_parallel_RC )
     {
-        timer.tic();
-        wynik = vf_high_level( data.f, data.s, global_conf );
-        double executionTime = timer.toc();
-        cout<< "Exec one: "<< executionTime << endl;
-        exec_time = exec_time + executionTime;
+        wynik.h.print("## h=");
+        wynik.d.print("## d=");
     }
 
-    exec_time = exec_time / VF_REPEAT;
-
-    printf("Sredni czas wykonania algorytmu po %d wywolaniach: %.6fs \n", VF_REPEAT, exec_time);
-
-    cout << "\n\n\n";
-    wynik.poles.print("poles=");
-    wynik.res.print("residues=");
-    wynik.h.print("h=");
-    wynik.d.print("d=");
-    cout << "RMS-err(wybrany)= " << wynik.err <<endl;
+    cout << "## Blad RRMS uzyskany po aproksymacji VF i wyborze optymalnego rzedu:\n" 
+         << "## RRMS_VF = " << wynik.err << " dB\n" << endl;
 
     // zapis otrzymanych wynikow do pliku - do wczytania w matlabie
+    cout << "## Zapis otrzymanego modelu (VF) do plikow:\n";
     save_results_mats( wynik, global_conf.out_file_name );
+
+    cout << "\n## Generowanie modelu ukladowego .cir" << endl;
     // utworzenie modelu cir i zapis do pliku
     ofstream myfile;
 
