@@ -546,8 +546,8 @@ int check_model_simulation_results( const cx_mat& f, const vf_opts& conf, gnuplo
     double rms_err = sqrt( accu( pow( abs( f - spice_simulation_data.f ), 2 ) ) /
                      accu ( pow ( abs(f), 2 ) ) );
     double rms_err_db = 20 * log10( rms_err );
-    cout << "RMS err (between input data and data obtainted from simulation on generated model) = " << rms_err << endl;
-    cout << "RMS err (between input data and data obtainted from simulation on generated model) = " << rms_err_db << " db" << endl;
+    cout << "## Blad RRMS (pomiedzy danymi wejsciowymi a danymi uzyskanymi z symulacji LT Spice) = " << rms_err << endl;
+    cout << "## Blad RRMS (pomiedzy danymi wejsciowymi a danymi uzyskanymi z symulacji LT Spice) = " << rms_err_db << " db" << endl;
 
     return 0;
 }
