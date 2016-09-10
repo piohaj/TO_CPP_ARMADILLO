@@ -284,9 +284,10 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles, vf_opts&
         }
     }
 
-//    cout << "Wynik.h: " << wynik.h << endl;
     // wstawienie biegunow do struktury wynikow
     wynik.poles = poles.st();
+
+    wynik.err_table = zeros<vec>(Nc);
 
      // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
      cx_mat f_check = zeros<cx_mat>(Nc, Ns);
@@ -300,9 +301,13 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles, vf_opts&
          f_check.row(n) = (poles_check*wynik.res.row(n).st()).st() + wynik.h(n,0);
      }
 
-     double rms_err_db = sqrt( accu( pow( abs( f - f_check ), 2 ) ) /
-                     accu ( pow ( abs(f), 2 ) ) );
-     wynik.err = 20 * log10( rms_err_db );
+     // obliczanie RRMS jako najgorszego bledu z obliczonych dla kazdego elementu Y
+     for ( int j = 0; j < Nc; j++ )
+     {
+         double rms_err_row_db = norm( f.row(j) - f_check.row(j) ) / norm( f.row(j) );
+         wynik.err_table(j) = 20 * log10( rms_err_row_db );
+     }
+     wynik.err = arma::max( wynik.err_table );
 
      return wynik;
 }

@@ -17,6 +17,8 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
         delete[] wynik_iter;
         return wynik;
     }
+    cout << "++ Liczba wrot badanego ukladu: " << sqrt(Nc) << endl;
+    cout << "++ Liczba probek pomiarowych: " << Ns << endl;
 
     // sprawdzenie i ewentualne wymuszenie pasywnosci
     if ( conf.pasivity_check )
@@ -299,7 +301,7 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
         wynik.res = zeros<cx_mat>(Nc, max_row);
         wynik.d = zeros<mat>(Nc, 1);
         wynik.h = zeros<mat>(Nc, 1);
-        double err_temp = 0.0;
+        wynik.err_table = zeros<vec>(Nc);
     
         for ( int n = 0; n < Nc ; n++ )
         {
@@ -312,9 +314,9 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
             wynik.res( n, span(0, res_temp.n_cols-1) ) = res_temp;
             wynik.d.row(n) = d_temp;
             wynik.h.row(n) = h_temp;
-            err_temp += iter_models[int(indexes(n))].err_table(n); 
+            wynik.err_table(n) = iter_models[int(indexes(n))].err_table(n); 
         }
-        wynik.err = err_temp/Nc;
+        wynik.err = arma::max( wynik.err_table );
     }
     else if ( split_strat == COLUMN_SPLITING )
     {
@@ -323,6 +325,7 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
         wynik.d = zeros<mat>(Nc, 1);
         wynik.h = zeros<mat>(Nc, 1);
         double err_temp = 0.0;
+        wynik.err_table = zeros<vec>(sqrt(Nc));
     
         for ( int n = 0; n < Nc ; n++ )
         {
@@ -335,9 +338,10 @@ SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int
             wynik.res( n, span(0, res_temp.n_cols-1) ) = res_temp;
             wynik.d.row(n) = d_temp;
             wynik.h.row(n) = h_temp;
-            err_temp += iter_models[int(indexes(n/sqrt(Nc)))].err_table(n/sqrt(Nc)); 
+            //err_temp += iter_models[int(indexes(n/sqrt(Nc)))].err_table(n/sqrt(Nc)); 
+            wynik.err_table(n/sqrt(Nc)) = iter_models[int(indexes(n/sqrt(Nc)))].err_table(n/sqrt(Nc));
         }
-        wynik.err = err_temp / Nc;
+        wynik.err = arma::max( wynik.err_table );
     }
 
     return wynik;
@@ -523,6 +527,7 @@ int check_model_simulation_results( const cx_mat& f, const vf_opts& conf, gnuplo
     string simulation_data_file = conf.out_file_name;
     simulation_data_file.replace(simulation_data_file.end()-3,simulation_data_file.end(), "raw");
     int Ns = f.n_cols;
+    int Nc = f.n_rows;
     input_data spice_simulation_data;
 
     try
@@ -538,14 +543,17 @@ int check_model_simulation_results( const cx_mat& f, const vf_opts& conf, gnuplo
     gp_data.input_data = f;
     gp_data.simulation_data = spice_simulation_data.f;
 
-    // obliczanie rms miedzy danymi wejsciowymi a modelem
-    mat diff_real = real(f - spice_simulation_data.f);
-    mat diff_imag = imag(f - spice_simulation_data.f);
-
-    //double rms_err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
-    double rms_err = sqrt( accu( pow( abs( f - spice_simulation_data.f ), 2 ) ) /
-                     accu ( pow ( abs(f), 2 ) ) );
+    // obliczanie rrms miedzy danymi wejsciowymi a modelem
+    vec err_temp = zeros<vec>(Nc);
+    for ( int j = 0; j < Nc; j++ )
+    {
+        double rms_err_row = norm( f.row(j) - spice_simulation_data.f.row(j) ) / norm( f.row(j) );
+        err_temp(j) = rms_err_row;
+    }
+    
+    double rms_err = arma::max( err_temp );
     double rms_err_db = 20 * log10( rms_err );
+
     cout << "## Blad RRMS (pomiedzy danymi wejsciowymi a danymi uzyskanymi z symulacji LT Spice) = " << rms_err << endl;
     cout << "## Blad RRMS (pomiedzy danymi wejsciowymi a danymi uzyskanymi z symulacji LT Spice) = " << rms_err_db << " db" << endl;
 

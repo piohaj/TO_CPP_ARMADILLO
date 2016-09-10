@@ -324,7 +324,7 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file, vf_op
 
      if ( abs(data.R) > conf.R_max || abs(data.R) == 0 )
      {
-         cout << "Rownolegle R dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl;
+         cout << "== Rownolegle R dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl;
      }
      else
      {
@@ -333,7 +333,7 @@ void create_subckt( Y_network_data data, string index, ofstream &cir_file, vf_op
 
      if ( abs(data.C) < conf.C_min || abs(data.C) == 0 )
      {
-         cout << "Rownolegle C dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl;
+         cout << "== Rownolegle C dla Y" << index << " pominiete (zgodnie z konfiguracja)" << endl;
      }
      else
      {

@@ -247,7 +247,7 @@ SER my_vf_column_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles, vf_o
     wynik.h = zeros<mat>(Nc,1);
     wynik.d = zeros<mat>(Nc,1);
     wynik.err = 0.0;
-    wynik.err_table = zeros<mat>(column_num, 1);
+    wynik.err_table = zeros<vec>(column_num);
 
     MKL_Set_Num_Threads(1); // ustawienie 1 watku w MKL na czas TBB
     // wielowatkowe uruchomienie algorytmu VF
@@ -283,22 +283,19 @@ void rms_err_calculation(SER *wynik, const cx_mat *f, const cx_vec *s, int N)
         } 
     }
 
-    // mat diff_real = real(*f - f_check);
-    // mat diff_imag = imag(*f - f_check);
-
-    //wynik->err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
-
-    double rms_err_db = sqrt( accu( pow( abs( *f - f_check ), 2 ) ) /
-                     accu ( pow ( abs(*f), 2 ) ) );
-    wynik->err = 20 * log10( rms_err_db );
+    vec err_table_temp = zeros<vec>(Nc);
+    // wypelnienie macierzy z RRMS dla kazdego z elementow Y
+    for ( int j = 0; j < Nc; j++ )
+    {
+        double rms_err_row_db = norm( f->row(j) - f_check.row(j) ) / norm( f->row(j) );
+        err_table_temp(j) = 20 * log10( rms_err_row_db );
+    }
+    wynik->err = arma::max( err_table_temp );
 
     // wypelnienie macierzy z RMS dla kazdego z elementow Y
-    for ( int j = 0; j < Nc; j=j+2 )
+    for ( int j = 1; j <= column_num; j++ )
     {
-//        wynik->err_table.row(j/sqrt(Nc)) += sqrt( accu( pow(diff_real.row(j), 2)
-//                                            + pow(diff_imag.row(j), 2) ) / Ns ) ;
-        double rms_err_row_db = sqrt( accu( pow( abs( f->rows(j,j+1) - f_check.rows(j,j+1) ), 2) ) /
-                     accu ( pow ( abs(f->rows(j,j+1)), 2) ) );
-        wynik->err_table.row(j/sqrt(Nc)) += 20 * log10( rms_err_row_db );
+        vec temp = err_table_temp.subvec( (j-1)*column_num, column_num*j-1 );
+        wynik->err_table(j-1) = arma::max( temp );
     }
 }

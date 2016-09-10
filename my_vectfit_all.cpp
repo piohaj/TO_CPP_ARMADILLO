@@ -210,7 +210,7 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts
     wynik.h = zeros<mat>(Nc,1);
     wynik.d = zeros<mat>(Nc,1);
     wynik.err = 0.0;
-    wynik.err_table = zeros<mat>(Nc, 1);
+    wynik.err_table = zeros<vec>(Nc);
 
     MKL_Set_Num_Threads(1); // ustawienie 1 watku MKL na czas TBB
     // wielowatkowe uruchomienie algorytmu VF
@@ -235,25 +235,14 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts
             f_check(m, i) = f_check(m, i) + wynik.d(m, 0) + sk * wynik.h(m,0);
         } 
     }
-     
-    //mat diff_real = real(*f - f_check);
-    //mat diff_imag = imag(*f - f_check);
 
-//    wynik.err = sqrt( ( accu( pow(diff_real, 2) + pow(diff_imag, 2) ) ) / Ns );
-
-    double rms_err_db = sqrt( accu( pow( abs( *f - f_check ), 2 ) ) /
-                     accu ( pow ( abs(*f), 2 ) ) );
-    wynik.err = 20 * log10( rms_err_db );
-
-    // wypelnienie macierzy z RMS dla kazdego z elementow Y
+    // wypelnienie macierzy z RRMS dla kazdego z elementow Y
     for ( int j = 0; j < Nc; j++ )
     {
-     //   wynik.err_table.row(j) = sqrt( accu ( pow(diff_real.row(j), 2)
-     //                            + pow(diff_imag.row(j), 2) ) / Ns ) ;
-        double rms_err_row_db = sqrt( accu( pow( abs( f->row(j) - f_check.row(j) ), 2) ) /
-                     accu ( pow ( abs(f->row(j)), 2) ) );
-        wynik.err_table.row(j) = 20 * log10( rms_err_row_db );
+        double rms_err_row_db = norm( f->row(j) - f_check.row(j) ) / norm( f->row(j) );
+        wynik.err_table(j) = 20 * log10( rms_err_row_db );
     }
+    wynik.err = arma::max( wynik.err_table );
 
     return wynik;
 }
