@@ -1276,23 +1276,103 @@ void reciprocal_make_mat( cx_mat &f )
 {
     int Nc = f.n_rows;
     int Nc_ports = sqrt(Nc);
-    int Ns = f.n_cols;
     
-    // liczba funkcji ktore zostana "usuniete"
-    int param = (Nc - Nc_ports) / 2;
+    // macierz z ograniczona liczba funkcji
+    cx_mat f_temp;
 
-    // srednia Y21 i Y12
-    f.row(1) = (f.row(1) + f.row(2)) / 2;
-    f.shed_row(2);
+    for ( int i = 0; i < Nc_ports; i++ )
+    {
+        for ( int j = 0; j < Nc_ports; j++ )
+        {
+            if ( i == j )
+            {
+                f_temp = join_vert( f_temp, get_Y_elem(f, i, j, Nc_ports) );
+            }
+            else if ( j > i )
+            {
+                // srednia np. Y21 i Y12
+                cx_mat tt = ( get_Y_elem(f, i, j, Nc_ports) + get_Y_elem(f, j, i, Nc_ports) ) / 2;
+                f_temp = join_vert( f_temp, tt );
+            }
+        }
+    }
+
+    f = f_temp;
 }
 
 
-void reciprocal_fix_results( SER &wynik, cx_mat &f)
+void reciprocal_fix_results( SER &wynik, cx_mat &f, int Nc_ports )
 {
+    wynik.poles.print("poles_before");
+    cx_mat poles_temp = wynik.poles;
+    poles_temp.fill(cx_double(0,0));
+
+    cx_mat res_temp = wynik.res;
+    res_temp.fill(cx_double(0,0));
+
+    mat d_temp = wynik.d;
+    d_temp.fill(0);
+
+    mat h_temp = wynik.h;
+    h_temp.fill(0);
+
+    mat zer = zeros<mat>(Nc_ports*Nc_ports,1);
+
+    int temp_index = 0;
+    for ( int i = 0; i < Nc_ports; i++ )
+    {
+        for ( int j = 0; j < Nc_ports; j++ )
+        {
+            int index = i*Nc_ports + j;
+            if ( j >= i )
+            {
+                poles_temp.row(index) = wynik.poles.row(temp_index);
+                res_temp.row(index) = wynik.res.row(temp_index);
+                d_temp.row(index) = wynik.d.row(temp_index);
+                h_temp.row(index) = wynik.h.row(temp_index);
+                temp_index++;
+            }
+        }
+    }
+
+    cx_mat cx_h = cx_mat(h_temp,zer);
+    cx_mat cx_d = cx_mat(d_temp,zer);
+
+    for ( int i = 0; i < Nc_ports; i++ )
+    {
+        for ( int j = 0; j < Nc_ports; j++ )
+        {
+            int index = i*Nc_ports + j;
+            if ( j < i )
+            {
+                poles_temp.row(index) = get_Y_elem(poles_temp, j, i, Nc_ports);
+                res_temp.row(index) = get_Y_elem(res_temp, j, i, Nc_ports);
+
+
+                h_temp.row(index) = real(get_Y_elem(cx_h, j, i, Nc_ports));
+                d_temp.row(index) = real(get_Y_elem(cx_d, j, i, Nc_ports));
+            }
+        }
+    }
+
     f.insert_rows(2,f.row(1));
 
-    wynik.poles.insert_rows(2, wynik.poles.row(1));
-    wynik.res.insert_rows(2, wynik.res.row(1));
-    wynik.d.insert_rows(2, wynik.d.row(1));
-    wynik.h.insert_rows(2, wynik.h.row(1));
+    wynik.poles = poles_temp;
+    wynik.res = res_temp;
+    wynik.d = d_temp;
+    wynik.h = h_temp;
+
+//    wynik.poles.insert_rows(2, wynik.poles.row(1));
+//    wynik.res.insert_rows(2, wynik.res.row(1));
+//    wynik.d.insert_rows(2, wynik.d.row(1));
+//    wynik.h.insert_rows(2, wynik.h.row(1));
+}
+
+
+cx_mat get_Y_elem(cx_mat &f, int i, int j, int Nc_ports)
+{
+    int index = Nc_ports*i + j;
+    cout << "index w get " << index << endl;
+
+    return f.row(index);
 }

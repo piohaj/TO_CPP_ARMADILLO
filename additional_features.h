@@ -63,5 +63,6 @@ void prepare_gnuplot_script( gnuplot_data & data, string name );
 
 // odwracalnosc ukladu
 void reciprocal_make_mat( cx_mat &f );
-void reciprocal_fix_results( SER &wynik, cx_mat &f);
+void reciprocal_fix_results( SER &wynik, cx_mat &f, int Nc_ports );
+cx_mat get_Y_elem(cx_mat &f, int i, int j, int Nc_ports);
 #endif

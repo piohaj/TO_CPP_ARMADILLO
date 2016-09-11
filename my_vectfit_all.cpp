@@ -201,6 +201,7 @@ SER my_vf_all_splitting(cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts& conf
     int N = poles->n_cols;
     int Ns = s->n_elem;
     int Nc = f->n_rows;
+    int Nc_ports = sqrt(Nc);
     int RC_offset = 0;
     if ( conf.calc_parallel_RC ) RC_offset = 2; 
 
@@ -223,7 +224,7 @@ SER my_vf_all_splitting(cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts& conf
 
     MKL_Set_Num_Threads(0); // MKL max threads
 
-    reciprocal_fix_results( wynik, *f );
+    reciprocal_fix_results( wynik, *f, Nc_ports );
     Nc = f->n_rows;
     // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
     cx_mat f_check = zeros<cx_mat>(Nc, Ns);
