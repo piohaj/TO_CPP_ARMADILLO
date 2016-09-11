@@ -60,4 +60,7 @@ void save_results_mats( SER & results, string file_name );
 
 // wykresy gnuplot
 void prepare_gnuplot_script( gnuplot_data & data, string name );
+
+// odwracalnosc ukladu
+void reciprocal_make_mat( cx_mat &f, cx_mat &out );
 #endif

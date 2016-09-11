@@ -66,6 +66,11 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     }
     else if ( split_strat == ALL_SPLITING )
     {
+        // wykorzystanie odwracalnosci ukladu
+        cx_mat out;
+        reciprocal_make_mat( f, out );
+        Nc = out.n_rows;
+
         int high_iter = 0;
         for ( int row = conf.min_row; row <= conf.max_row; row++ )
         {
@@ -76,7 +81,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             // wywolanie algorytmu
             for ( iter = 1; iter <= conf.max_iters; iter++ )
             {
-                wynik_iter[high_iter] = my_vf_all_splitting(&f, &s, &poles, conf); 
+                wynik_iter[high_iter] = my_vf_all_splitting(&out, &s, &poles, conf); 
     	        poles = wynik_iter[high_iter].poles;
     		
     	        if ( wynik_iter[high_iter].err < conf.tol )
@@ -1268,4 +1273,46 @@ mat gp_angle( cx_mat & data )
     }
 
     return result;
+}
+
+
+void reciprocal_make_mat( cx_mat &f, cx_mat &out )
+{
+    int Nc = f.n_rows;
+    int Nc_ports = sqrt(Nc);
+    int Ns = f.n_cols;
+    
+    // liczba funkcji ktore zostana "usuniete"
+    int param = (Nc - Nc_ports) / 2;
+
+    out = zeros<cx_mat>(Nc - param, Ns);
+
+    f.print("f=");
+
+    int j = 0;
+    // przepisanie elementow z przekatnej Y do pierwszych wierszy out
+    for ( j = 0; j < Nc_ports ; j++)
+    {
+        out.row(j) = f.row(j*(Nc_ports+1));
+    }
+
+//    int off = 0;
+//    for ( j = 0; j < Nc_ports ; j++)
+//    {
+//        f.shed_row(j*(Nc_ports+1-off));
+//        off++;
+//    }
+    f.shed_row(0);
+    f.print("f_shed=");
+
+    // przepisanie sredniej odpowiednich elementow do kolejnych wierszy out
+    for ( int i = 0; i < param; i++ )
+    {   
+        int index = i+j;
+        out.row(index) = ( f.row(i) + f(i+param) ) / 2;
+    }
+
+    out.print("out");
+
+
 }
