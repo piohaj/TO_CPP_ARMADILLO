@@ -8,7 +8,8 @@
 
 SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf );
 cx_mat prepare_input_poles( const cx_vec& s, int split_strat, int Nc, int N, int Ns );
-mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double rms_diff );
+mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double tol );
+mat choose_lowest_rrms( SER *input, int size, int Nc, int split_strat );
 SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int max_row );
 
 

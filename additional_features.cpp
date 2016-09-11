@@ -62,7 +62,17 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             cout << "\n";
             high_iter++;
         }
-        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
+
+        if ( conf.optim_model )
+        {
+            result_idx = choose_best_aprox( wynik_iter, row_iterations_num,
+                                               Nc, split_strat, conf.tol );
+        }
+        else
+        {
+            result_idx = choose_lowest_rrms( wynik_iter, row_iterations_num,
+                                               Nc, split_strat );
+        }
         cout << "\n++ Optymalne rozwiazanie (zgodnie z konfiguracja):\n"
              << "++ Rzad: " << conf.min_row + int(result_idx(0)) << "\n" << endl;
         wynik = wynik_iter[int(result_idx(0))];
@@ -98,11 +108,20 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             high_iter++;
         }
        
-       result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
-       cout << "\n++ Optymalne rozwiazanie (zgodnie z konfiguracja):\n";
-       (result_idx + conf.min_row).print("++ Rzedy (dla kolejnych elementow Y (kolumnowo):");
+        if ( conf.optim_model )
+        {
+            result_idx = choose_best_aprox( wynik_iter, row_iterations_num,
+                                               Nc, split_strat, conf.tol );
+        }
+        else
+        {
+            result_idx = choose_lowest_rrms( wynik_iter, row_iterations_num,
+                                               Nc, split_strat );
+        }
+        cout << "\n++ Optymalne rozwiazanie (zgodnie z konfiguracja):\n";
+        (result_idx + conf.min_row).print("++ Rzedy (dla kolejnych elementow Y (kolumnowo):");
 
-       wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
+        wynik = cumulate_model( split_strat, result_idx, wynik_iter, Nc, conf.max_row);
     }
     else if ( split_strat == COLUMN_SPLITING )
     {
@@ -133,7 +152,16 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
 
             high_iter++;
         }
-        result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
+        if ( conf.optim_model )
+        {
+            result_idx = choose_best_aprox( wynik_iter, row_iterations_num,
+                                               Nc, split_strat, conf.tol );
+        }
+        else
+        {
+            result_idx = choose_lowest_rrms( wynik_iter, row_iterations_num,
+                                               Nc, split_strat );
+        }
 
         cout << "\n++ Optymalne rozwiazanie (zgodnie z konfiguracja):\n";
         (result_idx + conf.min_row).print("++ Rzedy (dla kolejnych kolumn Y (pionowo):");
@@ -243,9 +271,62 @@ cx_mat prepare_input_poles( const cx_vec& s, int split_strat, int Nc, int N, int
     return poles;
 }
 
-mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double rms_diff )
+mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double tol )
 {
     mat result;
+    if ( split_strat == NON_SPLITING )
+    {
+        result = zeros<mat>(1,1);
+        for ( int i = 0; i < size; i++ )
+        {
+            double err_temp = input[i].err;
+            if ( err_temp  <= tol )
+            {
+                result(0) = i;
+                break;
+            }
+        }
+    }
+    else if ( split_strat == ALL_SPLITING )
+    {
+        result = zeros<mat>(Nc, 1);
+        for ( int i = 0; i < Nc; i++ )
+        {
+            for ( int j = 0; j < size; j++ )
+            {
+                double err_temp = input[j].err_table[i];
+                if ( err_temp <= tol )
+                {
+                    result(i) = j;
+                    break;
+                }
+            }
+        }
+    }
+    else if ( split_strat == COLUMN_SPLITING )
+    {
+        result = zeros<mat>( sqrt(Nc), 1 );
+        for ( int i = 0; i < sqrt(Nc); i++ )
+        {
+            for ( int j = 0; j < size; j++ )
+            {
+                double err_temp = input[j].err_table[i];
+                if ( err_temp <= tol )
+                {
+                    result(i) = j;
+                    break;
+                }
+            }
+        }
+    
+    }
+    return result;
+}  
+
+mat choose_lowest_rrms( SER *input, int size, int Nc, int split_strat )
+{
+    mat result;
+    double rms_diff = 0;
     if ( split_strat == NON_SPLITING )
     {
         result = zeros<mat>(1,1);
@@ -298,7 +379,7 @@ mat choose_best_aprox( SER *input, int size, int Nc, int split_strat, double rms
     
     }
     return result;
-}  
+}
 
 
 SER cumulate_model( int split_strat, mat& indexes, SER *iter_models, int Nc, int max_row )
@@ -598,7 +679,7 @@ int read_conf( vf_opts& global_conf, string file_name )
         global_conf.out_file_name = read_param("out_file_name", conf_map); 
         global_conf.in_file_name = read_param("in_file_name", conf_map); 
         global_conf.tol = atof( read_param("min_rms", conf_map).c_str() ); 
-        global_conf.rms_diff = atof( read_param("rms_diff", conf_map).c_str() ); 
+        global_conf.optim_model = atoi( read_param("optim_model", conf_map).c_str() ); 
         global_conf.min_row = atoi( read_param("min_row", conf_map).c_str() ); 
         global_conf.max_row = atoi( read_param("max_row", conf_map).c_str() ); 
         global_conf.max_iters = atoi( read_param("max_iters", conf_map).c_str() ); 
