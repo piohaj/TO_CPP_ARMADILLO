@@ -213,18 +213,18 @@ SER my_vf_all_splitting(cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts& conf
     wynik.err = 0.0;
     wynik.err_table = zeros<vec>(Nc);
 
-    reciprocal_make_mat( *f );
-    Nc = f->n_rows;
+    cx_mat f_temp = reciprocal_make_mat( *f );
+    Nc = f_temp.n_rows;
 
     MKL_Set_Num_Threads(1); // ustawienie 1 watku MKL na czas TBB
     // wielowatkowe uruchomienie algorytmu VF
     task_scheduler_init init();
     parallel_for( blocked_range<int>(0, Nc),
-              vf_all(f, s, poles, &wynik, RC_offset) );
+              vf_all(&f_temp, s, poles, &wynik, RC_offset) );
 
     MKL_Set_Num_Threads(0); // MKL max threads
 
-    reciprocal_fix_results( wynik, *f, Nc_ports );
+    reciprocal_fix_results( wynik, Nc_ports );
     Nc = f->n_rows;
     // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
     cx_mat f_check = zeros<cx_mat>(Nc, Ns);

@@ -1272,7 +1272,7 @@ mat gp_angle( cx_mat & data )
 }
 
 
-void reciprocal_make_mat( cx_mat &f )
+cx_mat reciprocal_make_mat( cx_mat &f )
 {
     int Nc = f.n_rows;
     int Nc_ports = sqrt(Nc);
@@ -1297,13 +1297,12 @@ void reciprocal_make_mat( cx_mat &f )
         }
     }
 
-    f = f_temp;
+    return f_temp;
 }
 
 
-void reciprocal_fix_results( SER &wynik, cx_mat &f, int Nc_ports )
+void reciprocal_fix_results( SER &wynik, int Nc_ports )
 {
-    wynik.poles.print("poles_before");
     cx_mat poles_temp = wynik.poles;
     poles_temp.fill(cx_double(0,0));
 
@@ -1348,31 +1347,21 @@ void reciprocal_fix_results( SER &wynik, cx_mat &f, int Nc_ports )
                 poles_temp.row(index) = get_Y_elem(poles_temp, j, i, Nc_ports);
                 res_temp.row(index) = get_Y_elem(res_temp, j, i, Nc_ports);
 
-
                 h_temp.row(index) = real(get_Y_elem(cx_h, j, i, Nc_ports));
                 d_temp.row(index) = real(get_Y_elem(cx_d, j, i, Nc_ports));
             }
         }
     }
 
-    f.insert_rows(2,f.row(1));
-
     wynik.poles = poles_temp;
     wynik.res = res_temp;
     wynik.d = d_temp;
     wynik.h = h_temp;
-
-//    wynik.poles.insert_rows(2, wynik.poles.row(1));
-//    wynik.res.insert_rows(2, wynik.res.row(1));
-//    wynik.d.insert_rows(2, wynik.d.row(1));
-//    wynik.h.insert_rows(2, wynik.h.row(1));
 }
 
 
 cx_mat get_Y_elem(cx_mat &f, int i, int j, int Nc_ports)
 {
     int index = Nc_ports*i + j;
-    cout << "index w get " << index << endl;
-
     return f.row(index);
 }
