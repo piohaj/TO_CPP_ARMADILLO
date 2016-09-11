@@ -4,7 +4,7 @@
 #include "data_model.h"
 #include "additional_features.h"
 
-SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts& conf);
+SER my_vf_all_splitting(cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts& conf);
 
 class vf_all
 {

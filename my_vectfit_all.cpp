@@ -195,12 +195,12 @@ void vf_all::operator() ( const blocked_range<int>& r ) const
 } 
 
 
-SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts& conf )
+SER my_vf_all_splitting(cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts& conf )
 {
     SER wynik;
-    int Nc = f->n_rows;
     int N = poles->n_cols;
     int Ns = s->n_elem;
+    int Nc = f->n_rows;
     int RC_offset = 0;
     if ( conf.calc_parallel_RC ) RC_offset = 2; 
 
@@ -212,6 +212,9 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts
     wynik.err = 0.0;
     wynik.err_table = zeros<vec>(Nc);
 
+    reciprocal_make_mat( *f );
+    Nc = f->n_rows;
+
     MKL_Set_Num_Threads(1); // ustawienie 1 watku MKL na czas TBB
     // wielowatkowe uruchomienie algorytmu VF
     task_scheduler_init init();
@@ -220,6 +223,8 @@ SER my_vf_all_splitting(const cx_mat *f, const cx_vec *s, cx_mat *poles, vf_opts
 
     MKL_Set_Num_Threads(0); // MKL max threads
 
+    reciprocal_fix_results( wynik, *f );
+    Nc = f->n_rows;
     // obliczanie bledu metody najmniejszych kwadratow dla kazdego z portow
     cx_mat f_check = zeros<cx_mat>(Nc, Ns);
     for ( int m = 0; m < Nc; m++ )

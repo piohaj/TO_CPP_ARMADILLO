@@ -62,5 +62,6 @@ void save_results_mats( SER & results, string file_name );
 void prepare_gnuplot_script( gnuplot_data & data, string name );
 
 // odwracalnosc ukladu
-void reciprocal_make_mat( cx_mat &f, cx_mat &out );
+void reciprocal_make_mat( cx_mat &f );
+void reciprocal_fix_results( SER &wynik, cx_mat &f);
 #endif
