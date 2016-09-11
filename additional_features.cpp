@@ -55,8 +55,11 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	            break;
     	        }
             }
+            if ( iter > conf.max_iters ) iter = conf.max_iters;
             cout << "++ Rzad przyblizenia: " << row << ", RRMS: "
                  << wynik_iter[high_iter].err << " dB" << endl;
+            cout << "++ Wykonano iteracji VF: " << iter << endl;
+            cout << "\n";
             high_iter++;
         }
         result_idx = choose_best_aprox( wynik_iter, row_iterations_num, Nc, split_strat, conf.rms_diff );
@@ -85,9 +88,12 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	            break;
     	        }
             }
+            if ( iter > conf.max_iters ) iter = conf.max_iters;
             cout << "++ Rzad przyblizenia: " << row << ", RRMS: "
                  << wynik_iter[high_iter].err << " dB" << endl;
+            cout << "++ Wykonano iteracji VF: " << iter << endl;
             wynik_iter[high_iter].err_table.print("++ Bledy RRMS dla kolejnych elementow Y (dB)=");
+            cout << "\n";
 
             high_iter++;
         }
@@ -118,9 +124,12 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     	            break;
     	        }
             }
+            if ( iter > conf.max_iters ) iter = conf.max_iters;
             cout << "++ Rzad przyblizenia: " << row << ", RRMS: "
                  << wynik_iter[high_iter].err << " dB" << endl;
+            cout << "++ Wykonano iteracji VF: " << iter << endl;
             wynik_iter[high_iter].err_table.print("++ Bledy RRMS dla kolejnych kolumn Y=");
+            cout << "\n";
 
             high_iter++;
         }
@@ -551,6 +560,8 @@ int check_model_simulation_results( const cx_mat& f, const vf_opts& conf, gnuplo
         double rms_err_row = norm( f.row(j) - spice_simulation_data.f.row(j) ) / norm( f.row(j) );
         err_temp(j) = rms_err_row;
     }
+
+    err_temp.print("err");
     
     double rms_err = arma::max( err_temp );
     double rms_err_db = 20 * log10( rms_err );
