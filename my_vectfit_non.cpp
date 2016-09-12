@@ -298,7 +298,8 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles, vf_opts&
      }
      for ( int n = 0 ; n < Nc; n++ )
      {
-         f_check.row(n) = (poles_check*wynik.res.row(n).st()).st() + wynik.h(n,0);
+         f_check.row(n) = (poles_check*wynik.res.row(n).st()).st() + wynik.d(n,0)
+                           + (s.st() * wynik.h(n,0));
      }
 
      // obliczanie RRMS jako najgorszego bledu z obliczonych dla kazdego elementu Y
@@ -307,6 +308,7 @@ SER my_vf_non_splitting(const cx_mat& f, const cx_vec& s, cx_mat poles, vf_opts&
          double rms_err_row_db = norm( f.row(j) - f_check.row(j) ) / norm( f.row(j) );
          wynik.err_table(j) = 20 * log10( rms_err_row_db );
      }
+
      wynik.err = arma::max( wynik.err_table );
 
      return wynik;
