@@ -63,7 +63,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             high_iter++;
         }
 
-        if ( conf.optim_model )
+        if ( conf.optim_model && is_optim_possible( wynik_iter, conf.max_row - conf.min_row, conf.tol ) )
         {
             result_idx = choose_best_aprox( wynik_iter, row_iterations_num,
                                                Nc, split_strat, conf.tol );
@@ -108,7 +108,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
             high_iter++;
         }
        
-        if ( conf.optim_model )
+        if ( conf.optim_model && is_optim_possible( wynik_iter, conf.max_row - conf.min_row, conf.tol) )
         {
             result_idx = choose_best_aprox( wynik_iter, row_iterations_num,
                                                Nc, split_strat, conf.tol );
@@ -152,7 +152,7 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
 
             high_iter++;
         }
-        if ( conf.optim_model )
+        if ( conf.optim_model && is_optim_possible( wynik_iter, conf.max_row - conf.min_row, conf.tol ) )
         {
             result_idx = choose_best_aprox( wynik_iter, row_iterations_num,
                                                Nc, split_strat, conf.tol );
@@ -178,6 +178,16 @@ SER vf_high_level( cx_mat& f, const cx_vec& s, vf_opts conf )
     return wynik;
 } 
 
+
+bool is_optim_possible( SER *wynik, int size, double tol )
+{
+    for ( int i = 0; i < size; i++ )
+    {
+        if ( wynik[i].err <= tol ) return true;
+    }
+
+    return false;
+}
 
 cx_mat prepare_input_poles( const cx_vec& s, int split_strat, int Nc, int N, int Ns )
 {
@@ -336,7 +346,7 @@ mat choose_lowest_rrms( SER *input, int size, int Nc, int split_strat )
             double err_temp = input[i].err;
             if ( ( err - err_temp ) >= rms_diff )
             {
-                err = input[i].err;
+                err = err_temp;
                 result(0) = i;
             }
         }
@@ -353,7 +363,7 @@ mat choose_lowest_rrms( SER *input, int size, int Nc, int split_strat )
 
                 if ( ( err - err_temp ) >= rms_diff )
                 {
-                    err = input[j].err_table[i];
+                    err = err_temp;
                     result(i) = j;
                 }
             }

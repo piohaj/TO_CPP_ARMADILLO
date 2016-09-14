@@ -28,6 +28,7 @@ int check_model_simulation_results( const cx_mat& f, const vf_opts& conf, gnuplo
 
 void force_stable_poles( cx_mat& poles ); 
 mat gp_angle( cx_mat & data );
+bool is_optim_possible( SER *wynik, int size, double tol );
 
 // wczytywanie konfiguracji
 vector<string> my_split(string str, const char delim);
